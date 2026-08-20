@@ -239,9 +239,29 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 #modal .op:hover{border-color:var(--txt3);color:var(--txt)}
 #modal .op.on{border-color:var(--verde);background:var(--verde-esc);color:#fff}
 #modal .op.livre{border-style:dashed}
-#modal .op.livre{border-style:dashed}
 #modal .op small{display:block;font-size:11px;opacity:.75;margin-top:2px}
 #modal .bts{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+#modal .larga{width:min(760px,100%)}
+#modal .lista{border:1px solid var(--linha);border-radius:10px;overflow:hidden;margin-bottom:14px}
+#modal .lin{display:flex;align-items:center;gap:10px;padding:8px 12px;
+  border-bottom:1px solid var(--linha);font-size:13.5px}
+#modal .lin:last-child{border-bottom:none}
+#modal .lin:hover{background:var(--painel2)}
+#modal .lin input[type=checkbox]{width:16px;height:16px;flex:none;accent-color:var(--verde)}
+#modal .lin .nm{flex:1;min-width:0}
+#modal .lin .nm small{display:block;font-size:11px;color:var(--txt3)}
+#modal .lin input[type=number],#modal .lin input[type=text]{width:110px;flex:none;padding:5px 8px;font-size:13px}
+#modal .lin.off{opacity:.42}
+#modal .cab{display:flex;gap:10px;padding:7px 12px;background:var(--painel2);
+  font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);font-weight:600}
+#modal .cab .nm{flex:1}#modal .cab span.col{width:110px;flex:none;text-align:center}
+#modal .radio{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+#modal .radio button{padding:7px 13px;border:1.5px solid var(--linha2);border-radius:9px;
+  font-size:13px;color:var(--txt2)}
+#modal .radio button.on{border-color:var(--verde);color:var(--verde);background:var(--painel2)}
+#modal .passos{font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--txt3);margin-bottom:14px}
+#modal .passos b{color:var(--verde)}
 #modal .bts button{padding:9px 17px;border-radius:8px;border:1px solid var(--linha2);font-size:13.5px}
 #modal .bts button.ok{background:var(--verde-esc);border-color:var(--verde);color:#fff;font-weight:500}
 #modal .resumo{background:var(--painel2);border-radius:9px;padding:12px 14px;font-size:12.5px;
@@ -415,8 +435,21 @@ const CANAIS=[
   ['Alteração no site','Banner + tarja com timer + aviso nas PDPs + preço com desconto (não cupom)','Pedro']
 ];
 /* ===== CATÁLOGO — é aqui que se mexe quando o portfólio ou o padrão muda ===== */
-const SKUS=['Tri[Mg]','TetraVit D','Hair','Whey','Creatina','Vit C','Sleep','Ômega 3'];
-const KITS=[['Kit Imunidade','10% OFF']];
+/* Catálogo real da loja (Shopify · Botanika Brasil), puxado em 20/08/2026.
+   Quando o portfólio mudar é só pedir pro Claude sincronizar de novo. */
+const CATALOGO=[
+  {curto:'Tri[Mg]',      sku:'80.1.1', preco:87.50,  nome:'Tri[Mg] Complex — Magnésio 3 em 1 de Rápida Absorção'},
+  {curto:'Vit C',        sku:'80.1.2', preco:89.52,  nome:'Super Vitamina C — Vitamina C + Quercetina + Própolis'},
+  {curto:'Ômega 3',      sku:'80.1.3', preco:163.12, nome:'Super Ômega 3 + CoQ10 — Concentrado'},
+  {curto:'Hair',         sku:'80.1.5', preco:99.40,  nome:'Hair Botanika — Cabelos, Unhas e Pele'},
+  {curto:'Sleep',        sku:'80.1.6', preco:119.70, nome:'Sleep Inositol — Relaxamento e Rotina do Sono'},
+  {curto:'Creatina',     sku:'80.1.7', preco:128.30, nome:'Creatina Monohidratada + Magnésio Taurato'},
+  {curto:'Whey',         sku:'80.1.8', preco:147.30, nome:'Whey Balance Chocolate — Whey + Colágeno C-PURE®'},
+  {curto:'TetraVit D',   sku:'80.1.9', preco:117.12, nome:'TetraVit D — Vitaminas A, D, E e K em Gotas'},
+  {curto:'Kit Imunidade',sku:'kitimu', preco:361.71, nome:'Kit Imunidade — TetraVit D + Ômega 3 + Vit C', kit:true}
+];
+const SKUS=CATALOGO.filter(p=>!p.kit).map(p=>p.curto);
+const KITS=CATALOGO.filter(p=>p.kit).map(p=>[p.curto,'10% OFF']);
 const BONUS={universal:'Manual da Suplementação (PDF)',
              influencer:'Guia da Imunidade Infantil (PDF)'};
 const EQUIPE=[
@@ -477,10 +510,17 @@ const RITMO={
   'Alteração no site':{abertura:'00h no ar',ultimo:'23h59 tira do ar'}
 };
 
-/* divisão da meta por canal, tirada do Dia D de agosto */
-const SPLIT=[['Tráfego',.267,'Gestor'],['Influencer',.178,'Joinny'],
-  ['Instagram Bio/stories',.078,'Italo'],['Atendimento',.056,'Lissia'],
-  ['Grupos antigos',.156,'Pedro'],['API',.267,'Pedro']];
+/* Canais que faturam — proporção da meta e fatia do investimento, tiradas do
+   Dia D de agosto. Cada campanha pode sobrescrever no assistente. */
+const CANAIS_RECEITA=[
+  {n:'Tráfego',               pr:.267, invPr:.67, r:'Gestor'},
+  {n:'Influencer',            pr:.178, invPr:0,   r:'Joinny'},
+  {n:'Instagram Bio/stories', pr:.078, invPr:0,   r:'Italo'},
+  {n:'Atendimento',           pr:.056, invPr:0,   r:'Lissia'},
+  {n:'Grupos antigos',        pr:.156, invPr:0,   r:'Pedro'},
+  {n:'API',                   pr:.267, invPr:.33, r:'Pedro'}
+];
+const SPLIT=CANAIS_RECEITA.map(c=>[c.n,c.pr,c.r]);
 const CORES=['#35d07f','#5eb3f0','#a78bfa','#f5c451','#f06fa8','#f2777a','#0AB58F','#E36DBE'];
 const RAMOS=['#7B61FF','#F24726','#FF9D48','#F5C51E','#0AB58F','#E36DBE','#2D9BF0','#9510AC'];
 const STICKY=['#FFF9B1','#D5F692','#A6CCF5','#FFCEE0','#FFD599','#D0C6FF','#FFFFFF'];
@@ -520,6 +560,7 @@ let W={};
 const $=s=>document.querySelector(s);
 const esc=t=>String(t??'').replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m]));
 const brl=n=>'R$ '+Number(n||0).toLocaleString('pt-BR',{maximumFractionDigits:0});
+const brl2=n=>'R$ '+Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const dISO=s=>new Date(s+'T12:00:00');
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const dBR=d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
@@ -610,9 +651,40 @@ function papeisPorColuna(tipo,ini,fim){
   const out=[];for(let i=0;i<ps.length;i+=7)out.push(ps[i]);return out;
 }
 
+/* As proporções do Dia D somam 1,002 — arredondar canal a canal faz o TAP
+   fechar acima da meta. O resto vai pro canal de maior fatia. */
+function dividirReceita(meta,inv){
+  const l=CANAIS_RECEITA.map(c=>({n:c.n,r:c.r,on:true,
+    inv:Math.round(inv*c.invPr),meta:Math.round(meta*c.pr)}));
+  const ajusta=(campo,alvo,peso)=>{
+    const soma=l.reduce((t,x)=>t+x[campo],0);
+    if(soma===alvo)return;
+    const i=l.indexOf(l.reduce((a,b)=>peso(b)>peso(a)?b:a));
+    l[i][campo]+=alvo-soma;
+  };
+  ajusta('meta',meta,x=>x.meta);
+  ajusta('inv',inv,x=>x.inv);
+  return l;
+}
+
+/* Campanha criada antes do assistente ganhar oferta/canais cai no padrão do
+   formato — assim TAP antigo e novo geram igual. */
+function ofertaDe(c){
+  const P=PADRAO[c.tipo]||PADRAO.outro;
+  return {produtos:CATALOGO.map(p=>p.sku),modoDesc:'todos',
+    descGeral:parseInt(P.desconto)||0,descPorSku:{},extras:[],
+    frete:P.frete,brinde:'',
+    bonusUniversal:BONUS.universal,bonusInfluencer:BONUS.influencer, ...(c.oferta||{})};
+}
+const descontoDe=(o,sku)=>o.modoDesc==='cada'?(o.descPorSku[sku]??o.descGeral):o.descGeral;
+const pct=v=>v>0?v+'% OFF':'—';
+
 function gerarSecoes(c){
   const dIni=dISO(c.inicio),dFim=dISO(c.fim);
   const T=TIPOS[c.tipo]||TIPOS.outro, P=PADRAO[c.tipo]||PADRAO.outro;
+  const O=ofertaDe(c);
+  const canaisOn=CANAIS.filter(([n])=>!c.canais||c.canais.includes(n));
+  const escolhidos=CATALOGO.filter(p=>O.produtos.includes(p.sku));
   const invTraf=Math.round(c.investimento*.67), invApi=c.investimento-invTraf;
   const metaTraf=Math.round(c.meta*.267);
   const roas=invTraf?(metaTraf/invTraf).toFixed(1).replace('.',','):'—';
@@ -621,39 +693,43 @@ function gerarSecoes(c){
   const periodo=c.inicio===c.fim?dBR(dIni):`${dBR(dIni)} a ${dBR(dFim)}`;
   const tema=c.tema?` — tema ${c.tema}`:'';
 
-  const metas=[['Investimento WhatsApp API',brl(invApi),'Pedro'],
-    ['Investimento tráfego — Vendas',brl(invTraf),'Gestor'],
-    ['ROAS alvo',roas,'Gestor']];
-  SPLIT.forEach(([n,pr,r])=>metas.push([`Meta faturamento — ${n}`,brl(Math.round(c.meta*pr)),r]));
-  metas.push(['Meta faturamento total',brl(c.meta),''],
-    ['Investimento API e tráfego',brl(c.investimento),''],
-    ['Lucro (aprox.)',brl(c.meta-c.investimento),'']);
+  const rec=(c.receita||dividirReceita(c.meta,c.investimento)).filter(x=>x.on!==false);
+  const metas=[];
+  rec.filter(x=>x.inv>0).forEach(x=>metas.push([`Investimento — ${x.n}`,brl(x.inv),x.r]));
+  metas.push(['ROAS alvo',roas,'Gestor']);
+  rec.forEach(x=>metas.push([`Meta faturamento — ${x.n}`,brl(x.meta),x.r]));
+  const somaInv=rec.reduce((t,x)=>t+x.inv,0), somaMeta=rec.reduce((t,x)=>t+x.meta,0);
+  metas.push(['Meta faturamento total',brl(somaMeta||c.meta),''],
+    ['Investimento API e tráfego',brl(somaInv||c.investimento),''],
+    ['Lucro (aprox.)',brl((somaMeta||c.meta)-(somaInv||c.investimento)),'']);
   const tot=[metas.length-3,metas.length-2,metas.length-1];
 
   return [
     {t:'SOBRE O EVENTO',c:['Campo','Valor'],l:[
       ['Nome da Campanha',c.nome],
       ['Formato da campanha',`${T.desc}${tema} (${periodo})`],
-      ['Cupom automático',P.cupom],
-      ['Bônus universal',`${BONUS.universal} — todos que comprarem`],
-      ['Bônus via influencer',`${BONUS.influencer} — só quem comprar pela influencer`]]},
+      ['Cupom automático',O.modoDesc==='cada'
+        ?'Desconto por produto (já embutido no preço) — ver SOBRE A OFERTA'
+        :`${O.descGeral}% OFF geral (já embutido no preço)`],
+      ['Bônus universal',`${O.bonusUniversal} — todos que comprarem`],
+      ['Bônus via influencer',`${O.bonusInfluencer} — só quem comprar pela influencer`],
+      ...(O.brinde?[['Brinde',O.brinde]]:[])]},
     {t:'EQUIPE',c:['Quem','Responsabilidade'],l:EQUIPE.map(e=>[...e])},
     {t:'FASES',c:['Fase','Tem?','Data'],l:fasesDe(c.tipo,dIni,dFim)},
-    {t:'SOBRE A OFERTA',c:['Produtos','Detalhe','Desconto'],l:[
-      [P.produtos||'Produtos em promoção',
-       c.tipo==='diaD'?`${SKUS.length} SKUs Botanika (${SKUS.join(', ')})`:SKUS.join(', '),
-       P.desconto],
-      ['Kits ativos',KITS.map(([n,d])=>`${n} continua com ${d} (empilhado)`).join(' · '),
-       KITS[0]?KITS[0][1]:'—'],
-      ['Bônus universal',BONUS.universal,'—'],
-      ['Bônus via influencer',BONUS.influencer,'—'],
-      ['Frete grátis',P.frete,'—']]},
+    {t:'SOBRE A OFERTA',c:['Produto','Detalhe','Desconto'],l:[
+      ...escolhidos.map(p=>[p.curto+(p.kit?' · kit':''),
+        `${p.nome} · SKU ${p.sku} · ${brl2(p.preco)}`, pct(descontoDe(O,p.sku))]),
+      ...O.extras.map(t=>['Fora do catálogo',t,'—']),
+      ['Bônus universal',O.bonusUniversal,'—'],
+      ['Bônus via influencer',O.bonusInfluencer,'—'],
+      ...(O.brinde?[['Brinde',O.brinde,'—']]:[]),
+      ['Frete grátis',O.frete,'—']]},
     {t:'AUMENTO DE TICKET MÉDIO',c:['Estratégia','Detalhe','Desconto'],l:[
       ['Orderbump',P.orderbump,'10% / 15%'],
       ['Desconto por volume','3 un = 10% · 5 un = 15% · 8 un = 20% — empilha com o desconto da ação','até 20%']]},
     {t:'METAS',c:['Item','Valor','Responsável'],l:metas,tot},
     {t:'CANAIS · CRONOGRAMA',c:['Canal','Base',...cols,'Quem faz'],
-      l:CANAIS.map(([n,b,q])=>{
+      l:canaisOn.map(([n,b,q])=>{
         const r=RITMO[n]||{};
         return [n,b,...papeis.map(pa=>r[pa]??'—'),q];
       })}
@@ -668,10 +744,16 @@ function assistente(noId){
   AS={noId,tipo:null,tema:null,
     inicio:iso(new Date(m.ano,m.mes-1,Math.min(7,28))),
     fim:iso(new Date(m.ano,m.mes-1,Math.min(7,28))),
-    meta:45000,inv:4500,nome:''};
+    meta:45000,inv:4500,nome:'',
+    produtos:CATALOGO.map(p=>p.sku),   // todos participam até você tirar algum
+    modoDesc:'todos',descGeral:8,descPorSku:{},
+    extras:[],                          // produto escrito na mão
+    canais:CANAIS.map(c=>c[0]),         // canais de execução ligados
+    receita:null};
   passo1();
 }
 function passo1(){
+  $('#modal-cx').className='cx';
   $('#modal-cx').innerHTML=`
     <h3>Nova campanha</h3>
     <p class="sub">Escolha o formato. O TAP e o calendário se montam a partir dele.</p>
@@ -742,9 +824,122 @@ function passo2(){
     </div>
     <div class="resumo" id="w-resumo"></div>
     <div class="bts"><button onclick="passo1()">Voltar</button>
-      <button class="ok" onclick="criarCampanha()">Criar campanha e TAP</button></div>`;
+      <button class="ok" onclick="irPasso3()">Produtos e oferta →</button></div>`;
   ['w-ini','w-fim','w-meta','w-inv'].forEach(id=>$('#'+id).oninput=resumoW);
   resumoW();
+}
+function guardaPasso2(){
+  AS.nome=$('#w-nome').value.trim()||AS.nome;
+  AS.inicio=$('#w-ini').value;AS.fim=$('#w-fim').value;
+  AS.meta=+$('#w-meta').value||0;AS.inv=+$('#w-inv').value||0;
+}
+function irPasso3(){guardaPasso2();passo3()}
+
+/* ---------- passo 3: quais produtos entram e com qual desconto ---------- */
+function passo3(){
+  const P=PADRAO[AS.tipo]||PADRAO.outro;
+  if(!AS.descGeralTocado)AS.descGeral=parseInt(P.desconto)||8;
+  if(AS.frete===undefined)AS.frete=P.frete;
+  if(AS.bonusUniversal===undefined)AS.bonusUniversal=BONUS.universal;
+  if(AS.bonusInfluencer===undefined)AS.bonusInfluencer=BONUS.influencer;
+  if(AS.brinde===undefined)AS.brinde='';
+  $('#modal-cx').className='cx larga';
+  $('#modal-cx').innerHTML=`
+    <div class="passos">Passo <b>3</b> de 4 · oferta</div>
+    <h3>Produtos e desconto</h3>
+    <p class="sub">O catálogo vem da Shopify. Desmarque o que não entra e escreva o que não está na loja.</p>
+    <div class="radio">
+      <button id="r-todos" class="${AS.modoDesc==='todos'?'on':''}" onclick="modoDesc('todos')">Mesmo % para todos</button>
+      <button id="r-cada" class="${AS.modoDesc==='cada'?'on':''}" onclick="modoDesc('cada')">Um % por produto</button>
+    </div>
+    <div id="desc-geral" style="${AS.modoDesc==='todos'?'':'display:none'}">
+      <label><b>Desconto da ação</b><input type="number" id="w-desc" value="${AS.descGeral}" min="0" max="90" step="1"></label>
+    </div>
+    <div class="cab"><span class="nm">Produto</span><span class="col">Preço</span><span class="col">% OFF</span></div>
+    <div class="lista" id="lista-prod">${CATALOGO.map(pr=>{
+      const on=AS.produtos.includes(pr.sku);
+      return `<div class="lin ${on?'':'off'}" data-sku="${pr.sku}">
+        <input type="checkbox" ${on?'checked':''} onchange="ligarProduto('${pr.sku}',this.checked)">
+        <span class="nm">${esc(pr.curto)}${pr.kit?' · kit':''}<small>${esc(pr.nome)} · SKU ${esc(pr.sku)}</small></span>
+        <span class="col" style="width:110px;flex:none;text-align:center;color:var(--txt2)">${brl2(pr.preco)}</span>
+        <input type="number" class="d-sku" data-sku="${pr.sku}" min="0" max="90"
+          value="${AS.descPorSku[pr.sku]??AS.descGeral}"
+          style="${AS.modoDesc==='cada'?'':'visibility:hidden'}"
+          onchange="AS.descPorSku['${pr.sku}']=+this.value">
+      </div>`}).join('')}</div>
+    <label><b>Produto fora do catálogo (um por linha)</b>
+      <textarea id="w-extras" rows="2" placeholder="Ex: Combo Fitness · 15% OFF">${esc(AS.extras.join('\n'))}</textarea></label>
+    <div class="dupla">
+      <label><b>Frete grátis</b><input id="w-frete" value="${esc(AS.frete)}"></label>
+      <label><b>Brinde (opcional)</b><input id="w-brinde" value="${esc(AS.brinde)}" placeholder="Ex: coqueteleira nas compras acima de R$ 400"></label>
+    </div>
+    <div class="dupla">
+      <label><b>Bônus universal</b><input id="w-bu" value="${esc(AS.bonusUniversal)}"></label>
+      <label><b>Bônus via influencer</b><input id="w-bi" value="${esc(AS.bonusInfluencer)}"></label>
+    </div>
+    <div class="bts"><button onclick="passo2()">Voltar</button>
+      <button class="ok" onclick="irPasso4()">Canais e metas →</button></div>`;
+  $('#w-desc').oninput=e=>{AS.descGeral=+e.target.value||0;AS.descGeralTocado=true;
+    document.querySelectorAll('.d-sku').forEach(i=>{if(AS.descPorSku[i.dataset.sku]===undefined)i.value=AS.descGeral})};
+}
+function modoDesc(m){AS.modoDesc=m;guardaPasso3();passo3()}
+function ligarProduto(sku,on){
+  AS.produtos=on?[...new Set([...AS.produtos,sku])]:AS.produtos.filter(x=>x!==sku);
+  document.querySelector(`.lin[data-sku="${sku}"]`)?.classList.toggle('off',!on);
+}
+function guardaPasso3(){
+  if(!$('#w-frete'))return;
+  AS.frete=$('#w-frete').value;AS.brinde=$('#w-brinde').value;
+  AS.bonusUniversal=$('#w-bu').value;AS.bonusInfluencer=$('#w-bi').value;
+  AS.extras=$('#w-extras').value.split('\n').map(t=>t.trim()).filter(Boolean);
+}
+function irPasso4(){guardaPasso3();passo4()}
+
+/* ---------- passo 4: canais, investimento e meta de cada um ---------- */
+function passo4(){
+  if(!AS.receita)AS.receita=dividirReceita(AS.meta,AS.inv);
+  $('#modal-cx').className='cx larga';
+  $('#modal-cx').innerHTML=`
+    <div class="passos">Passo <b>4</b> de 4 · canais</div>
+    <h3>Onde entra a verba e de onde vem o faturamento</h3>
+    <p class="sub">Já vem dividido na proporção do Dia D de agosto. Mexa no que for diferente.</p>
+    <div class="cab"><span class="nm">Canal que fatura</span><span class="col">Investimento</span><span class="col">Meta</span></div>
+    <div class="lista">${AS.receita.map((c,i)=>`
+      <div class="lin ${c.on?'':'off'}" data-i="${i}">
+        <input type="checkbox" ${c.on?'checked':''} onchange="ligarReceita(${i},this.checked)">
+        <span class="nm">${esc(c.n)}<small>${esc(c.r)}</small></span>
+        <input type="number" step="100" value="${c.inv}" onchange="AS.receita[${i}].inv=+this.value||0;somaW()">
+        <input type="number" step="500" value="${c.meta}" onchange="AS.receita[${i}].meta=+this.value||0;somaW()">
+      </div>`).join('')}</div>
+    <div class="resumo" id="w-soma"></div>
+    <h3 style="font-size:15px;margin:18px 0 4px">Canais de execução</h3>
+    <p class="sub">Quem for desmarcado não entra no cronograma.</p>
+    <div class="lista">${CANAIS.map(([n,b])=>{
+      const on=AS.canais.includes(n);
+      return `<div class="lin ${on?'':'off'}" data-canal="${esc(n)}">
+        <input type="checkbox" ${on?'checked':''} onchange="ligarCanal('${esc(n)}',this.checked)">
+        <span class="nm">${esc(n)}<small>${esc(b)}</small></span></div>`}).join('')}</div>
+    <div class="bts"><button onclick="passo3()">Voltar</button>
+      <button class="ok" onclick="criarCampanha()">Criar campanha e TAP</button></div>`;
+  somaW();
+}
+function ligarReceita(i,on){AS.receita[i].on=on;
+  document.querySelector(`.lin[data-i="${i}"]`)?.classList.toggle('off',!on);somaW()}
+function ligarCanal(n,on){
+  AS.canais=on?[...new Set([...AS.canais,n])]:AS.canais.filter(x=>x!==n);
+  document.querySelector(`.lin[data-canal="${n}"]`)?.classList.toggle('off',!on);
+}
+function somaW(){
+  const at=AS.receita.filter(c=>c.on);
+  const si=at.reduce((s,c)=>s+c.inv,0), sm=at.reduce((s,c)=>s+c.meta,0);
+  const roas=si?(sm/si).toFixed(1).replace('.',','):'—';
+  const dif=sm-AS.meta;
+  $('#w-soma').innerHTML=
+    `Investimento somado: <b>${brl(si)}</b> · faturamento somado: <b>${brl(sm)}</b> ·
+     ROAS <b>${roas}</b>.<br>
+     ${Math.abs(dif)<1?'Bate certo com a meta da campanha.':
+       `<span style="color:var(--amar)">${dif>0?'Passa':'Falta'} ${brl(Math.abs(dif))}
+        para a meta de ${brl(AS.meta)} — ajuste os canais ou volte e mude a meta.</span>`}`;
 }
 function resumoW(){
   const ini=dISO($('#w-ini').value),fim=dISO($('#w-fim').value);
@@ -765,11 +960,15 @@ function resumoW(){
      ${fora?'<br><span style="color:var(--amar)">As datas saem do mês selecionado.</span>':''}`;
 }
 function criarCampanha(){
-  const nome=$('#w-nome').value.trim()||'Campanha sem nome';
-  const inicio=$('#w-ini').value,fim=$('#w-fim').value;
+  const nome=(AS.nome||'').trim()||'Campanha sem nome';
+  const inicio=AS.inicio,fim=AS.fim;
   if(!inicio||!fim||dISO(fim)<dISO(inicio))return alert('Confira as datas.');
+  const oferta={produtos:AS.produtos,modoDesc:AS.modoDesc,descGeral:AS.descGeral,
+    descPorSku:{...AS.descPorSku},extras:AS.extras,frete:AS.frete,brinde:AS.brinde,
+    bonusUniversal:AS.bonusUniversal,bonusInfluencer:AS.bonusInfluencer};
   const c={id:D.prox.camp++,mesId:D.mesAtivo,nome,tipo:AS.tipo,tema:AS.tema,
-    meta:+$('#w-meta').value||0,investimento:+$('#w-inv').value||0,inicio,fim,secoes:[]};
+    oferta,canais:AS.canais,receita:AS.receita,
+    meta:AS.meta||0,investimento:AS.inv||0,inicio,fim,secoes:[]};
   c.secoes=gerarSecoes(c);
   D.campanhas.push(c);
 

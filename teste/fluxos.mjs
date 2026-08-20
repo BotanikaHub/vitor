@@ -33,6 +33,12 @@ for(const pg of ['mapa','mes','semana','camp']){
 
 // 2. assistente: Dia D
 await p.click('nav.paginas button[data-pg="mes"]'); await p.waitForTimeout(150);
+// caminha do passo 2 até criar, passando pela oferta e pelos canais
+async function concluirAssistente(){
+  await p.click('button.ok'); await p.waitForTimeout(300);          // passo 2 -> 3
+  await p.click('button.ok'); await p.waitForTimeout(300);          // passo 3 -> 4
+  await p.click('button.ok'); await p.waitForTimeout(450);          // cria
+}
 const camp0=await G(()=>D.campanhas.length);
 await p.click('#lista-camp-mes >> nothing').catch(()=>{});
 await p.click('button:has-text("+ nova campanha")'); await p.waitForTimeout(200);
@@ -45,8 +51,51 @@ await p.fill('#w-nome','TESTE Dia D');
 await p.fill('#w-meta','60000'); await p.fill('#w-inv','6000'); await p.waitForTimeout(150);
 ok('ROAS recalcula', await G(()=>/ROAS implícito no tráfego: <b>4,0/.test(document.querySelector('#w-resumo').innerHTML)),
    await G(()=>document.querySelector('#w-resumo').textContent.match(/ROAS[^(]*/)?.[0]));
-await p.click('button.ok'); await p.waitForTimeout(400);
+await p.click('button.ok'); await p.waitForTimeout(350);
+ok('passo 3 é a oferta', await G(()=>document.querySelector('#modal-cx h3')?.textContent)==='Produtos e desconto');
+ok('catálogo real da Shopify no passo 3',
+   await G(()=>document.querySelectorAll('#lista-prod .lin').length)===9,
+   'linhas='+await G(()=>document.querySelectorAll('#lista-prod .lin').length));
+ok('produto traz SKU e preço',
+   await G(()=>/SKU 80\.1\.1/.test(document.querySelector('#lista-prod').textContent)&&
+              /87,50/.test(document.querySelector('#lista-prod').textContent)));
+// tira o Whey da ação e põe um produto de fora
+await p.uncheck('#lista-prod .lin[data-sku="80.1.8"] input[type=checkbox]'); await p.waitForTimeout(120);
+await p.fill('#w-extras','Combo Fitness · 15% OFF');
+await p.fill('#w-brinde','Coqueteleira acima de R$ 400');
+await p.click('button.ok'); await p.waitForTimeout(350);
+ok('passo 4 são os canais',
+   await G(()=>/verba/i.test(document.querySelector('#modal-cx h3')?.textContent||'')));
+ok('6 canais de receita já divididos',
+   await G(()=>AS.receita.length)===6, 'canais='+await G(()=>AS.receita.length));
+ok('soma dos canais bate com a meta',
+   await G(()=>/Bate certo com a meta/.test(document.querySelector('#w-soma').textContent)),
+   await G(()=>document.querySelector('#w-soma').textContent.replace(/\s+/g,' ').slice(0,110)));
+ok('11 canais de execução ligados',
+   await G(()=>document.querySelectorAll('.lin[data-canal]').length)===11);
+await p.uncheck('.lin[data-canal="Página de captura"] input[type=checkbox]'); await p.waitForTimeout(120);
+await p.click('button.ok'); await p.waitForTimeout(450);
 ok('campanha criada', await G(()=>D.campanhas.length)===camp0+1);
+// o que foi escolhido chegou no TAP
+const of=await G(()=>{
+  const c=D.campanhas.at(-1),por={};c.secoes.forEach(s=>por[s.t]=s);
+  return {oferta:por['SOBRE A OFERTA'].l.map(r=>r.join(' | ')),
+          evento:Object.fromEntries(por['SOBRE O EVENTO'].l),
+          canais:por['CANAIS · CRONOGRAMA'].l.map(r=>r[0]),
+          metas:por['METAS'].l.map(r=>r.join(' | '))};
+});
+ok('produto desmarcado sai da oferta', !of.oferta.some(l=>/^Whey/.test(l)),
+   of.oferta.map(l=>l.split(' | ')[0]).join(', '));
+ok('8 produtos restantes na oferta', of.oferta.filter(l=>/SKU/.test(l)).length===8);
+ok('produto de fora do catálogo entra', of.oferta.some(l=>/Combo Fitness/.test(l)));
+ok('brinde entra no evento e na oferta',
+   /Coqueteleira/.test(of.evento['Brinde']||'') && of.oferta.some(l=>/Coqueteleira/.test(l)));
+ok('canal desmarcado sai do cronograma', !of.canais.includes('Página de captura'),
+   'canais='+of.canais.length);
+ok('METAS traz meta por canal', of.metas.filter(l=>/^Meta faturamento — /.test(l)).length===6,
+   of.metas.filter(l=>/Meta faturamento/.test(l)).length+' linhas');
+ok('METAS traz investimento por canal', of.metas.some(l=>/^Investimento — Tráfego/.test(l)),
+   of.metas.filter(l=>/^Investimento/.test(l)).join(' / '));
 ok('TAP gerado', await G(()=>D.campanhas.at(-1).secoes.length)>=5, 'secoes='+await G(()=>D.campanhas.at(-1).secoes.length));
 ok('pilula no mapa', await G(()=>D.mapas[0].nos.some(n=>n.t==='TESTE Dia D')));
 ok('barra no calendario', await G(()=>document.querySelectorAll('#calendario .barra, #calendario [class*=barra]').length)>0,
@@ -63,7 +112,7 @@ ok('nome auto', await G(()=>document.querySelector('#w-nome')?.value)==='Semana 
 ok('semana: 5 de venda + 2 de preparação',
    await G(()=>document.querySelector('#w-resumo')?.textContent.includes('7 dias de cronograma (5 de venda + 2 de preparação)')),
    await G(()=>document.querySelector('#w-resumo')?.textContent.replace(/\s+/g,' ').slice(0,80)));
-await p.click('button.ok'); await p.waitForTimeout(400);
+await concluirAssistente();
 ok('semana criada', await G(()=>D.campanhas.length)===camp0+2);
 ok('cronograma: Canal + Base + 7 dias + Quem faz', await G(()=>{
   const cr=D.campanhas.at(-1).secoes.find(s=>/cronograma/i.test(s.t));
@@ -87,7 +136,10 @@ ok('nasce com a seção EQUIPE', tap.equipe===3, 'linhas='+tap.equipe);
 ok('nenhuma célula em branco no TAP (fora as linhas de total)', tap.vazias===0, 'em branco='+tap.vazias);
 ok('cupom já preenchido', /10% OFF/.test(tap.evento['Cupom automático']||''), tap.evento['Cupom automático']);
 ok('bônus já preenchidos', /Manual da Suplementação/.test(tap.evento['Bônus universal']||''));
-ok('oferta traz os SKUs', tap.oferta.some(l=>/Tri\[Mg\]/.test(l)&&/Ômega 3/.test(l)), tap.oferta[0]?.slice(0,70));
+ok('uma linha por produto, com SKU e preço',
+   tap.oferta.filter(l=>/SKU/.test(l)).length===9 &&
+   tap.oferta.some(l=>/Tri\[Mg\]/.test(l)) && tap.oferta.some(l=>/Ômega 3/.test(l)),
+   tap.oferta.filter(l=>/SKU/.test(l)).length+' produtos');
 ok('oferta traz kit e frete', tap.oferta.some(l=>/Kit Imunidade/.test(l))&&tap.oferta.some(l=>/Frete grátis/.test(l)));
 ok('cronograma com ritmo por fase, não traços',
    tap.ritmoEmail.filter(v=>v!=='—').length>=5, 'e-mails='+JSON.stringify(tap.ritmoEmail));
