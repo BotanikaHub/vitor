@@ -12,7 +12,9 @@
   --c-bg:#f2f2f2;--c-grade:#e0e0e0;--c-txt:#1a1a1a;--c-borda:#d5d5d8;--c-azul:#4262ff;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--txt);
+/* clip, não hidden: não cria contexto de rolagem, então #quadro.cheio
+   (position:fixed) continua escapando pra tela toda */
+body{margin:0;overflow-x:clip;background:var(--bg);color:var(--txt);
   font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
 .wrap{max-width:1500px;margin:0 auto;padding:0 22px 90px}
 button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
@@ -116,6 +118,10 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 #quadro{position:relative;height:min(74vh,760px);background:var(--c-bg);
   border:1px solid var(--linha);border-radius:12px;overflow:hidden;touch-action:none;user-select:none}
 #quadro.cheio{position:fixed;inset:0;z-index:9000;border-radius:0;height:auto}
+/* largura total: escapa do .wrap de 1500px e encosta nas duas bordas da janela.
+   A altura quem calcula é altura Larga(), que mede a sobra real até o rodapé. */
+#quadro.larga{width:100vw;margin-left:calc(50% - 50vw);border-radius:0;
+  border-left:none;border-right:none}
 #quadro.pan{cursor:grabbing}
 #quadro.criando{cursor:crosshair}
 #grade{position:absolute;inset:0;
@@ -180,6 +186,7 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 #zoomcx button{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;
   justify-content:center;color:#3a3a40;font-size:17px}
 #zoomcx button:hover{background:#f0f0f2}
+#zoomcx button.on{background:var(--c-azul);color:#fff}
 #zoomcx button svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;
   stroke-linecap:round;stroke-linejoin:round}
 #zpc{min-width:52px;text-align:center;font-size:13px;color:#3a3a40;font-weight:500;cursor:pointer}
@@ -322,13 +329,16 @@ tr.total .cel{font-weight:600;color:var(--verde)}
       <span id="zpc" onclick="Z=1;centrar()">100%</span>
       <button onclick="zoom(1.2)">+</button>
       <span class="div"></span>
-      <button onclick="telaCheia()" title="Tela cheia">
+      <button id="b-larga" onclick="larguraTotal()" title="Largura total (W)">
+        <svg viewBox="0 0 24 24"><path d="M2 12h20M6 8l-4 4 4 4M18 8l4 4-4 4"/></svg></button>
+      <button id="b-cheio" onclick="telaCheia()" title="Tela cheia (F)">
         <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
     </div>
     <div id="paleta"></div>
   </div>
   <p class="dica" style="margin-top:12px">Selecione o nó do mês e clique em <b>+</b> para criar uma campanha —
-    o TAP e o calendário se preenchem sozinhos. Botão direito abre o menu.</p>
+    o TAP e o calendário se preenchem sozinhos. Botão direito abre o menu.<br>
+    Precisa de espaço? <b>W</b> alarga o canvas até as bordas da janela e <b>F</b> abre em tela cheia — <b>Esc</b> volta.</p>
 </div>
 
 <div class="pagina on" id="pg-mes">
@@ -715,6 +725,7 @@ function transform(){
   $('#zpc').textContent=Math.round(Z*100)+'%';
   const g=$('#grade'),p=24*Z;
   g.style.backgroundSize=`${p}px ${p}px`;g.style.backgroundPosition=`${PX%p}px ${PY%p}px`;
+  posPaleta();
 }
 function zoomFator(f,cx,cy){
   const q=$('#quadro'),r=q.getBoundingClientRect();
@@ -734,7 +745,36 @@ function ajustar(){
   Z=Math.min(1.4,Math.max(.08,Math.min(w/(x2-x1),h/(y2-y1))*.92));
   PX=w/2-((x1+x2)/2)*Z;PY=h/2-((y1+y2)/2)*Z;transform();
 }
-function telaCheia(){$('#quadro').classList.toggle('cheio');setTimeout(ajustar,80)}
+function telaCheia(){
+  const q=$('#quadro');
+  if(q.classList.contains('larga'))larguraTotal();
+  q.classList.toggle('cheio');marcarModo();setTimeout(ajustar,80);
+}
+function larguraTotal(){
+  const q=$('#quadro');
+  if(q.classList.contains('cheio'))return telaCheia();
+  const ligando=!q.classList.contains('larga');
+  q.classList.toggle('larga',ligando);
+  if(ligando)alturaLarga();else q.style.height='';
+  marcarModo();setTimeout(ajustar,80);
+}
+/* mede a sobra entre o topo do canvas e o rodapé em vez de chutar um número.
+   O piso é a altura do modo normal: alargar nunca pode devolver menos canvas. */
+function alturaLarga(){
+  const q=$('#quadro');
+  if(!q.classList.contains('larga'))return;
+  q.style.height='';
+  const normal=Math.min(innerHeight*.74,760);
+  const topo=q.getBoundingClientRect().top;
+  const rod=$('.rodape')?.offsetHeight||0;
+  q.style.height=Math.round(Math.max(normal,innerHeight-topo-rod-16))+'px';
+}
+function marcarModo(){
+  const q=$('#quadro');
+  $('#b-larga')?.classList.toggle('on',q.classList.contains('larga'));
+  $('#b-cheio')?.classList.toggle('on',q.classList.contains('cheio'));
+}
+addEventListener('resize',()=>{alturaLarga();if($('#quadro').classList.contains('cheio'))ajustar()});
 function ferramenta(f){fer=f;$('#subformas').classList.remove('on');
   document.querySelectorAll('#ferramentas [data-fer]').forEach(b=>b.classList.toggle('on',b.dataset.fer===f));
   $('#quadro').classList.toggle('criando',f!=='sel')}
@@ -890,6 +930,10 @@ function ligar(el,obj,tipo){
 (function(){
   const q=$('#quadro');
   q.addEventListener('pointerdown',e=>{
+    /* os controles flutuantes moram dentro do #quadro; sem esta saída o
+       setPointerCapture abaixo retarga o clique pro canvas e o botão nunca
+       recebe o próprio onclick */
+    if(e.target.closest('#ferramentas,#zoomcx,#titulo-q,#paleta,#subformas')){fecharMenu();return}
     if(editando)return;fecharMenu();$('#subformas').classList.remove('on');
     if(fer!=='sel'){const r=q.getBoundingClientRect();
       criarEm(fer,(e.clientX-r.left-PX)/Z,(e.clientY-r.top-PY)/Z);return}
@@ -926,13 +970,14 @@ function criarEm(tipo,x,y){
     if(tipo==='forma'){it.forma=formaAtual;it.cor='#4262ff'}
     itens().push(it);sel={t:'item',id:it.id};
   }
-  ferramenta('sel');render();setTimeout(editar,30);
+  ferramenta('sel');render();setTimeout(()=>editar(true),30);
 }
-function editar(){
+function editar(novo){
   const el=document.querySelector(`#mundo .el[data-tipo="${sel.t}"][data-id="${sel.id}"]`);
   if(!el)return;
   const obj=alvoSel(),c=el.querySelector('.conteudo');
-  guardar();editando=true;
+  if(!novo)guardar();
+  editando=true;
   c.setAttribute('contenteditable','true');c.focus();
   const r=document.createRange();r.selectNodeContents(c);
   const s=getSelection();s.removeAllRanges();s.addRange(r);
@@ -1106,13 +1151,18 @@ document.addEventListener('keydown',e=>{
   if(cmd&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?refazer():desfazer();return}
   if(cmd&&e.key.toLowerCase()==='d'){e.preventDefault();duplicarRamo();return}
   if(/^[vnst]$/i.test(e.key)){ferramenta({v:'sel',n:'sticky',s:'forma',t:'texto'}[e.key.toLowerCase()]);return}
+  if(/^w$/i.test(e.key)){e.preventDefault();larguraTotal();return}
+  if(/^f$/i.test(e.key)){e.preventDefault();telaCheia();return}
   if(e.key==='Tab'){e.preventDefault();addFilho()}
   else if(e.key==='Enter'){e.preventDefault();addIrmao()}
   else if(e.key==='F2'){e.preventDefault();editar()}
   else if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();apagar()}
   else if(e.key===' '){e.preventDefault();if(sel.t==='no'){const n=acharNo(sel.id);
     if(n&&filhos(n.id).length){guardar();n.fech=!n.fech;render()}}}
-  else if(e.key==='Escape'){if($('#quadro').classList.contains('cheio'))telaCheia();else ferramenta('sel')}
+  else if(e.key==='Escape'){const q=$('#quadro');
+    if(q.classList.contains('cheio'))telaCheia();
+    else if(q.classList.contains('larga'))larguraTotal();
+    else ferramenta('sel')}
   else if(e.key==='ArrowUp'){e.preventDefault();navegar('cima')}
   else if(e.key==='ArrowDown'){e.preventDefault();navegar('baixo')}
   else if(e.key==='ArrowLeft'){e.preventDefault();navegar(sel.t==='no'&&lado(acharNo(sel.id))>0?'pai':'filho')}
@@ -1436,7 +1486,7 @@ document.querySelectorAll('nav.paginas button').forEach(b=>{
     document.querySelectorAll('nav.paginas button').forEach(x=>x.classList.remove('on'));
     document.querySelectorAll('.pagina').forEach(x=>x.classList.remove('on'));
     b.classList.add('on');$('#pg-'+b.dataset.pg).classList.add('on');
-    if(b.dataset.pg==='mapa')setTimeout(ajustar,40);
+    if(b.dataset.pg==='mapa')setTimeout(()=>{alturaLarga();ajustar();posPaleta()},40);
   };
 });
 

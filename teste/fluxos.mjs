@@ -1,0 +1,246 @@
+/* Percorre os fluxos do app num Chromium headless e imprime OK/FALHA por checagem.
+   Rodar com:  npm test          (veja o README) */
+import { chromium } from 'playwright-core';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
+const raiz = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const b = await chromium.launch({
+  executablePath: process.env.CHROMIUM_PATH || undefined,
+  channel: process.env.CHROMIUM_PATH ? undefined : 'chromium',
+  args: ['--no-sandbox'],
+});
+const p=await b.newPage({viewport:{width:1600,height:1000}});
+const errs=[];
+p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
+p.on('console',m=>{if(m.type()==='error')errs.push('CONSOLE: '+m.text())});
+const R=[]; const ok=(n,c,d='')=>R.push([c?'OK ':'FALHA',n,d].join(' | '));
+let prompts=[]; // fila de respostas para prompt()
+p.on('dialog',async d=>{
+  if(d.type()==='prompt'){const v=prompts.shift(); await d.accept(v==null?'':v);}
+  else if(d.type()==='confirm'){await d.accept();}
+  else {errs.push('ALERT: '+d.message()); await d.accept();}
+});
+await p.goto('file://'+resolve(raiz,'index.html'),{waitUntil:'networkidle'});
+await p.waitForTimeout(400);
+const G=(f,a)=>p.evaluate(f,a);
+
+try{
+// 1. navegacao
+for(const pg of ['mapa','mes','semana','camp']){
+  await p.click(`nav.paginas button[data-pg="${pg}"]`); await p.waitForTimeout(200);
+  ok('aba '+pg, await G(x=>document.querySelector('.pagina.on')?.id)==='pg-'+pg);
+}
+
+// 2. assistente: Dia D
+await p.click('nav.paginas button[data-pg="mes"]'); await p.waitForTimeout(150);
+const camp0=await G(()=>D.campanhas.length);
+await p.click('#lista-camp-mes >> nothing').catch(()=>{});
+await p.click('button:has-text("+ nova campanha")'); await p.waitForTimeout(200);
+ok('modal abriu', await G(()=>document.querySelector('#modal').classList.contains('on')));
+await p.click('.op:has-text("Dia D")'); await p.waitForTimeout(200);
+ok('passo2 Dia D', await G(()=>!!document.querySelector('#w-resumo')?.textContent.includes('1 dia')),
+   await G(()=>document.querySelector('#w-resumo')?.textContent.replace(/\s+/g,' ').slice(0,90)));
+await p.fill('#w-nome','TESTE Dia D');
+await p.fill('#w-meta','60000'); await p.fill('#w-inv','6000'); await p.waitForTimeout(150);
+ok('ROAS recalcula', await G(()=>/ROAS implícito no tráfego: <b>4,0/.test(document.querySelector('#w-resumo').innerHTML)),
+   await G(()=>document.querySelector('#w-resumo').textContent.match(/ROAS[^(]*/)?.[0]));
+await p.click('button.ok'); await p.waitForTimeout(400);
+ok('campanha criada', await G(()=>D.campanhas.length)===camp0+1);
+ok('TAP gerado', await G(()=>D.campanhas.at(-1).secoes.length)>=5, 'secoes='+await G(()=>D.campanhas.at(-1).secoes.length));
+ok('pilula no mapa', await G(()=>D.mapas[0].nos.some(n=>n.t==='TESTE Dia D')));
+ok('barra no calendario', await G(()=>document.querySelectorAll('#calendario .barra, #calendario [class*=barra]').length)>0,
+   'barras='+await G(()=>document.querySelectorAll('#calendario .barra, #calendario [class*=barra]').length));
+
+// 3. semana tematica com tema novo
+await p.click('button:has-text("+ nova campanha")'); await p.waitForTimeout(200);
+await p.click('.op:has-text("Semana temática")'); await p.waitForTimeout(200);
+ok('passo tema apareceu', await G(()=>document.querySelector('#modal-cx h3')?.textContent)==='Qual tema');
+prompts=['Energia'];
+await p.click('.op:has-text("+ novo tema")'); await p.waitForTimeout(300);
+ok('tema novo no catalogo', await G(()=>D.temas.includes('Energia')), 'temas='+await G(()=>D.temas.join(',')));
+ok('nome auto', await G(()=>document.querySelector('#w-nome')?.value)==='Semana Energia');
+ok('5 dias sugeridos', await G(()=>document.querySelector('#w-resumo')?.textContent.includes('5 dias')));
+await p.click('button.ok'); await p.waitForTimeout(400);
+ok('semana criada', await G(()=>D.campanhas.length)===camp0+2);
+ok('cronograma: Canal + Base + 5 dias + Quem faz', await G(()=>{
+  const cr=D.campanhas.at(-1).secoes.find(s=>/cronograma/i.test(s.t));
+  return cr? cr.c.length : 0;})===8, 'colunas='+await G(()=>{
+  const cr=D.campanhas.at(-1).secoes.find(s=>/cronograma/i.test(s.t));return cr?cr.c.join(' '):'n/a'}));
+ok('cronograma com os 11 canais', await G(()=>{
+  const cr=D.campanhas.at(-1).secoes.find(s=>/cronograma/i.test(s.t));return cr?cr.l.length:0})===11);
+
+// 4. novo mes
+prompts=['09/2026','400000'];
+await p.click('button:has-text("+ novo mês")'); await p.waitForTimeout(500);
+ok('mes criado', await G(()=>D.meses.length)===2, 'meses='+await G(()=>D.meses.map(m=>m.mes+'/'+m.ano).join(' ')));
+ok('mapa proprio do mes', await G(()=>D.mapas.length)===2);
+ok('titulo trocou', /[Ss]etembro/.test(await G(()=>document.querySelector('#tit-mes').textContent)),
+   await G(()=>document.querySelector('#tit-mes').textContent));
+ok('campanhas filtradas p/ o mes', await G(()=>document.querySelectorAll('#abas .aba').length)===0
+   || await G(()=>campsMes().length)===0, 'campsMes='+await G(()=>campsMes().length));
+await p.selectOption('#sel-mes','1'); await p.waitForTimeout(400);
+ok('voltou p/ agosto', await G(()=>campsMes().length)===3, 'campsMes='+await G(()=>campsMes().length));
+
+// 5. TAP: editar, duplicar, regerar, excluir
+await p.click('nav.paginas button[data-pg="camp"]'); await p.waitForTimeout(250);
+const nAbas=await G(()=>document.querySelectorAll('#abas .aba:not(.nova)').length);
+ok('abas do TAP', nAbas===3, 'abas='+nAbas);
+const cel=await p.$('#secoes td .cel');
+await cel.click(); await p.keyboard.type('EDITADO'); await G(()=>document.activeElement.blur()); await p.waitForTimeout(250);
+ok('celula edita e persiste no modelo',
+   await G(()=>JSON.stringify(D.campanhas).includes('EDITADO')));
+await p.click('button:has-text("Duplicar TAP")'); await p.waitForTimeout(400);
+ok('TAP duplicado', await G(()=>D.campanhas.length)===camp0+3);
+const secAntes=await G(()=>D.campanhas[ativa].secoes.length);
+await p.click('button:has-text("Regerar cronograma")'); await p.waitForTimeout(400);
+ok('regerar cronograma nao quebra', await G(()=>D.campanhas[ativa].secoes.length)===secAntes,
+   `antes=${secAntes} depois=`+await G(()=>D.campanhas[ativa].secoes.length));
+await p.click('button:has-text("Excluir TAP")'); await p.waitForTimeout(400);
+ok('TAP excluido', await G(()=>D.campanhas.length)===camp0+2);
+
+// 6. exportar / importar
+const json=await G(()=>JSON.stringify(D));
+await p.click('nav.paginas button[data-pg="mes"]'); await p.waitForTimeout(150);
+await p.click('button:has-text("Zerar")').catch(()=>{}); await p.waitForTimeout(400);
+ok('zerar limpa', await G(()=>D.campanhas.length)===0, 'camps='+await G(()=>D.campanhas.length));
+await G(j=>{D=JSON.parse(j);tudo()},json); await p.waitForTimeout(300);
+ok('restaura do JSON', await G(()=>D.campanhas.length)===camp0+2);
+
+// 7. mapa: ferramentas, undo/redo, zoom
+await p.click('nav.paginas button[data-pg="mapa"]'); await p.waitForTimeout(400);
+const itens0=await G(()=>M().itens.length);
+await p.click('[data-fer="sticky"]'); await p.waitForTimeout(120);
+await p.mouse.click(700,600); await p.waitForTimeout(300);
+ok('nota adesiva criada', await G(()=>M().itens.length)===itens0+1, 'itens='+await G(()=>M().itens.length));
+await p.keyboard.press('Escape');
+ok('botao desfazer habilitou', await G(()=>!document.querySelector('#b-undo').disabled), 'pilha='+await G(()=>pilha.length));
+await p.click('#b-undo'); await p.waitForTimeout(300);
+ok('desfazer', await G(()=>M().itens.length)===itens0, 'itens='+await G(()=>M().itens.length));
+await p.click('#b-redo'); await p.waitForTimeout(300);
+ok('refazer', await G(()=>M().itens.length)===itens0+1);
+const z0=await G(()=>Z);
+await p.click('#zoomcx button:has-text("+")'); await p.waitForTimeout(200);
+ok('zoom in', await G(()=>Z)>z0);
+await p.click('#zoomcx button:has-text("−")'); await p.waitForTimeout(200);
+await p.click('#zoomcx button[title="Enquadrar tudo"]'); await p.waitForTimeout(300);
+ok('enquadrar', await G(()=>Z)>0.05);
+
+// 7b. LARGURA TOTAL
+const boxNormal=await G(()=>{const r=document.querySelector('#quadro').getBoundingClientRect();
+  return {w:Math.round(r.width),h:Math.round(r.height)}});
+await p.click('#b-larga'); await p.waitForTimeout(400);
+const boxLarga=await G(()=>{const r=document.querySelector('#quadro').getBoundingClientRect();
+  const rod=document.querySelector('.rodape').getBoundingClientRect();
+  return {w:Math.round(r.width),h:Math.round(r.height),left:Math.round(r.left),
+          fim:Math.round(r.bottom),topoRodape:Math.round(rod.top),vw:innerWidth,vh:innerHeight}});
+ok('largura total encosta nas duas bordas', boxLarga.left===0&&boxLarga.w===boxLarga.vw, JSON.stringify(boxLarga));
+ok('largura total nunca encolhe', boxLarga.w>boxNormal.w && boxLarga.h>=boxNormal.h,
+   `${boxNormal.w}x${boxNormal.h} -> ${boxLarga.w}x${boxLarga.h}`);
+// janela alta: aí sim tem sobra vertical de verdade pra ocupar
+await p.setViewportSize({width:1600,height:1400}); await p.waitForTimeout(400);
+const alto=await G(()=>{const r=document.querySelector('#quadro').getBoundingClientRect();
+  return {h:Math.round(r.height),vh:innerHeight}});
+ok('em janela alta usa a sobra vertical', alto.h>800, `altura=${alto.h} de vh=${alto.vh}`);
+await p.setViewportSize({width:1600,height:1000}); await p.waitForTimeout(400);
+ok('sem rolagem horizontal', await G(()=>document.documentElement.scrollWidth<=innerWidth+1),
+   'scrollWidth='+await G(()=>document.documentElement.scrollWidth));
+ok('botao marca estado ligado', await G(()=>document.querySelector('#b-larga').classList.contains('on')));
+// redimensionar a janela deve recalcular a altura
+await p.setViewportSize({width:1280,height:800}); await p.waitForTimeout(400);
+const boxRe=await G(()=>{const r=document.querySelector('#quadro').getBoundingClientRect();
+  return {w:Math.round(r.width),h:Math.round(r.height),vw:innerWidth,
+          piso:Math.round(Math.min(innerHeight*.74,760))}});
+ok('acompanha o resize em largura', boxRe.w===boxRe.vw, JSON.stringify(boxRe));
+ok('nunca abaixo do piso do modo normal', boxRe.h>=boxRe.piso, `h=${boxRe.h} piso=${boxRe.piso}`);
+ok('sem rolagem horizontal apos resize', await G(()=>document.documentElement.scrollWidth<=innerWidth+1));
+await p.setViewportSize({width:1600,height:1000}); await p.waitForTimeout(300);
+// tela cheia por cima da largura total
+await p.click('#b-cheio'); await p.waitForTimeout(400);
+const boxCheio=await G(()=>{const r=document.querySelector('#quadro').getBoundingClientRect();
+  return {w:Math.round(r.width),h:Math.round(r.height),vw:innerWidth,vh:innerHeight,
+          larga:document.querySelector('#quadro').classList.contains('larga')}});
+ok('tela cheia ocupa a janela', boxCheio.w===boxCheio.vw&&boxCheio.h===boxCheio.vh, JSON.stringify(boxCheio));
+ok('tela cheia desliga largura total', boxCheio.larga===false);
+await p.keyboard.press('Escape'); await p.waitForTimeout(400);
+ok('Esc volta ao normal', await G(()=>{const q=document.querySelector('#quadro');
+  return !q.classList.contains('cheio')&&!q.classList.contains('larga')&&q.style.height===''}));
+// atalhos
+await p.keyboard.press('w'); await p.waitForTimeout(350);
+ok('atalho W liga largura total', await G(()=>document.querySelector('#quadro').classList.contains('larga')));
+await p.keyboard.press('Escape'); await p.waitForTimeout(250);
+await p.keyboard.press('f'); await p.waitForTimeout(350);
+ok('atalho F liga tela cheia', await G(()=>document.querySelector('#quadro').classList.contains('cheio')));
+await p.keyboard.press('Escape'); await p.waitForTimeout(300);
+
+// 7c. os demais controles de dentro do canvas (o bug do pointer capture)
+await p.click('[data-fer="texto"]'); await p.waitForTimeout(150);
+ok('ferramenta texto responde ao clique', await G(()=>fer)==='texto', 'fer='+await G(()=>fer));
+await p.keyboard.press('Escape');
+await p.click('[data-fer="forma"]'); await p.waitForTimeout(200);
+ok('menu de formas abre', await G(()=>document.querySelector('#subformas').classList.contains('on')));
+await p.keyboard.press('Escape'); await p.waitForTimeout(150);
+const zA=await G(()=>Z);
+await p.click('#zoomcx button:has-text("+")'); await p.waitForTimeout(250);
+ok('botao + do zoom', await G(()=>Z)>zA, `${zA.toFixed(2)} -> `+await G(()=>Z.toFixed(2)));
+await p.click('#zoomcx button:has-text("−")'); await p.waitForTimeout(250);
+ok('botao − do zoom', Math.abs(await G(()=>Z)-zA)<0.01);
+await p.click('#zpc'); await p.waitForTimeout(250);
+ok('clicar na porcentagem volta a 100%', await G(()=>Z)===1, 'Z='+await G(()=>Z));
+await p.click('#zoomcx button[title="Enquadrar tudo"]'); await p.waitForTimeout(300);
+ok('botao enquadrar', await G(()=>Z)!==1);
+await p.fill('#q-nome','Mapa renomeado'); await p.waitForTimeout(200);
+ok('renomear o mapa', await G(()=>M().nome)==='Mapa renomeado');
+
+// 7d. a paleta não pode cobrir os controles do topo do canvas
+await p.click('nav.paginas button[data-pg="mes"]'); await p.waitForTimeout(200);
+await p.click('nav.paginas button[data-pg="mapa"]'); await p.waitForTimeout(600);
+const pal=await G(()=>{
+  const pl=document.querySelector('#paleta'), tt=document.querySelector('#titulo-q');
+  if(!pl.classList.contains('on'))return {off:true};
+  const a=pl.getBoundingClientRect(), t=tt.getBoundingClientRect();
+  const no=document.querySelector('#mundo .el.sel')?.getBoundingClientRect();
+  return {sobrepoe:!(a.right<t.left||a.left>t.right||a.bottom<t.top||a.top>t.bottom),
+          acimaDoNo: no? Math.round(no.top-a.bottom) : null};
+});
+ok('paleta não cobre nome do mapa e busca', pal.off||!pal.sobrepoe, JSON.stringify(pal));
+ok('paleta ancorada logo acima do nó selecionado', pal.off||(pal.acimaDoNo>=0&&pal.acimaDoNo<30),
+   'folga='+pal.acimaDoNo);
+// e continua ancorada depois de dar zoom
+await p.click('#zoomcx button:has-text("+")'); await p.waitForTimeout(300);
+ok('paleta segue o nó no zoom', await G(()=>{
+  const pl=document.querySelector('#paleta').getBoundingClientRect();
+  const no=document.querySelector('#mundo .el.sel')?.getBoundingClientRect();
+  return !no || (no.top-pl.bottom>=0 && no.top-pl.bottom<30)}));
+await p.click('#zoomcx button[title="Enquadrar tudo"]'); await p.waitForTimeout(300);
+
+// 8. busca
+await p.fill('#busca-q','RMKT'); await p.waitForTimeout(300);
+ok('busca destaca e apaga o resto', await G(()=>document.querySelectorAll('.el.achado').length)===1
+   && await G(()=>document.querySelectorAll('.el.apagado').length)>3,
+   'achado='+await G(()=>document.querySelectorAll('.el.achado').length)
+   +' apagado='+await G(()=>document.querySelectorAll('.el.apagado').length));
+await p.fill('#busca-q','');
+
+// 9. semana
+await p.click('nav.paginas button[data-pg="semana"]'); await p.waitForTimeout(300);
+ok('seletor de semanas', await G(()=>document.querySelectorAll('#sel-semana button').length)>=4,
+   'n='+await G(()=>document.querySelectorAll('#sel-semana button').length));
+const bs=await p.$$('#sel-semana button');
+if(bs[1]){await bs[1].click(); await p.waitForTimeout(250);}
+ok('troca de semana', await G(()=>semanaSel)===1, 'semanaSel='+await G(()=>semanaSel));
+ok('canais da semana', await G(()=>document.querySelectorAll('#canais-semana *').length)>0);
+
+// 10. clique no dia do calendario
+await p.click('nav.paginas button[data-pg="mes"]'); await p.waitForTimeout(250);
+const dia=await p.$('#calendario .dia, #calendario [class*=dia]');
+if(dia){await dia.click(); await p.waitForTimeout(250);}
+ok('detalhe do dia', await G(()=>document.querySelector('#dia-detalhe')?.textContent.trim().length)>0,
+   'len='+await G(()=>document.querySelector('#dia-detalhe')?.textContent.trim().length));
+
+}catch(e){R.push('EXCECAO | '+e.message.split('\n')[0])}
+console.log(R.join('\n'));
+const falhas=R.filter(l=>!l.startsWith('OK')&&l.trim()!==''&&!l.startsWith(' |')).length;
+console.log(`\n${R.filter(l=>l.startsWith('OK')).length} OK, ${falhas} falha(s)`);
+console.log('--- ERROS DE JS ---\n'+(errs.length?errs.join('\n'):'nenhum'));
+await b.close();
+process.exit(falhas||errs.length?1:0);

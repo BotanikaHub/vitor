@@ -42,6 +42,30 @@ open index.html          # macOS
 xdg-open index.html      # Linux
 ```
 
+### Espaço de tela no mapa
+
+O canvas tem dois modos além do normal, nos dois últimos botões da caixa de zoom:
+
+- **Largura total** (`W`) — o canvas encosta nas duas bordas da janela e cresce em
+  altura até onde sobrar espaço, sem perder o cabeçalho com as metas do mês.
+- **Tela cheia** (`F`) — o canvas ocupa a janela inteira.
+
+`Esc` sai de qualquer um dos dois.
+
+## Testes
+
+```
+npm install
+npm test
+```
+
+Percorre os fluxos num Chromium headless — criação de campanha pelo assistente
+nos vários formatos, geração do TAP, calendário, troca de mês, edição de célula,
+exportar/importar, e o canvas inteiro (ferramentas, undo/redo, zoom, busca,
+largura total e tela cheia). Imprime `OK`/`FALHA` por checagem e sai com código 1
+se algo quebrar. Se o Chromium não estiver no lugar padrão do Playwright, aponte
+com `CHROMIUM_PATH=/caminho/do/chrome npm test`.
+
 ## Publicando como Artifact
 
 O publicador injeta a própria casca `<!doctype>/<html>/<head>/<body>`, então existe

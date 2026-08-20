@@ -1,0 +1,11 @@
+{
+  "name": "botanika-planejamento",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node teste/fluxos.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.49.0"
+  }
+}
