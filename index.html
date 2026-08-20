@@ -238,6 +238,8 @@ tr.total .cel{font-weight:600;color:var(--verde)}
   color:var(--txt2);text-align:left}
 #modal .op:hover{border-color:var(--txt3);color:var(--txt)}
 #modal .op.on{border-color:var(--verde);background:var(--verde-esc);color:#fff}
+#modal .op.livre{border-style:dashed}
+#modal .op.livre{border-style:dashed}
 #modal .op small{display:block;font-size:11px;opacity:.75;margin-top:2px}
 #modal .bts{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
 #modal .bts button{padding:9px 17px;border-radius:8px;border:1px solid var(--linha2);font-size:13.5px}
@@ -401,17 +403,80 @@ const TIPOS={
 };
 const CANAIS=[
   ['E-mails base antiga','Base de compradores + leads','Pedro cria e Sarah programa'],
-  ['E-mails base captada','','Pedro cria e Sarah programa'],
+  ['E-mails base captada','não tem','Pedro cria e Sarah programa'],
   ['WhatsApp grupos antigos','Grupo VIP + Grupo de ofertas','Pedro cria e Sarah programa'],
-  ['WhatsApp grupos da campanha','','Pedro cria e Sarah programa'],
+  ['WhatsApp grupos da campanha','não tem','Pedro cria e Sarah programa'],
   ['WhatsApp API','Base com opt-in','Pedro cria e Sarah programa'],
   ['Criativos em vídeo','UGC conversivo','Pedro cria e Gestor programa'],
   ['Criativos em imagem','Estáticos emocionais','Pedro cria e Gestor programa'],
   ['Instagram feed','Italo define o planejamento','Italo cria planejamento e mostra Gabriel'],
-  ['Instagram stories','','Italo cria e não precisa de aprovação'],
-  ['Página de captura','','—'],
-  ['Alteração no site','','Pedro']
+  ['Instagram stories','Sequência antecipando + produtos + contagem','Italo cria e não precisa de aprovação'],
+  ['Página de captura','não tem','—'],
+  ['Alteração no site','Banner + tarja com timer + aviso nas PDPs + preço com desconto (não cupom)','Pedro']
 ];
+/* ===== CATÁLOGO — é aqui que se mexe quando o portfólio ou o padrão muda ===== */
+const SKUS=['Tri[Mg]','TetraVit D','Hair','Whey','Creatina','Vit C','Sleep','Ômega 3'];
+const KITS=[['Kit Imunidade','10% OFF']];
+const BONUS={universal:'Manual da Suplementação (PDF)',
+             influencer:'Guia da Imunidade Infantil (PDF)'};
+const EQUIPE=[
+  ['Gabriel','Preenche o TAP — define o que será feito e as datas'],
+  ['Gustavo','Distribui as tarefas no ClickUp e acompanha os status'],
+  ['Equipe','Realiza as tarefas, altera o status no ClickUp e avisa a próxima pessoa que precisa da demanda']];
+
+/* O que cada formato já traz pronto. Os valores do Dia D são os do TAP de
+   agosto; os demais formatos são ponto de partida — edite e siga. */
+const PADRAO={
+  diaD:{prep:2,desconto:'8% OFF',
+    cupom:'8% OFF geral (já embutido no preço no dia)',
+    frete:'Sim — para todos, sem piso mínimo neste dia',
+    produtos:'Todos os SKUs',
+    orderbump:'Definir SKU (ex: Vit C ou Tri[Mg]) no carrinho'},
+  semana:{prep:2,desconto:'10% OFF',
+    cupom:'10% OFF na linha do tema (já embutido no preço)',
+    frete:'Grátis acima de R$ 199',
+    produtos:'SKUs da linha do tema',
+    orderbump:'SKU complementar ao tema no carrinho'},
+  gap:{prep:0,desconto:'—',
+    cupom:'Sem cupom — o ganho vem do combo e do frete',
+    frete:'Grátis a partir de R$ 349 — é o gap que se quer destravar',
+    produtos:'SKUs que fecham a faixa de ticket',
+    orderbump:'Item de baixo valor que empurra o carrinho pra faixa'},
+  recompra:{prep:0,desconto:'12% OFF',
+    cupom:'12% OFF exclusivo para quem já comprou',
+    frete:'Grátis acima de R$ 199',
+    produtos:'Reposição do que a pessoa já comprou',
+    orderbump:'SKU complementar ao histórico de compra'},
+  perpetuo:{prep:0,desconto:'—',
+    cupom:'Sem cupom — oferta de catálogo',
+    frete:'Grátis acima de R$ 199',
+    produtos:'Catálogo completo',
+    orderbump:'Orderbump fixo do carrinho'},
+  outro:{prep:1,desconto:'',cupom:'',frete:'',produtos:'',orderbump:''}
+};
+
+/* Ritmo padrão de cada canal conforme o papel do dia. É o que sai preenchido
+   no cronograma; qualquer célula continua editável. */
+const RITMO={
+  'E-mails base antiga':{antecipacao:'1 sem CTA',amanha:'1 é amanhã',abertura:'2 vendas',
+    venda:'1 vendas',penultimo:'1 amanhã acaba',ultimo:'2 última chance'},
+  'E-mails base captada':{},
+  'WhatsApp grupos antigos':{antecipacao:'2',amanha:'2',abertura:'8',
+    venda:'4',penultimo:'4',ultimo:'8'},
+  'WhatsApp grupos da campanha':{},
+  'WhatsApp API':{antecipacao:'0',amanha:'1 sem CTA',abertura:'2 08h e 20h',
+    venda:'1',penultimo:'1',ultimo:'2 08h e 20h'},
+  'Criativos em vídeo':{antecipacao:'0',amanha:'0',abertura:'4',
+    venda:'2',penultimo:'2',ultimo:'4'},
+  'Criativos em imagem':{antecipacao:'0',amanha:'0',abertura:'4 com desconto',
+    venda:'2',penultimo:'2',ultimo:'4 última chance'},
+  'Instagram feed':{},
+  'Instagram stories':{abertura:'09h / 13h / 19h + CTA',venda:'09h / 19h',
+    penultimo:'09h / 19h',ultimo:'09h / 13h / 19h + contagem'},
+  'Página de captura':{},
+  'Alteração no site':{abertura:'00h no ar',ultimo:'23h59 tira do ar'}
+};
+
 /* divisão da meta por canal, tirada do Dia D de agosto */
 const SPLIT=[['Tráfego',.267,'Gestor'],['Influencer',.178,'Joinny'],
   ['Instagram Bio/stories',.078,'Italo'],['Atendimento',.056,'Lissia'],
@@ -507,8 +572,29 @@ function fasesDe(tipo,ini,fim){
   return [['Sempre no ar','sim',dBR(ini)+' a '+dBR(fim)]];
 }
 
-function colunasDe(ini,fim){
-  const dias=diasEntre(ini,fim);
+/* O cronograma cobre os dias de preparação, não só os de venda — no Dia D de
+   agosto ele começa dois dias antes, junto com a fase de antecipação. */
+function janelaDe(tipo,ini,fim){
+  const prep=(PADRAO[tipo]||PADRAO.outro).prep;
+  const a=new Date(ini);a.setDate(a.getDate()-prep);
+  return diasEntre(a,fim);
+}
+/* que papel cada dia da janela cumpre — é o que decide o ritmo dos canais */
+function papeisDe(tipo,ini,fim){
+  const dias=janelaDe(tipo,ini,fim);
+  const iAbertura=dias.findIndex(d=>iso(d)===iso(ini));
+  const n=dias.length;
+  return dias.map((d,i)=>{
+    if(i<iAbertura)return i===iAbertura-1?'amanha':'antecipacao';
+    if(i===iAbertura)return 'abertura';
+    if(tipo==='recompra'||tipo==='perpetuo')return 'venda';
+    if(i===n-1)return 'ultimo';
+    if(i===n-2)return 'penultimo';
+    return 'venda';
+  });
+}
+function colunasDe(ini,fim,tipo){
+  const dias=tipo?janelaDe(tipo,ini,fim):diasEntre(ini,fim);
   if(dias.length<=9)return dias.map(d=>`${DOW[d.getDay()]} ${dBR(d)}`);
   const out=[];
   for(let i=0;i<dias.length;i+=7){
@@ -517,19 +603,28 @@ function colunasDe(ini,fim){
   }
   return out;
 }
+/* um papel por coluna; quando as colunas viram semanas, vale o papel do 1º dia */
+function papeisPorColuna(tipo,ini,fim){
+  const ps=papeisDe(tipo,ini,fim);
+  if(ps.length<=9)return ps;
+  const out=[];for(let i=0;i<ps.length;i+=7)out.push(ps[i]);return out;
+}
 
 function gerarSecoes(c){
-  const ini=dISO(c.inicio),fim=dISO(c.fim);
-  const T=TIPOS[c.tipo]||TIPOS.outro;
+  const dIni=dISO(c.inicio),dFim=dISO(c.fim);
+  const T=TIPOS[c.tipo]||TIPOS.outro, P=PADRAO[c.tipo]||PADRAO.outro;
   const invTraf=Math.round(c.investimento*.67), invApi=c.investimento-invTraf;
   const metaTraf=Math.round(c.meta*.267);
   const roas=invTraf?(metaTraf/invTraf).toFixed(1).replace('.',','):'—';
-  const cols=colunasDe(ini,fim);
+  const cols=colunasDe(dIni,dFim,c.tipo);
+  const papeis=papeisPorColuna(c.tipo,dIni,dFim);
+  const periodo=c.inicio===c.fim?dBR(dIni):`${dBR(dIni)} a ${dBR(dFim)}`;
+  const tema=c.tema?` — tema ${c.tema}`:'';
 
   const metas=[['Investimento WhatsApp API',brl(invApi),'Pedro'],
     ['Investimento tráfego — Vendas',brl(invTraf),'Gestor'],
     ['ROAS alvo',roas,'Gestor']];
-  SPLIT.forEach(([n,p,r])=>metas.push([`Meta faturamento — ${n}`,brl(Math.round(c.meta*p)),r]));
+  SPLIT.forEach(([n,pr,r])=>metas.push([`Meta faturamento — ${n}`,brl(Math.round(c.meta*pr)),r]));
   metas.push(['Meta faturamento total',brl(c.meta),''],
     ['Investimento API e tráfego',brl(c.investimento),''],
     ['Lucro (aprox.)',brl(c.meta-c.investimento),'']);
@@ -538,19 +633,30 @@ function gerarSecoes(c){
   return [
     {t:'SOBRE O EVENTO',c:['Campo','Valor'],l:[
       ['Nome da Campanha',c.nome],
-      ['Formato da campanha',T.desc+(c.tema?` — tema ${c.tema}`:'')],
-      ['Período',`${dBR(ini)} a ${dBR(fim)}`],
-      ['Cupom automático',''],['Bônus universal',''],['Bônus via influencer','']]},
-    {t:'FASES',c:['Fase','Tem?','Data'],l:fasesDe(c.tipo,ini,fim)},
+      ['Formato da campanha',`${T.desc}${tema} (${periodo})`],
+      ['Cupom automático',P.cupom],
+      ['Bônus universal',`${BONUS.universal} — todos que comprarem`],
+      ['Bônus via influencer',`${BONUS.influencer} — só quem comprar pela influencer`]]},
+    {t:'EQUIPE',c:['Quem','Responsabilidade'],l:EQUIPE.map(e=>[...e])},
+    {t:'FASES',c:['Fase','Tem?','Data'],l:fasesDe(c.tipo,dIni,dFim)},
     {t:'SOBRE A OFERTA',c:['Produtos','Detalhe','Desconto'],l:[
-      ['Produtos em promoção','',''],['Kits ativos','',''],
-      ['Bônus universal','','—'],['Bônus via influencer','','—'],
-      ['Frete grátis','','—']]},
+      [P.produtos||'Produtos em promoção',
+       c.tipo==='diaD'?`${SKUS.length} SKUs Botanika (${SKUS.join(', ')})`:SKUS.join(', '),
+       P.desconto],
+      ['Kits ativos',KITS.map(([n,d])=>`${n} continua com ${d} (empilhado)`).join(' · '),
+       KITS[0]?KITS[0][1]:'—'],
+      ['Bônus universal',BONUS.universal,'—'],
+      ['Bônus via influencer',BONUS.influencer,'—'],
+      ['Frete grátis',P.frete,'—']]},
     {t:'AUMENTO DE TICKET MÉDIO',c:['Estratégia','Detalhe','Desconto'],l:[
-      ['Orderbump','',''],['Desconto por volume','3 un = 10% · 5 un = 15% · 8 un = 20%','até 20%']]},
+      ['Orderbump',P.orderbump,'10% / 15%'],
+      ['Desconto por volume','3 un = 10% · 5 un = 15% · 8 un = 20% — empilha com o desconto da ação','até 20%']]},
     {t:'METAS',c:['Item','Valor','Responsável'],l:metas,tot},
     {t:'CANAIS · CRONOGRAMA',c:['Canal','Base',...cols,'Quem faz'],
-      l:CANAIS.map(([n,b,q])=>[n,b,...cols.map(()=>'—'),q])}
+      l:CANAIS.map(([n,b,q])=>{
+        const r=RITMO[n]||{};
+        return [n,b,...papeis.map(pa=>r[pa]??'—'),q];
+      })}
   ];
 }
 
@@ -570,9 +676,25 @@ function passo1(){
     <h3>Nova campanha</h3>
     <p class="sub">Escolha o formato. O TAP e o calendário se montam a partir dele.</p>
     <div class="opcoes">${Object.entries(TIPOS).map(([k,t])=>
-      `<button class="op" onclick="escolherTipo('${k}')">${t.nome}<small>${t.desc}</small></button>`).join('')}</div>
+      `<button class="op" onclick="escolherTipo('${k}')">${t.nome}<small>${t.desc}</small></button>`).join('')}
+      <button class="op livre" onclick="noLivre()">Livre<small>Só escrever, igual no Miro — sem TAP, sem datas</small></button></div>
     <div class="bts"><button onclick="fecharModal()">Cancelar</button></div>`;
   $('#modal').classList.add('on');
+}
+/* "Livre": nasce só o nó no mapa, pra escrever como no Miro */
+function noLivre(){
+  fecharModal();
+  guardar();
+  const alvo=AS.noId?acharNo(AS.noId):null;
+  if(alvo){sel={t:'no',id:alvo.id}}
+  else{
+    const r=M().nos.find(n=>!n.pai);
+    const n={id:M().prox++,pai:r?.id,t:'novo',
+      x:(r?.x??4500)+380,y:(r?.y??3000)+filhos(r?.id).length*56};
+    M().nos.push(n);sel={t:'no',id:n.id};
+  }
+  document.querySelector('nav.paginas button[data-pg="mapa"]').click();
+  organizar();setTimeout(()=>editar(true),80);
 }
 function escolherTipo(k){
   AS.tipo=k;
@@ -628,15 +750,16 @@ function resumoW(){
   const ini=dISO($('#w-ini').value),fim=dISO($('#w-fim').value);
   const meta=+$('#w-meta').value||0,inv=+$('#w-inv').value||0;
   if(isNaN(ini)||isNaN(fim)||fim<ini){$('#w-resumo').innerHTML='Datas inválidas.';return}
-  const nd=diasEntre(ini,fim).length;
+  const nd=janelaDe(AS.tipo,ini,fim).length, nv=diasEntre(ini,fim).length;
   const invTraf=Math.round(inv*.67),metaTraf=Math.round(meta*.267);
   const roas=invTraf?(metaTraf/invTraf).toFixed(1).replace('.',','):'—';
   const m=mesAtual();
   const fora=ini<new Date(m.ano,m.mes-1,1)||fim>new Date(m.ano,m.mes,0,23,59);
   const outras=campsMes().reduce((s,c)=>s+(c.meta||0),0);
   $('#w-resumo').innerHTML=
-    `Vai gerar <b>${nd} ${nd>1?'dias':'dia'}</b> de cronograma, com ${CANAIS.length} canais e
-     ${fasesDe(AS.tipo,ini,fim).length} fases.<br>
+    `Vai gerar <b>${nd} ${nd>1?'dias':'dia'}</b> de cronograma${nd>nv?
+       ` (${nv} de venda + ${nd-nv} de preparação)`:''}, com ${CANAIS.length} canais,
+     ${fasesDe(AS.tipo,ini,fim).length} fases e ${SKUS.length} SKUs já na oferta.<br>
      ROAS implícito no tráfego: <b>${roas}</b> (R$ ${invTraf.toLocaleString('pt-BR')} para ${brl(metaTraf)}).<br>
      Com esta, o mês soma <b>${brl(outras+meta)}</b> de ${brl(m.metas[0])} da Meta 1.
      ${fora?'<br><span style="color:var(--amar)">As datas saem do mês selecionado.</span>':''}`;
@@ -929,6 +1052,11 @@ function ligar(el,obj,tipo){
 
 (function(){
   const q=$('#quadro');
+  /* cinto e suspensório: além da saída no handler abaixo, os painéis param o
+     evento antes dele chegar no canvas — o retarget do pointer capture varia
+     entre navegadores e não vale confiar num só caminho */
+  ['#ferramentas','#zoomcx','#titulo-q','#paleta','#subformas'].forEach(sel=>
+    $(sel)?.addEventListener('pointerdown',e=>e.stopPropagation()));
   q.addEventListener('pointerdown',e=>{
     /* os controles flutuantes moram dentro do #quadro; sem esta saída o
        setPointerCapture abaixo retarga o clique pro canvas e o botão nunca

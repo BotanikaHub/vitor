@@ -38,7 +38,8 @@ await p.click('#lista-camp-mes >> nothing').catch(()=>{});
 await p.click('button:has-text("+ nova campanha")'); await p.waitForTimeout(200);
 ok('modal abriu', await G(()=>document.querySelector('#modal').classList.contains('on')));
 await p.click('.op:has-text("Dia D")'); await p.waitForTimeout(200);
-ok('passo2 Dia D', await G(()=>!!document.querySelector('#w-resumo')?.textContent.includes('1 dia')),
+ok('passo2 Dia D inclui os dias de preparação',
+   await G(()=>!!document.querySelector('#w-resumo')?.textContent.includes('3 dias de cronograma (1 de venda + 2 de preparação)')),
    await G(()=>document.querySelector('#w-resumo')?.textContent.replace(/\s+/g,' ').slice(0,90)));
 await p.fill('#w-nome','TESTE Dia D');
 await p.fill('#w-meta','60000'); await p.fill('#w-inv','6000'); await p.waitForTimeout(150);
@@ -59,15 +60,56 @@ prompts=['Energia'];
 await p.click('.op:has-text("+ novo tema")'); await p.waitForTimeout(300);
 ok('tema novo no catalogo', await G(()=>D.temas.includes('Energia')), 'temas='+await G(()=>D.temas.join(',')));
 ok('nome auto', await G(()=>document.querySelector('#w-nome')?.value)==='Semana Energia');
-ok('5 dias sugeridos', await G(()=>document.querySelector('#w-resumo')?.textContent.includes('5 dias')));
+ok('semana: 5 de venda + 2 de preparação',
+   await G(()=>document.querySelector('#w-resumo')?.textContent.includes('7 dias de cronograma (5 de venda + 2 de preparação)')),
+   await G(()=>document.querySelector('#w-resumo')?.textContent.replace(/\s+/g,' ').slice(0,80)));
 await p.click('button.ok'); await p.waitForTimeout(400);
 ok('semana criada', await G(()=>D.campanhas.length)===camp0+2);
-ok('cronograma: Canal + Base + 5 dias + Quem faz', await G(()=>{
+ok('cronograma: Canal + Base + 7 dias + Quem faz', await G(()=>{
   const cr=D.campanhas.at(-1).secoes.find(s=>/cronograma/i.test(s.t));
-  return cr? cr.c.length : 0;})===8, 'colunas='+await G(()=>{
+  return cr? cr.c.length : 0;})===10, 'colunas='+await G(()=>{
   const cr=D.campanhas.at(-1).secoes.find(s=>/cronograma/i.test(s.t));return cr?cr.c.join(' '):'n/a'}));
+// TAP PRÉ-PREENCHIDO
+const tap=await G(()=>{
+  const c=D.campanhas.at(-1), por={};c.secoes.forEach(s=>por[s.t]=s);
+  // linhas de total legitimamente não têm responsável — não contam como buraco
+  const vazias=c.secoes.flatMap(s=>s.l.filter((_,i)=>!(s.tot||[]).includes(i)))
+                       .flat().filter(v=>v==='').length;
+  const cron=por['CANAIS · CRONOGRAMA'];
+  return {secoes:c.secoes.map(s=>s.t), vazias,
+    evento:Object.fromEntries(por['SOBRE O EVENTO'].l),
+    oferta:por['SOBRE A OFERTA'].l.map(r=>r[0]+' :: '+r[1]),
+    equipe:por['EQUIPE']?por['EQUIPE'].l.length:0,
+    ritmoEmail:cron.l[0].slice(2,-1),
+    celulasVazias:cron.l.flat().filter(v=>v==='').length};
+});
+ok('nasce com a seção EQUIPE', tap.equipe===3, 'linhas='+tap.equipe);
+ok('nenhuma célula em branco no TAP (fora as linhas de total)', tap.vazias===0, 'em branco='+tap.vazias);
+ok('cupom já preenchido', /10% OFF/.test(tap.evento['Cupom automático']||''), tap.evento['Cupom automático']);
+ok('bônus já preenchidos', /Manual da Suplementação/.test(tap.evento['Bônus universal']||''));
+ok('oferta traz os SKUs', tap.oferta.some(l=>/Tri\[Mg\]/.test(l)&&/Ômega 3/.test(l)), tap.oferta[0]?.slice(0,70));
+ok('oferta traz kit e frete', tap.oferta.some(l=>/Kit Imunidade/.test(l))&&tap.oferta.some(l=>/Frete grátis/.test(l)));
+ok('cronograma com ritmo por fase, não traços',
+   tap.ritmoEmail.filter(v=>v!=='—').length>=5, 'e-mails='+JSON.stringify(tap.ritmoEmail));
+ok('cronograma abre e fecha diferente do meio',
+   tap.ritmoEmail[2]!==tap.ritmoEmail[tap.ritmoEmail.length-1], JSON.stringify(tap.ritmoEmail));
 ok('cronograma com os 11 canais', await G(()=>{
   const cr=D.campanhas.at(-1).secoes.find(s=>/cronograma/i.test(s.t));return cr?cr.l.length:0})===11);
+
+// 3b. OPÇÃO LIVRE
+const nos0=await G(()=>M().nos.length), camps=await G(()=>D.campanhas.length);
+await p.click('nav.paginas button[data-pg="mes"]'); await p.waitForTimeout(150);
+await p.click('button:has-text("+ nova campanha")'); await p.waitForTimeout(250);
+ok('opção Livre existe no modal', await G(()=>!!document.querySelector('#modal .op.livre')));
+await p.click('#modal .op.livre'); await p.waitForTimeout(500);
+ok('Livre fecha o modal', await G(()=>!document.querySelector('#modal').classList.contains('on')));
+ok('Livre leva pro mapa', await G(()=>document.querySelector('.pagina.on')?.id)==='pg-mapa');
+ok('Livre cria um nó', await G(()=>M().nos.length)===nos0+1, `${nos0} -> `+await G(()=>M().nos.length));
+ok('Livre NÃO cria campanha nem TAP', await G(()=>D.campanhas.length)===camps);
+ok('Livre já entra em modo de escrita', await G(()=>editando)===true);
+await p.keyboard.type('anotação solta'); await p.keyboard.press('Enter'); await p.waitForTimeout(350);
+ok('Livre grava o que foi escrito', await G(()=>M().nos.some(n=>n.t==='anotação solta')),
+   'nós='+await G(()=>M().nos.map(n=>n.t).slice(-2).join(' | ')));
 
 // 4. novo mes
 prompts=['09/2026','400000'];
