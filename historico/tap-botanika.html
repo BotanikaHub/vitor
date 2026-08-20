@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TAP Botanika — Termo de Abertura de Projetos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --azul:#303890;
+  --azul-escuro:#20266B;
+  --azul-claro:#4a52b8;
+  --lima:#D0E088;
+  --amarelo:#F8C840;
+  --creme:#F8F0E8;
+  --creme-claro:#FCF7EE;
+  --tinta:#181010;
+  --linha:rgba(32,38,107,.16);
+  --linha-forte:rgba(32,38,107,.34);
+  --suave:rgba(32,38,107,.55);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--creme);
+  color:var(--tinta);
+  font-family:Inter,system-ui,sans-serif;
+  font-size:15px;
+  line-height:1.5;
+}
+.wrap{max-width:1400px;margin:0 auto;padding:0 28px 120px}
+
+/* ---------- cabeçalho ---------- */
+header.top{
+  background:var(--azul-escuro);
+  color:var(--creme-claro);
+  padding:36px 0 0;
+  margin-bottom:38px;
+}
+.top-inner{max-width:1400px;margin:0 auto;padding:0 28px}
+.eyebrow{
+  font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--lima);font-weight:600;margin-bottom:10px;
+}
+.titulo{
+  font-family:Fraunces,Georgia,serif;
+  font-size:clamp(34px,5vw,58px);
+  line-height:1.02;margin:0 0 4px;font-weight:600;
+  letter-spacing:-.02em;
+}
+.titulo em{font-style:italic;color:var(--amarelo)}
+.sub-top{color:rgba(248,240,232,.7);font-size:14px;margin-bottom:26px}
+.faixa{
+  display:flex;flex-wrap:wrap;gap:0;
+  border-top:1px solid rgba(248,240,232,.18);
+}
+.faixa div{
+  flex:1 1 200px;padding:14px 20px 16px;
+  border-right:1px solid rgba(248,240,232,.14);
+}
+.faixa div:last-child{border-right:none}
+.faixa b{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--lima);margin-bottom:3px;font-weight:600}
+.faixa span{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:600}
+
+/* ---------- seções ---------- */
+section{margin-bottom:44px}
+h2{
+  font-family:Fraunces,Georgia,serif;
+  font-size:22px;font-weight:600;margin:0 0 3px;letter-spacing:-.01em;
+}
+.dica{font-size:13px;color:var(--suave);margin:0 0 16px}
+
+/* ---------- campos ---------- */
+.grade{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+label.campo{display:block}
+label.campo b{
+  display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--suave);font-weight:600;margin-bottom:5px;
+}
+input,select,textarea{
+  width:100%;font-family:inherit;font-size:15px;color:var(--tinta);
+  background:var(--creme-claro);
+  border:1px solid var(--linha);border-radius:7px;
+  padding:9px 11px;transition:border-color .12s,box-shadow .12s;
+}
+input:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--azul);
+  box-shadow:0 0 0 3px rgba(48,56,144,.13);
+}
+textarea{min-height:130px;resize:vertical;line-height:1.6}
+select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'><path d='M1 1l4.5 4.5L10 1' stroke='%2320266B' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>");background-repeat:no-repeat;background-position:right 11px center;padding-right:30px}
+
+/* ---------- matriz ---------- */
+.matriz-caixa{
+  border:1px solid var(--linha-forte);border-radius:11px;
+  background:var(--creme-claro);overflow:auto;
+}
+table.matriz{border-collapse:collapse;width:100%;min-width:900px}
+table.matriz th,table.matriz td{border-right:1px solid var(--linha);border-bottom:1px solid var(--linha)}
+table.matriz tr:last-child td{border-bottom:none}
+table.matriz th:last-child,table.matriz td:last-child{border-right:none}
+
+th.canal-h{
+  text-align:left;padding:10px 14px;font-size:11px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--suave);font-weight:600;
+  background:var(--creme);position:sticky;left:0;z-index:3;min-width:230px;
+  border-right:1px solid var(--linha-forte);
+}
+th.dia{
+  padding:0;background:var(--creme);min-width:96px;vertical-align:bottom;
+}
+.fase{
+  font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;
+  padding:6px 4px;text-align:center;color:var(--azul-escuro);line-height:1.25;
+}
+.f-ant{background:rgba(208,224,136,.42)}
+.f-vesp{background:rgba(248,200,64,.42)}
+.f-abre{background:var(--amarelo)}
+.f-vend{background:rgba(48,56,144,.14)}
+.f-fim{background:rgba(48,56,144,.30);color:#fff}
+.data-dia{
+  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;
+  text-align:center;padding:7px 4px 8px;color:var(--azul-escuro);
+}
+.data-dia small{display:block;font-size:9.5px;font-weight:400;color:var(--suave);letter-spacing:.06em;text-transform:uppercase}
+
+td.canal{
+  padding:9px 14px;background:var(--creme);position:sticky;left:0;z-index:2;
+  border-right:1px solid var(--linha-forte);
+}
+td.canal .nome{font-weight:600;font-size:13.5px;line-height:1.3}
+td.canal .meta-canal{font-size:10.5px;color:var(--suave);margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tag-setor{
+  background:rgba(48,56,144,.1);color:var(--azul-escuro);
+  padding:1px 6px;border-radius:20px;font-weight:600;font-size:9.5px;
+  letter-spacing:.05em;text-transform:uppercase;
+}
+td.cel{padding:0;text-align:center}
+td.cel input{
+  border:none;background:transparent;border-radius:0;
+  text-align:center;font-family:'JetBrains Mono',monospace;
+  font-size:15px;font-weight:600;padding:11px 4px;color:var(--azul-escuro);
+}
+td.cel input:focus{box-shadow:inset 0 0 0 2px var(--azul);background:#fff}
+td.cel input::placeholder{color:rgba(32,38,107,.2);font-weight:400}
+td.cel.tem{background:rgba(208,224,136,.22)}
+
+/* ---------- financeiro ---------- */
+table.fin{width:100%;border-collapse:collapse;background:var(--creme-claro);
+  border:1px solid var(--linha-forte);border-radius:11px;overflow:hidden}
+table.fin th{
+  text-align:left;padding:9px 14px;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--suave);font-weight:600;
+  border-bottom:1px solid var(--linha-forte);background:var(--creme);
+}
+table.fin td{padding:5px 8px;border-bottom:1px solid var(--linha)}
+table.fin td:first-child{padding-left:14px;font-size:13.5px;font-weight:500}
+table.fin tr:last-child td{border-bottom:none}
+table.fin input{font-family:'JetBrains Mono',monospace;text-align:right;font-size:13.5px}
+
+/* ---------- previsão de tarefas ---------- */
+.previa{
+  background:var(--azul-escuro);color:var(--creme-claro);
+  border-radius:11px;padding:22px 24px;
+}
+.previa h3{
+  font-family:Fraunces,Georgia,serif;font-size:19px;margin:0 0 3px;font-weight:600;
+}
+.previa .dica{color:rgba(248,240,232,.6);margin-bottom:16px}
+.contadores{display:flex;gap:26px;flex-wrap:wrap;margin-bottom:18px}
+.contadores div b{
+  display:block;font-family:'JetBrains Mono',monospace;font-size:29px;
+  font-weight:700;color:var(--amarelo);line-height:1;
+}
+.contadores div span{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:rgba(248,240,232,.65)}
+#lista-tarefas{
+  max-height:330px;overflow-y:auto;font-size:13px;
+  border-top:1px solid rgba(248,240,232,.16);padding-top:12px;
+}
+.linha-tarefa{
+  display:flex;justify-content:space-between;gap:14px;
+  padding:6px 0;border-bottom:1px solid rgba(248,240,232,.08);
+}
+.linha-tarefa span:first-child{flex:1}
+.linha-tarefa .quando{
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;
+  color:var(--lima);white-space:nowrap;
+}
+.vazio{color:rgba(248,240,232,.5);font-style:italic;padding:14px 0}
+
+/* ---------- barra de ações ---------- */
+.acoes{
+  position:sticky;bottom:0;background:var(--creme);
+  border-top:1px solid var(--linha-forte);
+  padding:14px 28px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  margin:0 -28px -120px;
+}
+button{
+  font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;
+  border-radius:7px;padding:9px 16px;border:1px solid var(--azul-escuro);
+  background:transparent;color:var(--azul-escuro);transition:background .12s,color .12s;
+}
+button:hover{background:var(--azul-escuro);color:var(--creme-claro)}
+button.forte{background:var(--azul-escuro);color:var(--creme-claro)}
+button.forte:hover{background:var(--azul)}
+button:focus-visible{outline:3px solid rgba(48,56,144,.4);outline-offset:2px}
+.aviso{font-size:12.5px;color:var(--suave);margin-left:auto}
+
+@media (max-width:760px){
+  .wrap,.top-inner{padding-left:16px;padding-right:16px}
+  .acoes{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
+  .g2,.g3,.g4{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="eyebrow">Botanika · Termo de Abertura de Projetos</div>
+    <h1 class="titulo">Nova <em>campanha</em></h1>
+    <p class="sub-top">Preencha aqui e as tarefas do ClickUp saem prontas. Este documento substitui o Miro e a planilha.</p>
+    <div class="faixa">
+      <div><b>Meta 1</b><span>R$ 400.000</span></div>
+      <div><b>Meta 2</b><span>R$ 450.000</span></div>
+      <div><b>Meta 3</b><span>R$ 500.000</span></div>
+      <div><b>Mês até agora</b><span>R$ 224.158</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <h2>A campanha</h2>
+    <p class="dica">A data de abertura define todo o resto — as fases e os prazos são calculados a partir dela.</p>
+    <div class="grade g4">
+      <label class="campo"><b>Nome</b><input id="c-nome" value="Semana da Imunidade" placeholder="Semana da Imunidade"></label>
+      <label class="campo"><b>Formato</b>
+        <select id="c-formato">
+          <option>Semana temática</option>
+          <option>Dia D</option>
+          <option>Ações de Gap</option>
+          <option>Ações de Recompra</option>
+          <option>Perpétuo</option>
+          <option>Reativação</option>
+        </select>
+      </label>
+      <label class="campo"><b>Abertura das vendas</b><input type="date" id="c-abertura" value="2026-09-08"></label>
+      <label class="campo"><b>Duração total (dias)</b><input type="number" id="c-dias" value="8" min="2" max="21"></label>
+    </div>
+    <div class="grade g3" style="margin-top:14px">
+      <label class="campo"><b>Meta de faturamento</b><input id="c-meta" value="R$ 80.000" placeholder="R$ 80.000"></label>
+      <label class="campo"><b>Investimento previsto</b><input id="c-inv" value="R$ 8.000" placeholder="R$ 8.000"></label>
+      <label class="campo"><b>Dias de antecipação</b><input type="number" id="c-ant" value="2" min="0" max="7"></label>
+    </div>
+  </section>
+
+  <section>
+    <h2>A oferta</h2>
+    <p class="dica">O que exatamente o cliente compra nesta campanha.</p>
+    <div class="grade g2">
+      <label class="campo"><b>Produtos em promoção</b><input id="o-produtos" placeholder="TetraVit D, Super Ômega 3, Super Vitamina C"></label>
+      <label class="campo"><b>Desconto</b><input id="o-desconto" placeholder="20% em todos os produtos da linha"></label>
+      <label class="campo"><b>Kits</b><input id="o-kits" placeholder="Kit Imunidade — TetraVit D + Ômega 3 + Vit C"></label>
+      <label class="campo"><b>Bônus por kit</b><input id="o-bonus" placeholder="Ebook + brinde surpresa"></label>
+      <label class="campo"><b>Frete grátis</b><input id="o-frete" placeholder="Sem valor mínimo durante a campanha"></label>
+      <label class="campo"><b>Order bump</b><input id="o-bump" placeholder="Sleep Inositol por R$ 39"></label>
+    </div>
+  </section>
+
+  <section>
+    <h2>A narrativa</h2>
+    <p class="dica">O argumento que sustenta a semana inteira. É daqui que sai a copy de todos os canais.</p>
+    <textarea id="c-narrativa" placeholder="Qual é a virada de chave que essa campanha propõe para o cliente?"></textarea>
+  </section>
+
+  <section>
+    <h2>Canal por dia</h2>
+    <p class="dica">Quantas peças de cada canal em cada dia. Cada número vira tarefa no ClickUp — uma de criar, uma de programar.</p>
+    <div class="matriz-caixa">
+      <table class="matriz">
+        <thead><tr id="cab-matriz"></tr></thead>
+        <tbody id="corpo-matriz"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Previsto e realizado</h2>
+    <p class="dica">Investimento e retorno por canal. O realizado vem do dashboard depois que a campanha roda.</p>
+    <table class="fin">
+      <thead><tr>
+        <th style="width:32%">Canal</th>
+        <th>Investimento previsto</th>
+        <th>Investimento realizado</th>
+        <th>Faturamento previsto</th>
+        <th>Faturamento realizado</th>
+      </tr></thead>
+      <tbody id="corpo-fin"></tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Influenciadores</h2>
+    <p class="dica">Meta do mês e distribuição por semana.</p>
+    <table class="fin">
+      <thead><tr>
+        <th style="width:28%">Tipo</th><th>Meta do mês</th>
+        <th>Sem 1</th><th>Sem 2</th><th>Sem 3</th><th>Sem 4</th>
+      </tr></thead>
+      <tbody id="corpo-inf"></tbody>
+    </table>
+  </section>
+
+  <section>
+    <div class="previa">
+      <h3>O que vai para o ClickUp</h3>
+      <p class="dica">Prévia das tarefas que a matriz gera na lista Gestão Operacional › Botanika.</p>
+      <div class="contadores">
+        <div><b id="n-tarefas">0</b><span>tarefas</span></div>
+        <div><b id="n-canais">0</b><span>canais ativos</span></div>
+        <div><b id="n-pecas">0</b><span>peças</span></div>
+      </div>
+      <div id="lista-tarefas"></div>
+    </div>
+  </section>
+
+  <div class="acoes">
+    <button class="forte" onclick="baixarJSON()">Baixar como JSON</button>
+    <button onclick="copiarTexto()">Copiar como texto</button>
+    <button onclick="copiarTarefas()">Copiar lista de tarefas</button>
+    <button onclick="limpar()">Limpar tudo</button>
+    <span class="aviso" id="aviso">Protótipo — nada é salvo ainda. Baixe o JSON antes de fechar.</span>
+  </div>
+
+</div>
+
+<script>
+/* ---------------------------------------------------------------
+   CANAIS — vocabulário unificado.
+   "clickup" é o nome da tarefa-mãe correspondente na lista
+   Gestão Operacional › Botanika. É a tabela de tradução entre
+   a planilha antiga e o ClickUp.
+----------------------------------------------------------------*/
+const CANAIS = [
+  {id:'email_geral', nome:'E-mail · Base geral',        setor:'IA',          peca:'e-mail',   cria:'Estratégia', prog:'IA',          clickup:'E-mail Marketing | Base geral'},
+  {id:'email_capt',  nome:'E-mail · Base captada',      setor:'IA',          peca:'e-mail',   cria:'Estratégia', prog:'IA',          clickup:'E-mail Marketing | Base captada'},
+  {id:'wa_antigos',  nome:'WhatsApp · Grupos antigos',  setor:'IA',          peca:'mensagem', cria:'Estratégia', prog:'IA',          clickup:'WhatsApp | Grupos antigos'},
+  {id:'wa_campanha', nome:'WhatsApp · Grupos da campanha', setor:'IA',       peca:'mensagem', cria:'Estratégia', prog:'IA',          clickup:'WhatsApp | Grupos da campanha'},
+  {id:'wa_api',      nome:'WhatsApp API · Opt-in',      setor:'IA',          peca:'mensagem', cria:'Estratégia', prog:'IA',          clickup:'WhatsApp API | Base com opt-in'},
+  {id:'cri_video',   nome:'Criativos em vídeo · UGC',   setor:'Creators',    peca:'criativo', cria:'Creators',   prog:'Tráfego',     clickup:'Criativos em vídeo | UGC'},
+  {id:'cri_img',     nome:'Criativos em imagem',        setor:'Tráfego',     peca:'criativo', cria:'Creators',   prog:'Tráfego',     clickup:'Criativos em imagem | Estáticos'},
+  {id:'ig_feed',     nome:'Instagram Feed',             setor:'Social Media',peca:'post',     cria:'Social Media',prog:'Social Media',clickup:'Instagram Feed | Editorial + Carrossel'},
+  {id:'ig_stories',  nome:'Instagram Stories',          setor:'Social Media',peca:'sequência',cria:'Social Media',prog:'Social Media',clickup:'Instagram Stories'},
+  {id:'captura',     nome:'Página de captura',          setor:'Infra',       peca:'página',   cria:'Infra',      prog:'Infra',       clickup:'Página de captura'},
+  {id:'site',        nome:'Alterações no site',         setor:'Infra',       peca:'alteração',cria:'Infra',      prog:'Infra',       clickup:'Alterações no Site'},
+  {id:'influencer',  nome:'Influenciadores',            setor:'Creators',    peca:'ativação', cria:'Creators',   prog:'Creators',    clickup:'Influencer'}
+];
+
+const TIPOS_INF = ['Influencers','UGC','Prescritores'];
+
+/* ---------------------------------------------------------------
+   FASES — derivadas da data de abertura.
+   Padrão extraído da Semana da Imunidade (jul/26).
+----------------------------------------------------------------*/
+function montarFases(totalDias, diasAntecipacao){
+  const f = [];
+  for(let i=0;i<diasAntecipacao;i++) f.push({nome:'Antecipação', classe:'f-ant'});
+  f.push({nome:'É amanhã a abertura', classe:'f-vesp'});
+  f.push({nome:'Abertura das vendas', classe:'f-abre'});
+  const restante = totalDias - f.length;
+  for(let i=0;i<restante-2;i++) f.push({nome:'Vendas', classe:'f-vend'});
+  if(restante-2 >= 0) f.push({nome:'Amanhã é o último dia', classe:'f-fim'});
+  if(restante-1 >= 0) f.push({nome:'Hoje é o último dia', classe:'f-fim'});
+  return f.slice(0,totalDias);
+}
+
+function datasDaCampanha(){
+  const abertura = document.getElementById('c-abertura').value;
+  const total = Math.max(2, parseInt(document.getElementById('c-dias').value)||8);
+  const ant = Math.min(parseInt(document.getElementById('c-ant').value)||0, total-2);
+  const fases = montarFases(total, ant);
+  const idxAbertura = fases.findIndex(f=>f.nome==='Abertura das vendas');
+  const base = abertura ? new Date(abertura+'T12:00:00') : new Date();
+  return fases.map((f,i)=>{
+    const d = new Date(base);
+    d.setDate(d.getDate() + (i - (idxAbertura<0?0:idxAbertura)));
+    return {fase:f, data:d};
+  });
+}
+
+const fmtDia  = d => String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+const fmtSem  = d => ['dom','seg','ter','qua','qui','sex','sáb'][d.getDay()];
+const fmtISO  = d => d.toISOString().slice(0,10);
+
+/* ---------------------------------------------------------------
+   Matriz
+----------------------------------------------------------------*/
+let valores = {};
+
+function desenharMatriz(){
+  const dias = datasDaCampanha();
+
+  const cab = document.getElementById('cab-matriz');
+  cab.innerHTML = '<th class="canal-h">Canal</th>' + dias.map(d=>
+    `<th class="dia">
+       <div class="fase ${d.fase.classe}">${d.fase.nome}</div>
+       <div class="data-dia">${fmtDia(d.data)}<small>${fmtSem(d.data)}</small></div>
+     </th>`).join('');
+
+  const corpo = document.getElementById('corpo-matriz');
+  corpo.innerHTML = CANAIS.map(c=>{
+    const celulas = dias.map((d,i)=>{
+      const chave = c.id+'_'+i;
+      const v = valores[chave] || '';
+      return `<td class="cel ${v?'tem':''}">
+        <input inputmode="numeric" value="${v}" placeholder="—"
+               data-chave="${chave}" aria-label="${c.nome} em ${fmtDia(d.data)}">
+      </td>`;
+    }).join('');
+    return `<tr>
+      <td class="canal">
+        <div class="nome">${c.nome}</div>
+        <div class="meta-canal"><span class="tag-setor">${c.setor}</span> ${c.clickup}</div>
+      </td>${celulas}
+    </tr>`;
+  }).join('');
+
+  corpo.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const n = e.target.value.replace(/[^\d]/g,'');
+      e.target.value = n;
+      valores[e.target.dataset.chave] = n;
+      e.target.closest('td').classList.toggle('tem', !!n);
+      atualizarPrevia();
+    });
+  });
+  atualizarPrevia();
+}
+
+function desenharFinanceiro(){
+  document.getElementById('corpo-fin').innerHTML = CANAIS.map(c=>`
+    <tr><td>${c.nome}</td>
+      <td><input id="fin_${c.id}_ip" placeholder="—"></td>
+      <td><input id="fin_${c.id}_ir" placeholder="—"></td>
+      <td><input id="fin_${c.id}_fp" placeholder="—"></td>
+      <td><input id="fin_${c.id}_fr" placeholder="—"></td>
+    </tr>`).join('');
+}
+
+function desenharInfluenciadores(){
+  document.getElementById('corpo-inf').innerHTML = TIPOS_INF.map(t=>{
+    const k = t.toLowerCase();
+    return `<tr><td>${t}</td>
+      <td><input id="inf_${k}_meta" placeholder="—"></td>
+      ${[1,2,3,4].map(s=>`<td><input id="inf_${k}_s${s}" placeholder="—"></td>`).join('')}
+    </tr>`;
+  }).join('');
+}
+
+/* ---------------------------------------------------------------
+   Geração de tarefas — a regra vem do padrão real do ClickUp:
+   cada peça produz uma tarefa de criar e uma de programar.
+   Criar vence 2 dias antes da veiculação; programar, 1 dia antes.
+----------------------------------------------------------------*/
+function gerarTarefas(){
+  const dias = datasDaCampanha();
+  const campanha = document.getElementById('c-nome').value.trim() || 'Campanha sem nome';
+  const tarefas = [];
+
+  CANAIS.forEach(c=>{
+    dias.forEach((d,i)=>{
+      const q = parseInt(valores[c.id+'_'+i]);
+      if(!q) return;
+
+      const criar = new Date(d.data); criar.setDate(criar.getDate()-2);
+      const prog  = new Date(d.data); prog.setDate(prog.getDate()-1);
+      const plural = q>1 ? 's' : '';
+
+      tarefas.push({
+        mae: `${c.clickup} | ${campanha}`,
+        nome: `Criar ${q} ${c.peca}${plural} — ${d.fase.nome} | ${campanha}`,
+        setor: c.cria, prazo: criar, veicula: d.data, qtd:q, canal:c.nome
+      });
+      tarefas.push({
+        mae: `${c.clickup} | ${campanha}`,
+        nome: `Programar ${q} ${c.peca}${plural} — ${d.fase.nome} | ${campanha}`,
+        setor: c.prog, prazo: prog, veicula: d.data, qtd:q, canal:c.nome
+      });
+    });
+  });
+
+  tarefas.sort((a,b)=>a.prazo-b.prazo);
+  return tarefas;
+}
+
+function atualizarPrevia(){
+  const t = gerarTarefas();
+  const canaisAtivos = new Set(t.map(x=>x.canal)).size;
+  const pecas = t.reduce((s,x)=>s+x.qtd,0)/2;
+
+  document.getElementById('n-tarefas').textContent = t.length;
+  document.getElementById('n-canais').textContent  = canaisAtivos;
+  document.getElementById('n-pecas').textContent   = Math.round(pecas);
+
+  const lista = document.getElementById('lista-tarefas');
+  lista.innerHTML = t.length
+    ? t.map(x=>`<div class="linha-tarefa">
+         <span>${x.nome}</span>
+         <span class="quando">${x.setor} · ${fmtDia(x.prazo)}</span>
+       </div>`).join('')
+    : '<div class="vazio">Preencha a matriz acima para ver as tarefas aparecerem aqui.</div>';
+}
+
+/* ---------------------------------------------------------------
+   Saídas
+----------------------------------------------------------------*/
+const val = id => (document.getElementById(id)?.value || '').trim();
+
+function montarObjeto(){
+  const dias = datasDaCampanha();
+  return {
+    marca:'Botanika',
+    campanha:{
+      nome: val('c-nome'), formato: val('c-formato'),
+      abertura: val('c-abertura'), dias_total: val('c-dias'),
+      dias_antecipacao: val('c-ant'),
+      meta_faturamento: val('c-meta'), investimento_previsto: val('c-inv')
+    },
+    oferta:{
+      produtos: val('o-produtos'), desconto: val('o-desconto'), kits: val('o-kits'),
+      bonus: val('o-bonus'), frete: val('o-frete'), order_bump: val('o-bump')
+    },
+    narrativa: val('c-narrativa'),
+    calendario: dias.map((d,i)=>({indice:i, data:fmtISO(d.data), fase:d.fase.nome})),
+    matriz: CANAIS.map(c=>({
+      canal:c.nome, clickup:c.clickup, setor:c.setor,
+      por_dia: dias.map((d,i)=>({data:fmtISO(d.data), quantidade: parseInt(valores[c.id+'_'+i])||0}))
+    })),
+    financeiro: CANAIS.map(c=>({
+      canal:c.nome,
+      investimento_previsto: val(`fin_${c.id}_ip`), investimento_realizado: val(`fin_${c.id}_ir`),
+      faturamento_previsto: val(`fin_${c.id}_fp`), faturamento_realizado: val(`fin_${c.id}_fr`)
+    })),
+    influenciadores: TIPOS_INF.map(t=>{
+      const k=t.toLowerCase();
+      return {tipo:t, meta:val(`inf_${k}_meta`),
+        semanas:[1,2,3,4].map(s=>val(`inf_${k}_s${s}`))};
+    }),
+    tarefas_geradas: gerarTarefas().map(x=>({
+      tarefa_mae:x.mae, nome:x.nome, setor:x.setor,
+      prazo:fmtISO(x.prazo), veiculacao:fmtISO(x.veicula)
+    }))
+  };
+}
+
+function baixarJSON(){
+  const dados = montarObjeto();
+  const nome = (dados.campanha.nome||'tap').toLowerCase().replace(/[^a-z0-9]+/g,'-');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(dados,null,2)],{type:'application/json'}));
+  a.download = `tap-botanika-${nome}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  avisar('JSON baixado.');
+}
+
+function copiarTexto(){
+  const d = montarObjeto();
+  const linhas = [
+    `TAP BOTANIKA — ${d.campanha.nome}`,
+    `${d.campanha.formato} · abertura ${d.campanha.abertura} · ${d.campanha.dias_total} dias`,
+    `Meta ${d.campanha.meta_faturamento} · Investimento ${d.campanha.investimento_previsto}`,
+    '', 'OFERTA',
+    `Produtos: ${d.oferta.produtos}`, `Desconto: ${d.oferta.desconto}`,
+    `Kits: ${d.oferta.kits}`, `Bônus: ${d.oferta.bonus}`,
+    `Frete: ${d.oferta.frete}`, `Order bump: ${d.oferta.order_bump}`,
+    '', 'NARRATIVA', d.narrativa,
+    '', 'CANAL POR DIA'
+  ];
+  d.matriz.forEach(c=>{
+    const ativos = c.por_dia.filter(x=>x.quantidade>0);
+    if(ativos.length) linhas.push(`${c.canal}: ${ativos.map(x=>`${x.data} = ${x.quantidade}`).join(' · ')}`);
+  });
+  linhas.push('', `TAREFAS GERADAS: ${d.tarefas_geradas.length}`);
+  copiar(linhas.join('\n'), 'TAP copiado como texto.');
+}
+
+function copiarTarefas(){
+  const t = gerarTarefas();
+  if(!t.length) return avisar('A matriz está vazia — não há tarefas para copiar.');
+  copiar(t.map(x=>`${x.mae}\t${x.nome}\t${x.setor}\t${fmtISO(x.prazo)}`).join('\n'),
+         `${t.length} tarefas copiadas.`);
+}
+
+function copiar(texto, ok){
+  navigator.clipboard.writeText(texto)
+    .then(()=>avisar(ok))
+    .catch(()=>avisar('O navegador bloqueou a cópia. Use o botão de JSON.'));
+}
+
+function avisar(msg){
+  const el = document.getElementById('aviso');
+  el.textContent = msg;
+  setTimeout(()=>{el.textContent='Protótipo — nada é salvo ainda. Baixe o JSON antes de fechar.';},3500);
+}
+
+function limpar(){
+  if(!confirm('Isso apaga tudo que você preencheu. Continuar?')) return;
+  document.querySelectorAll('input, textarea').forEach(i=>{
+    if(i.type!=='date' && i.type!=='number') i.value='';
+  });
+  valores = {};
+  desenharMatriz();
+  avisar('Formulário limpo.');
+}
+
+/* ---------------------------------------------------------------
+   Início
+----------------------------------------------------------------*/
+['c-abertura','c-dias','c-ant'].forEach(id=>
+  document.getElementById(id).addEventListener('input', desenharMatriz));
+document.getElementById('c-nome').addEventListener('input', atualizarPrevia);
+
+desenharFinanceiro();
+desenharInfluenciadores();
+desenharMatriz();
+</script>
+</body>
+</html>

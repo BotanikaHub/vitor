@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Botanika — TAPs Agosto/26</title>
+<style>
+:root{
+  --bg:#0b1310; --painel:#101c16; --painel2:#152420; --linha:#1e332a;
+  --linha2:#2a463a; --txt:#e6efe9; --txt2:#8fa89b; --txt3:#5f7a6d;
+  --verde:#35d07f; --verde-esc:#1a6b45; --roxo:#a78bfa; --amar:#f5c451; --verm:#f2777a;
+  --r:9px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);
+  font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1500px;margin:0 auto;padding:0 22px 90px}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--verde);outline-offset:1px}
+
+/* topo */
+.topo{background:var(--painel);border-bottom:1px solid var(--linha)}
+.topo-in{max-width:1500px;margin:0 auto;padding:22px 22px 0}
+.marca{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--txt3);margin-bottom:6px}
+.mes-tit{font-size:32px;font-weight:300;letter-spacing:-.02em;margin:0 0 14px}
+.mes-tit b{font-weight:600;color:var(--verde)}
+.metas-topo{display:flex;gap:22px;flex-wrap:wrap;font-size:13px;color:var(--txt2);margin-bottom:16px}
+.metas-topo b{color:var(--txt);font-weight:600}
+
+/* navegação principal */
+nav.paginas{display:flex;gap:2px;flex-wrap:wrap}
+nav.paginas button{
+  padding:10px 17px;font-size:13.5px;color:var(--txt2);
+  border-bottom:2px solid transparent;border-radius:var(--r) var(--r) 0 0;
+}
+nav.paginas button:hover{color:var(--txt);background:var(--painel2)}
+nav.paginas button.on{color:var(--verde);border-bottom-color:var(--verde);background:var(--painel2)}
+
+/* páginas */
+.pagina{display:none;padding-top:26px}
+.pagina.on{display:block}
+h2.sec{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--txt3);
+  margin:0 0 12px;font-weight:600}
+.dica{font-size:13px;color:var(--txt3);margin:-6px 0 16px}
+
+/* cartões */
+.cartoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:26px}
+.cartao{background:var(--painel);border:1px solid var(--linha);border-radius:12px;padding:15px 17px}
+.cartao .rot{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);margin-bottom:5px}
+.cartao .num{font-size:25px;font-weight:600;letter-spacing:-.02em}
+.cartao .pe{font-size:12px;color:var(--txt2);margin-top:3px}
+.v{color:var(--verde)} .a{color:var(--amar)} .r{color:var(--verm)} .x{color:var(--roxo)}
+
+/* tabelas */
+.tab-caixa{background:var(--painel);border:1px solid var(--linha);border-radius:12px;
+  overflow-x:auto;margin-bottom:20px}
+table{border-collapse:collapse;width:100%;min-width:600px}
+th{background:var(--painel2);text-align:left;padding:9px 13px;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);font-weight:600;
+  border-bottom:1px solid var(--linha);white-space:nowrap}
+td{padding:0;border-bottom:1px solid var(--linha);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td .cel{padding:9px 13px;min-height:38px;font-size:14px;outline:none;white-space:pre-wrap;word-break:break-word}
+td .cel:hover{background:var(--painel2)}
+td .cel:focus{background:#0e1a15;box-shadow:inset 0 0 0 1.5px var(--verde)}
+td:first-child .cel{font-weight:500}
+tr.total{background:var(--painel2)}
+tr.total .cel{font-weight:600;color:var(--verde)}
+
+/* cabeçalho de seção do TAP */
+.sec-cab{display:flex;align-items:center;gap:10px;margin:26px 0 10px}
+.sec-cab h3{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--verde);margin:0;font-weight:600;flex:1}
+.mini{font-size:11.5px;color:var(--txt3);padding:3px 8px;border-radius:5px;border:1px solid var(--linha2)}
+.mini:hover{color:var(--txt);border-color:var(--txt3)}
+.mini.perigo:hover{color:var(--verm);border-color:var(--verm)}
+.add-linha{display:flex;gap:8px;padding:8px 13px;border-top:1px solid var(--linha)}
+
+/* abas de campanha */
+.abas{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.aba{padding:8px 14px;border:1px solid var(--linha2);border-radius:20px;font-size:13px;
+  color:var(--txt2);display:flex;align-items:center;gap:8px}
+.aba:hover{border-color:var(--txt3);color:var(--txt)}
+.aba.on{background:var(--verde-esc);border-color:var(--verde);color:#fff}
+.aba .vlr{font-size:11.5px;opacity:.8}
+.aba.nova{border-style:dashed;color:var(--roxo);border-color:var(--roxo)}
+
+/* mapa mental */
+.mapa-grade{display:grid;grid-template-columns:minmax(280px,1fr) minmax(280px,1.1fr);gap:16px}
+#mapa-txt{width:100%;min-height:440px;background:var(--painel);border:1px solid var(--linha);
+  border-radius:12px;padding:16px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:13.5px;line-height:1.75;resize:vertical}
+#mapa-arv{background:var(--painel);border:1px solid var(--linha);border-radius:12px;
+  padding:16px;min-height:440px;overflow:auto}
+.no{display:flex;align-items:flex-start;gap:8px;padding:2.5px 0;font-size:14px}
+.no .tronco{color:var(--linha2);font-family:ui-monospace,monospace;white-space:pre;flex-shrink:0}
+.n0{font-weight:600;color:var(--verde);font-size:15px;margin-top:9px}
+.n1{color:var(--txt)} .n2{color:var(--txt2);font-size:13.5px} .n3{color:var(--txt3);font-size:13px}
+
+/* semana */
+.seletor{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.seletor button{padding:7px 13px;border:1px solid var(--linha2);border-radius:18px;
+  font-size:12.5px;color:var(--txt2)}
+.seletor button.on{background:var(--verde-esc);border-color:var(--verde);color:#fff}
+.faixa-camp{display:flex;align-items:center;gap:12px;padding:11px 15px;background:var(--painel);
+  border:1px solid var(--linha);border-radius:10px;margin-bottom:8px}
+.bolinha{width:8px;height:8px;border-radius:50%;background:var(--verde);flex-shrink:0}
+.faixa-camp .nm{flex:1;font-weight:500}
+.faixa-camp .dt{font-size:12.5px;color:var(--txt3);font-family:ui-monospace,monospace}
+.faixa-camp .mt{font-size:13px;color:var(--verde);font-weight:600}
+.vazio{padding:26px 15px;text-align:center;color:var(--txt3);font-size:13.5px;
+  background:var(--painel);border:1px dashed var(--linha2);border-radius:10px}
+
+/* mês */
+.calend{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px}
+.cab-dia{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);
+  text-align:center;padding:5px 0}
+.dia{background:var(--painel);border:1px solid var(--linha);border-radius:7px;
+  min-height:62px;padding:5px 6px;font-size:11px}
+.dia.fora{opacity:.28}
+.dia .n{font-family:ui-monospace,monospace;color:var(--txt3);font-size:11px;margin-bottom:3px}
+.dia .ev{background:var(--verde-esc);color:#dfffee;border-radius:3px;padding:1.5px 4px;
+  margin-bottom:2px;font-size:10px;line-height:1.3;overflow:hidden}
+.dia.hoje{border-color:var(--verde)}
+.dia.hoje .n{color:var(--verde)}
+
+/* rodapé */
+.rodape{position:sticky;bottom:0;background:var(--painel);border-top:1px solid var(--linha);
+  padding:11px 22px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  margin:0 -22px -90px}
+.rodape button{padding:7px 13px;border:1px solid var(--linha2);border-radius:7px;
+  font-size:13px;color:var(--txt2)}
+.rodape button:hover{color:var(--txt);border-color:var(--txt3)}
+.rodape button.perigo:hover{color:var(--verm);border-color:var(--verm)}
+.rodape .msg{margin-left:auto;font-size:12.5px;color:var(--txt3)}
+
+/* caixa de transferência */
+#troca{display:none;position:relative;margin-bottom:20px}
+#troca.on{display:block}
+#troca textarea{width:100%;height:230px;background:var(--painel);border:1px solid var(--verde);
+  border-radius:12px;padding:14px;font-family:ui-monospace,monospace;font-size:12px;resize:vertical}
+#troca .barra{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:13px;color:var(--txt2)}
+
+@media(max-width:820px){
+  .mapa-grade{grid-template-columns:1fr}
+  .calend{font-size:9px}
+  .wrap,.topo-in{padding-left:13px;padding-right:13px}
+  .rodape{margin-left:-13px;margin-right:-13px;padding-left:13px;padding-right:13px}
+}
+</style>
+</head>
+<body>
+
+<div class="topo"><div class="topo-in">
+  <div class="marca">Botanika · Termo de Abertura de Projetos</div>
+  <h1 class="mes-tit">Agosto <b>2026</b></h1>
+  <div class="metas-topo">
+    <span>Meta 1 <b>R$ 300.000</b></span>
+    <span>Meta 2 <b>R$ 350.000</b></span>
+    <span>Meta 3 <b>R$ 400.000</b></span>
+    <span>Julho fechou em <b>~R$ 250k</b> · Meta 1 = <b class="v">+20%</b></span>
+  </div>
+  <nav class="paginas">
+    <button data-pg="mapa">Mapa mental</button>
+    <button data-pg="mes" class="on">Mês</button>
+    <button data-pg="semana">Semana</button>
+    <button data-pg="camp">Campanhas</button>
+  </nav>
+</div></div>
+
+<div class="wrap">
+
+<div id="troca">
+  <div class="barra"><span id="troca-msg"></span>
+    <button class="mini" onclick="fecharTroca()" style="margin-left:auto">fechar</button></div>
+  <textarea id="troca-txt" spellcheck="false"></textarea>
+</div>
+
+<!-- ============ MAPA MENTAL ============ -->
+<div class="pagina" id="pg-mapa">
+  <h2 class="sec">Rascunho do mês</h2>
+  <p class="dica">Escreve livre. Cada recuo de dois espaços vira um galho. Daqui sai o que entra no TAP.</p>
+  <div class="mapa-grade">
+    <textarea id="mapa-txt" spellcheck="false"></textarea>
+    <div id="mapa-arv"></div>
+  </div>
+</div>
+
+<!-- ============ MÊS ============ -->
+<div class="pagina on" id="pg-mes">
+  <h2 class="sec">Onde o mês está</h2>
+  <div class="cartoes" id="cartoes-mes"></div>
+
+  <h2 class="sec">Campanhas do mês</h2>
+  <p class="dica">A soma das metas de campanha contra a Meta 1. O que sobra vem do perpétuo e da base.</p>
+  <div id="lista-camp-mes"></div>
+
+  <h2 class="sec" style="margin-top:26px">Calendário</h2>
+  <div class="calend" id="cab-calend"></div>
+  <div class="calend" id="calend"></div>
+</div>
+
+<!-- ============ SEMANA ============ -->
+<div class="pagina" id="pg-semana">
+  <h2 class="sec">Qual semana</h2>
+  <div class="seletor" id="sel-semana"></div>
+  <div class="cartoes" id="cartoes-semana"></div>
+
+  <h2 class="sec">Campanhas nesta semana</h2>
+  <div id="camp-semana"></div>
+
+  <h2 class="sec" style="margin-top:26px">O que sai por dia</h2>
+  <p class="dica">Puxado da seção Canais · Cronograma de cada campanha ativa na semana.</p>
+  <div id="canais-semana"></div>
+</div>
+
+<!-- ============ CAMPANHAS ============ -->
+<div class="pagina" id="pg-camp">
+  <div class="abas" id="abas"></div>
+  <p class="dica">Clica em qualquer campo pra editar. Use "Exportar" no rodapé antes de fechar — este protótipo ainda não salva sozinho.</p>
+  <div style="display:flex;gap:8px;margin-bottom:4px">
+    <button class="mini" onclick="duplicarTAP()">Duplicar TAP</button>
+    <button class="mini" onclick="renomearTAP()">Renomear TAP</button>
+    <button class="mini" onclick="editarPeriodo()">Datas e meta</button>
+    <button class="mini perigo" onclick="excluirTAP()">Excluir TAP</button>
+  </div>
+  <div id="secoes"></div>
+  <div style="margin-top:16px">
+    <button class="mini" onclick="novaSecao()">+ Seção em branco</button>
+  </div>
+</div>
+
+<div class="rodape">
+  <button onclick="copiarTexto()">Copiar como texto</button>
+  <button onclick="exportarJSON()">Exportar JSON</button>
+  <button onclick="importarJSON()">Importar JSON</button>
+  <button class="perigo" onclick="zerar()">Zerar</button>
+  <span class="msg" id="msg">protótipo · exporte antes de fechar</span>
+</div>
+
+</div>
+
+<script>
+const MES = {ano:2026, mes:8, nome:'Agosto 2026', meta1:300000, meta2:350000, meta3:400000};
+
+let D = {
+  mapa: `Agosto 2026
+  Meta 1: R$ 300k (julho fechou 250k)
+  Perguntas do mês
+    Ticket está em 298 e a meta é 350 — o que sobe isso?
+    Frete grátis a 349 trava 6% dos pedidos na faixa 300-349
+    Recompra em 7,4% contra meta de 20%
+  Campanhas
+    Dia D — relâmpago de 1 dia, 07/08
+    Semana Fitness — Whey e Creatina, 11 a 15/08
+    Semana Sono de Verdade — Sleep e Tri[Mg], 17 a 21/08
+    Ações de gap — destravar a faixa do frete, 24 a 31/08
+    Ações de recompra — quem comprou e não voltou
+    Perpétuo — e-mail e API rodando o mês todo
+  Estoque
+    Excesso em Super Vitamina C (227 dias) e Kit Imunidade (454 dias)
+    Whey e Hair com cobertura curta — cuidado ao promover demais`,
+
+  campanhas: [
+    {
+      nome:'Dia D', meta:45000, inicio:'2026-08-07', fim:'2026-08-07',
+      secoes:[
+        {t:'SOBRE O EVENTO', c:['Campo','Valor'], l:[
+          ['Nome da Campanha','Dia D Botanika'],
+          ['Formato da campanha','Ação relâmpago de 1 dia (07/08)'],
+          ['Cupom automático','8% OFF geral (já embutido no preço no dia)'],
+          ['Bônus universal','Manual da Suplementação (todos que comprarem)'],
+          ['Bônus via influencer','Guia da Imunidade Infantil (só quem comprar pela influencer)']
+        ]},
+        {t:'FASES', c:['Fase','Tem?','Data'], l:[
+          ['Fase 1: Captação','não tem','—'],
+          ['Fase 2: Antecipação','sim','05/08'],
+          ['Fase 3: É amanhã','sim','06/08'],
+          ['Fase 4: Dia D (venda)','sim','07/08'],
+          ['Fase 5: Última chance / relâmpago noturno','sim','07/08 · 20h']
+        ]},
+        {t:'SOBRE A OFERTA', c:['Produtos','Detalhe','Desconto'], l:[
+          ['Todos os SKUs','8 SKUs Botanika (Tri[Mg], TetraVit D, Hair, Whey, Creatina, Vit C, Sleep, Ômega 3)','8% OFF'],
+          ['Kits ativos','Kit Imunidade continua com 10% OFF (empilhado)','10% OFF'],
+          ['Bônus universal','Manual da Suplementação (PDF)','—'],
+          ['Bônus via influencer','Guia da Imunidade Infantil (PDF)','—'],
+          ['Frete grátis','Sim — para todos, sem piso mínimo neste dia','—']
+        ]},
+        {t:'AUMENTO DE TICKET MÉDIO', c:['Estratégia','Detalhe','Desconto'], l:[
+          ['Orderbump','Definir SKU (ex: Vit C ou Tri[Mg]) no carrinho','10% / 15%'],
+          ['Desconto por volume','3 un = 10% · 5 un = 15% · 8 un = 20% — empilha com desconto da ação','até 20%']
+        ]},
+        {t:'METAS', c:['Item','Valor','Responsável'], l:[
+          ['Investimento WhatsApp API','R$ 1.500,00','Pedro'],
+          ['Investimento tráfego — Vendas','R$ 3.000,00','Gestor'],
+          ['ROAS alvo','6,0','Gestor'],
+          ['Meta faturamento — Tráfego','R$ 12.000,00','Gestor'],
+          ['Meta faturamento — Influencer','R$ 8.000,00','Joinny'],
+          ['Meta faturamento — Instagram Bio/stories','R$ 3.500,00','Italo'],
+          ['Meta faturamento — Atendimento','R$ 2.500,00','Lissia'],
+          ['Meta faturamento — Grupos antigos','R$ 7.000,00','Pedro'],
+          ['Meta faturamento — API','R$ 12.000,00','Pedro'],
+          ['Meta faturamento total','R$ 45.000,00',''],
+          ['Investimento API e tráfego','R$ 4.500,00',''],
+          ['Lucro (aprox.)','R$ 40.500,00','']
+        ], tot:[9,10,11]},
+        {t:'CANAIS · CRONOGRAMA', c:['Canal','Base','TER 05/08','QUA 06/08','QUI 07/08','Quem faz'], l:[
+          ['E-mails base antiga','Base de compradores + leads','1 sem CTA','1 é amanhã','2 vendas','Pedro cria e Sarah programa'],
+          ['E-mails base captada','não tem','—','—','—','—'],
+          ['WhatsApp grupos antigos','Grupo VIP + Grupo de ofertas','2','2','8','Pedro cria e Sarah programa'],
+          ['WhatsApp grupos da campanha','não tem','—','—','—','—'],
+          ['WhatsApp API','Base com opt-in','0','1 sem CTA','2 08h e 20h','Pedro cria e Sarah programa'],
+          ['Criativos em vídeo','UGC conversivo','0','0','4','Pedro cria e Gestor programa'],
+          ['Criativos em imagem','Estáticos emocionais','0','0','4 com desconto','Pedro cria e Gestor programa'],
+          ['Instagram feed','Italo define o planejamento','—','—','—','Italo cria planejamento e mostra Gabriel'],
+          ['Instagram stories','sequência antecipando + produtos + contagem','—','—','09h / 13h / 19h + CTA','Italo cria e não precisa de aprovação'],
+          ['Página de captura','Não','—','—','—','—'],
+          ['Alteração no site','Banner + tarja com timer + aviso nas PDPs + preço com desconto (não cupom) + frete grátis sem piso','—','—','07/08 00h','Pedro']
+        ]}
+      ]
+    },
+    {nome:'Semana Fitness', meta:50000, inicio:'2026-08-11', fim:'2026-08-15', secoes:[]},
+    {nome:'Semana Sono de Verdade', meta:45000, inicio:'2026-08-17', fim:'2026-08-21', secoes:[]},
+    {nome:'Ações de gap', meta:30000, inicio:'2026-08-24', fim:'2026-08-31', secoes:[]},
+    {nome:'Ações de recompra', meta:30000, inicio:'2026-08-01', fim:'2026-08-31', secoes:[]},
+    {nome:'Perpétuo', meta:0, inicio:'2026-08-01', fim:'2026-08-31', secoes:[]}
+  ]
+};
+
+let ativa = 0, semanaSel = 0;
+const $ = s => document.querySelector(s);
+const esc = t => String(t??'').replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m]));
+const brl = n => 'R$ ' + n.toLocaleString('pt-BR',{maximumFractionDigits:0});
+const dISO = s => new Date(s+'T12:00:00');
+const dBR = d => String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+
+/* ---------- navegação ---------- */
+document.querySelectorAll('nav.paginas button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('nav.paginas button').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pagina').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    $('#pg-'+b.dataset.pg).classList.add('on');
+  };
+});
+
+/* ---------- mapa mental ---------- */
+function arvore(){
+  const linhas = $('#mapa-txt').value.split('\n');
+  $('#mapa-arv').innerHTML = linhas.map(l=>{
+    if(!l.trim()) return '';
+    const nivel = Math.min(3, Math.floor((l.length - l.trimStart().length)/2));
+    const tronco = nivel===0 ? '' : '│  '.repeat(nivel-1)+'├─ ';
+    return `<div class="no n${nivel}"><span class="tronco">${tronco}</span><span>${esc(l.trim())}</span></div>`;
+  }).join('');
+}
+
+/* ---------- mês ---------- */
+function pintarMes(){
+  const somaCamp = D.campanhas.reduce((s,c)=>s+(c.meta||0),0);
+  const falta = MES.meta1 - somaCamp;
+  const pct = Math.round(somaCamp/MES.meta1*100);
+
+  $('#cartoes-mes').innerHTML = `
+    <div class="cartao"><div class="rot">Meta 1</div><div class="num">${brl(MES.meta1)}</div>
+      <div class="pe">julho fechou em ~R$ 250k</div></div>
+    <div class="cartao"><div class="rot">Somado nas campanhas</div><div class="num ${pct>=100?'v':'a'}">${brl(somaCamp)}</div>
+      <div class="pe">${pct}% da Meta 1</div></div>
+    <div class="cartao"><div class="rot">Sem campanha atrelada</div><div class="num ${falta>0?'a':'v'}">${brl(Math.max(0,falta))}</div>
+      <div class="pe">vem do perpétuo e da base</div></div>
+    <div class="cartao"><div class="rot">Campanhas</div><div class="num">${D.campanhas.length}</div>
+      <div class="pe">${D.campanhas.filter(c=>c.secoes.length).length} com TAP preenchido</div></div>`;
+
+  $('#lista-camp-mes').innerHTML = D.campanhas.map((c,i)=>{
+    const preenchido = c.secoes.length>0;
+    return `<div class="faixa-camp">
+      <span class="bolinha" style="background:${preenchido?'var(--verde)':'var(--txt3)'}"></span>
+      <span class="nm">${esc(c.nome)}</span>
+      <span class="dt">${dBR(dISO(c.inicio))} – ${dBR(dISO(c.fim))}</span>
+      <span class="mt">${c.meta?brl(c.meta):'—'}</span>
+      <button class="mini" onclick="irCampanha(${i})">${preenchido?'abrir':'preencher'}</button>
+    </div>`;
+  }).join('');
+
+  calendario();
+}
+
+function calendario(){
+  $('#cab-calend').innerHTML = ['dom','seg','ter','qua','qui','sex','sáb']
+    .map(d=>`<div class="cab-dia">${d}</div>`).join('');
+  const prim = new Date(MES.ano, MES.mes-1, 1);
+  const ini = new Date(prim); ini.setDate(1 - prim.getDay());
+  let html='';
+  for(let i=0;i<42;i++){
+    const d = new Date(ini); d.setDate(ini.getDate()+i);
+    const fora = d.getMonth() !== MES.mes-1;
+    const evs = D.campanhas.filter(c=> d>=dISO(c.inicio) && d<=dISO(c.fim) && c.meta>0);
+    html += `<div class="dia ${fora?'fora':''}">
+      <div class="n">${d.getDate()}</div>
+      ${evs.map(e=>`<div class="ev">${esc(e.nome)}</div>`).join('')}</div>`;
+    if(i>=34 && d.getMonth()!==MES.mes-1) break;
+  }
+  $('#calend').innerHTML = html;
+}
+
+/* ---------- semana ---------- */
+function semanas(){
+  const prim = new Date(MES.ano, MES.mes-1, 1);
+  const ini = new Date(prim); ini.setDate(1 - prim.getDay());
+  const out=[];
+  for(let i=0;i<6;i++){
+    const a = new Date(ini); a.setDate(ini.getDate()+i*7);
+    const b = new Date(a); b.setDate(a.getDate()+6);
+    if(a.getMonth()===MES.mes-1 || b.getMonth()===MES.mes-1) out.push({a,b,n:out.length+1});
+  }
+  return out;
+}
+
+function pintarSemana(){
+  const S = semanas();
+  $('#sel-semana').innerHTML = S.map((s,i)=>
+    `<button class="${i===semanaSel?'on':''}" onclick="semanaSel=${i};pintarSemana()">
+      Semana ${s.n} · ${dBR(s.a)}–${dBR(s.b)}</button>`).join('');
+
+  const s = S[semanaSel]; if(!s) return;
+  const ativas = D.campanhas.filter(c=> dISO(c.inicio)<=s.b && dISO(c.fim)>=s.a);
+  const metaSem = ativas.filter(c=>c.meta>0).reduce((t,c)=>t+c.meta,0);
+  const rateio = Math.round(MES.meta1/S.length);
+
+  $('#cartoes-semana').innerHTML = `
+    <div class="cartao"><div class="rot">Meta rateada do mês</div><div class="num">${brl(rateio)}</div>
+      <div class="pe">Meta 1 dividida por ${S.length} semanas</div></div>
+    <div class="cartao"><div class="rot">Metas de campanha na semana</div>
+      <div class="num ${metaSem>=rateio?'v':'a'}">${brl(metaSem)}</div>
+      <div class="pe">${metaSem>=rateio?'cobre o rateio':'abaixo do rateio'}</div></div>
+    <div class="cartao"><div class="rot">Campanhas ativas</div><div class="num">${ativas.length}</div>
+      <div class="pe">${ativas.filter(c=>c.secoes.length).length} com TAP pronto</div></div>`;
+
+  $('#camp-semana').innerHTML = ativas.length ? ativas.map(c=>{
+    const i = D.campanhas.indexOf(c);
+    return `<div class="faixa-camp">
+      <span class="bolinha" style="background:${c.secoes.length?'var(--verde)':'var(--txt3)'}"></span>
+      <span class="nm">${esc(c.nome)}</span>
+      <span class="dt">${dBR(dISO(c.inicio))} – ${dBR(dISO(c.fim))}</span>
+      <span class="mt">${c.meta?brl(c.meta):'contínuo'}</span>
+      <button class="mini" onclick="irCampanha(${i})">abrir</button></div>`;
+  }).join('') : '<div class="vazio">Nenhuma campanha nesta semana.</div>';
+
+  canaisDaSemana(ativas, s);
+}
+
+function canaisDaSemana(ativas, s){
+  const blocos = ativas.map(c=>{
+    const sec = c.secoes.find(x=>/CANAIS/i.test(x.t));
+    if(!sec) return '';
+    const idx = sec.c.map((col,i)=>({col,i}))
+      .filter(o=>{
+        const m = String(o.col).match(/(\d{2})\/(\d{2})/);
+        if(!m) return false;
+        const d = new Date(MES.ano, +m[2]-1, +m[1]);
+        return d>=s.a && d<=s.b;
+      });
+    if(!idx.length) return '';
+    const linhas = sec.l.filter(l=> idx.some(o=>{
+      const v = String(l[o.i]||'').trim();
+      return v && v!=='—' && v!=='0';
+    }));
+    if(!linhas.length) return '';
+    return `<h2 class="sec" style="margin-top:20px">${esc(c.nome)}</h2>
+      <div class="tab-caixa"><table>
+      <thead><tr><th>Canal</th>${idx.map(o=>`<th>${esc(sec.c[o.i])}</th>`).join('')}<th>Quem faz</th></tr></thead>
+      <tbody>${linhas.map(l=>`<tr>
+        <td><div class="cel">${esc(l[0])}</div></td>
+        ${idx.map(o=>`<td><div class="cel">${esc(l[o.i]||'—')}</div></td>`).join('')}
+        <td><div class="cel">${esc(l[sec.c.length-1]||'—')}</div></td>
+      </tr>`).join('')}</tbody></table></div>`;
+  }).filter(Boolean).join('');
+
+  $('#canais-semana').innerHTML = blocos ||
+    '<div class="vazio">Nenhuma campanha desta semana tem cronograma de canais preenchido ainda.</div>';
+}
+
+/* ---------- campanhas / TAP ---------- */
+function pintarAbas(){
+  $('#abas').innerHTML = D.campanhas.map((c,i)=>
+    `<button class="aba ${i===ativa?'on':''}" onclick="ativa=${i};pintarTAP()">
+      ${esc(c.nome)} <span class="vlr">${c.meta?brl(c.meta):'contínuo'}</span></button>`).join('')
+    + `<button class="aba nova" onclick="novoTAP()">+ novo TAP</button>`;
+}
+
+function pintarTAP(){
+  pintarAbas();
+  const c = D.campanhas[ativa];
+  $('#secoes').innerHTML = c.secoes.map((s,si)=>`
+    <div class="sec-cab">
+      <h3>${esc(s.t)}</h3>
+      <button class="mini" onclick="addCol(${si})">+ coluna</button>
+      <button class="mini perigo" onclick="delSecao(${si})">excluir seção</button>
+    </div>
+    <div class="tab-caixa">
+      <table><thead><tr>${s.c.map((col,ci)=>
+        `<th><span contenteditable data-s="${si}" data-c="${ci}" class="cab-ed">${esc(col)}</span></th>`).join('')}</tr></thead>
+        <tbody>${s.l.map((l,li)=>`<tr class="${(s.tot||[]).includes(li)?'total':''}">
+          ${s.c.map((_,ci)=>`<td><div class="cel" contenteditable
+             data-s="${si}" data-l="${li}" data-i="${ci}">${esc(l[ci]||'')}</div></td>`).join('')}
+        </tr>`).join('')}</tbody>
+      </table>
+      <div class="add-linha">
+        <button class="mini" onclick="addLinha(${si})">+ linha</button>
+        <button class="mini" onclick="addTotal(${si})">+ linha de total</button>
+        <button class="mini perigo" onclick="delLinha(${si})">− última linha</button>
+      </div>
+    </div>`).join('') || '<div class="vazio">Este TAP ainda não tem seções. Use "+ Seção em branco" abaixo, ou duplique um TAP pronto.</div>';
+
+  document.querySelectorAll('#secoes .cel[contenteditable]').forEach(el=>{
+    el.onblur = e=>{
+      const {s,l,i} = e.target.dataset;
+      D.campanhas[ativa].secoes[s].l[l][i] = e.target.innerText.trim();
+    };
+  });
+  document.querySelectorAll('#secoes .cab-ed').forEach(el=>{
+    el.onblur = e=>{
+      const {s,c} = e.target.dataset;
+      D.campanhas[ativa].secoes[s].c[c] = e.target.innerText.trim();
+    };
+  });
+}
+
+const sec = si => D.campanhas[ativa].secoes[si];
+function addCol(si){ const s=sec(si); s.c.push('nova coluna'); s.l.forEach(l=>l.push('')); pintarTAP(); }
+function addLinha(si){ const s=sec(si); s.l.push(s.c.map(()=>'')); pintarTAP(); }
+function addTotal(si){ const s=sec(si); s.l.push(s.c.map((_,i)=>i===0?'Total':'')); (s.tot=s.tot||[]).push(s.l.length-1); pintarTAP(); }
+function delLinha(si){ const s=sec(si); if(s.l.length>1){s.l.pop(); s.tot=(s.tot||[]).filter(i=>i<s.l.length);} pintarTAP(); }
+function delSecao(si){ if(confirm('Excluir esta seção?')){ D.campanhas[ativa].secoes.splice(si,1); pintarTAP(); } }
+function novaSecao(){
+  const t = prompt('Nome da seção:','NOVA SEÇÃO'); if(!t) return;
+  D.campanhas[ativa].secoes.push({t:t.toUpperCase(), c:['Campo','Valor'], l:[['','']]});
+  pintarTAP();
+}
+function irCampanha(i){
+  ativa=i; document.querySelector('[data-pg="camp"]').click(); pintarTAP();
+}
+function novoTAP(){
+  const n = prompt('Nome da campanha:'); if(!n) return;
+  D.campanhas.push({nome:n, meta:0, inicio:`${MES.ano}-08-01`, fim:`${MES.ano}-08-31`, secoes:[]});
+  ativa = D.campanhas.length-1; pintarTAP(); pintarMes(); pintarSemana();
+}
+function duplicarTAP(){
+  const c = JSON.parse(JSON.stringify(D.campanhas[ativa]));
+  c.nome += ' (cópia)';
+  D.campanhas.splice(ativa+1,0,c); ativa++; pintarTAP(); pintarMes(); pintarSemana();
+}
+function renomearTAP(){
+  const n = prompt('Novo nome:', D.campanhas[ativa].nome);
+  if(n){ D.campanhas[ativa].nome=n; pintarTAP(); pintarMes(); pintarSemana(); }
+}
+function editarPeriodo(){
+  const c = D.campanhas[ativa];
+  const i = prompt('Início (AAAA-MM-DD):', c.inicio); if(!i) return;
+  const f = prompt('Fim (AAAA-MM-DD):', c.fim); if(!f) return;
+  const m = prompt('Meta em reais (só números, 0 = contínuo):', c.meta);
+  c.inicio=i; c.fim=f; c.meta=parseInt(m)||0;
+  pintarTAP(); pintarMes(); pintarSemana();
+}
+function excluirTAP(){
+  if(D.campanhas.length<2) return aviso('Precisa sobrar pelo menos um TAP.');
+  if(!confirm(`Excluir "${D.campanhas[ativa].nome}"?`)) return;
+  D.campanhas.splice(ativa,1); ativa=0; pintarTAP(); pintarMes(); pintarSemana();
+}
+
+/* ---------- entrada e saída ----------
+   Sem clipboard e sem download: o sandbox bloqueia os dois.
+   O texto abre numa caixa já selecionada para Cmd+C.
+------------------------------------------ */
+function abrirTroca(txt, msg, editavel){
+  $('#troca').classList.add('on');
+  $('#troca-msg').textContent = msg;
+  const t = $('#troca-txt');
+  t.value = txt; t.readOnly = !editavel;
+  t.scrollIntoView({behavior:'smooth',block:'center'});
+  if(!editavel) setTimeout(()=>{t.focus();t.select();},250);
+  else { t.value=''; t.placeholder='Cole aqui o JSON e clique fora da caixa.'; t.focus();
+         t.onblur = ()=>{ try{ const n=JSON.parse(t.value); if(!n.campanhas) throw 0;
+           D=n; ativa=0; tudo(); fecharTroca(); aviso('Importado.'); }
+           catch(e){ aviso('Não consegui ler esse JSON.'); } }; }
+}
+function fecharTroca(){ $('#troca').classList.remove('on'); $('#troca-txt').onblur=null; }
+
+function copiarTexto(){
+  D.mapa = $('#mapa-txt').value;
+  const L = [`BOTANIKA — TAPs ${MES.nome}`,
+    `Meta 1 ${brl(MES.meta1)} · Meta 2 ${brl(MES.meta2)} · Meta 3 ${brl(MES.meta3)}`,'',
+    'MAPA MENTAL', D.mapa, ''];
+  D.campanhas.forEach(c=>{
+    L.push('='.repeat(50), `${c.nome.toUpperCase()} — ${c.meta?brl(c.meta):'contínuo'}`,
+           `${dBR(dISO(c.inicio))} a ${dBR(dISO(c.fim))}`, '');
+    c.secoes.forEach(s=>{
+      L.push(s.t, s.c.join(' | '), '-'.repeat(40));
+      s.l.forEach(l=>L.push(l.join(' | ')));
+      L.push('');
+    });
+  });
+  abrirTroca(L.join('\n'), 'Está tudo selecionado — só dar Cmd+C.', false);
+}
+function exportarJSON(){
+  D.mapa = $('#mapa-txt').value;
+  abrirTroca(JSON.stringify(D,null,2), 'JSON selecionado — Cmd+C para copiar e guardar.', false);
+}
+function importarJSON(){ abrirTroca('', 'Cole o JSON e clique fora da caixa.', true); }
+function zerar(){
+  if(!confirm('Isso apaga tudo que está na tela. Você exportou antes?')) return;
+  D = {mapa:'', campanhas:[{nome:'Nova campanha', meta:0,
+       inicio:`${MES.ano}-08-01`, fim:`${MES.ano}-08-31`, secoes:[]}]};
+  ativa=0; tudo(); aviso('Zerado.');
+}
+function aviso(m){
+  $('#msg').textContent = m;
+  setTimeout(()=>{$('#msg').textContent='protótipo · exporte antes de fechar';},3000);
+}
+
+/* ---------- início ---------- */
+function tudo(){
+  $('#mapa-txt').value = D.mapa || '';
+  arvore(); pintarMes(); pintarSemana(); pintarTAP();
+}
+$('#mapa-txt').addEventListener('input', ()=>{ D.mapa=$('#mapa-txt').value; arvore(); });
+tudo();
+</script>
+</body>
+</html>
