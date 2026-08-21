@@ -220,6 +220,14 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 #menu hr{border:none;border-top:1px solid #ebebee;margin:4px 0}
 
 /* modal */
+#nuvem{display:none;padding:11px 22px;font-size:13.5px;background:var(--painel2);
+  border-bottom:1px solid var(--linha2);align-items:center;gap:12px;flex-wrap:wrap}
+#nuvem.on{display:flex}
+#nuvem.alerta{background:#2a2412;border-bottom-color:var(--amar)}
+#nuvem b{font-weight:600}
+#nuvem button{padding:5px 12px;border:1px solid var(--linha2);border-radius:8px;font-size:12.5px}
+#nuvem button:hover{border-color:var(--txt3)}
+#nuvem button.forte{background:var(--verde-esc);border-color:var(--verde);color:#fff}
 #modal{position:fixed;inset:0;z-index:9700;background:rgba(0,0,0,.6);display:none;
   align-items:center;justify-content:center;padding:20px}
 #modal.on{display:flex}
@@ -288,6 +296,8 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 </style>
 </head>
 <body>
+
+<div id="nuvem"></div>
 
 <div class="topo"><div class="topo-in">
   <div class="marca">Botanika · Planejamento</div>
@@ -1851,7 +1861,8 @@ function marcaSalvo(){
   const h=new Date();
   m.style.color='';
   m.textContent='salvo '+String(h.getHours()).padStart(2,'0')+':'+
-    String(h.getMinutes()).padStart(2,'0');
+    String(h.getMinutes()).padStart(2,'0')+
+    (typeof estadoRodape==='function'?' · '+estadoRodape():'');
 }
 function carregar(){
   let txt=null;
@@ -1870,17 +1881,117 @@ setInterval(salvar,1500);
 addEventListener('beforeunload',salvar);
 addEventListener('visibilitychange',()=>{if(document.hidden)salvar()});
 
+/* ================= COMPARTILHADO ENTRE A EQUIPE =================
+   O estado vive num arquivo de dados ao lado da página. Publicar só esse
+   arquivo mantém esta aba rodando (a página não recarrega) e faz as outras
+   pegarem a versão nova. localStorage continua embaixo como cópia local. */
+const ARQ='dados/estado.json';
+let API=null;                 // namespace do artifact, ou null fora dele
+let modo='local';             // 'nuvem' | 'local' | 'leitura'
+let enviando=false, sujo=false, ultimoEnvio=0, remoto='';
+const ESPERA=4000, MIN_ENTRE=9000;
+
+async function baixarEstado(){
+  try{
+    const r=await fetch(ARQ+'?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok)return null;
+    const g=await r.json();
+    return (g&&Array.isArray(g.meses)&&g.meses.length)?g:null;
+  }catch(e){return null}
+}
+
+function faixa(html,alerta){
+  const n=$('#nuvem');
+  if(!html){n.className='';n.innerHTML='';return}
+  n.className='on'+(alerta?' alerta':'');n.innerHTML=html;
+}
+
+function estadoRodape(){
+  if(modo==='leitura')return 'somente leitura — suas mudanças ficam só nesta aba';
+  if(modo==='nuvem')return 'compartilhado com a equipe';
+  return 'salvo só neste navegador';
+}
+
+/* Publica o arquivo de dados. Só é chamado depois de ESPERA sem mudança,
+   e nunca mais de uma vez a cada MIN_ENTRE — cada publicação vira uma
+   versão, então não dá pra mandar a cada tecla. */
+async function enviar(){
+  if(!API||modo!=='nuvem'||enviando)return;
+  const agora=Date.now();
+  if(agora-ultimoEnvio<MIN_ENTRE){sujo=true;return}
+  const txt=JSON.stringify(D);
+  if(txt===remoto){sujo=false;return}
+  enviando=true;sujo=false;
+  try{
+    await API.publish({[ARQ]:{content:txt,contentType:'application/json'}});
+    remoto=txt;ultimoEnvio=Date.now();
+    marcaSalvo();
+  }catch(e){
+    const c=e?.code||'upstream_error';
+    if(c==='conflict'){
+      // outra pessoa publicou primeiro — quem decide o que fazer é você
+      faixa(`<b>Outra pessoa salvou.</b> A versão dela é mais recente que a sua.
+        <button class="forte" onclick="pegarDelesEBaixar()">Ver a versão dela</button>
+        <button onclick="mandarPorCima()">Mandar a minha por cima</button>`,true);
+    }else if(['not_writer','not_granted','not_declared','consent_required'].includes(c)){
+      modo='leitura';
+      faixa(`Você está vendo este planejamento em <b>somente leitura</b> —
+        o que mexer fica só nesta aba. Peça acesso de edição a quem compartilhou.`);
+      marcaSalvo();
+    }else if(c==='capability_disabled'){
+      modo='local';
+      faixa(`Salvando <b>só neste navegador</b>. Compartilhamento indisponível aqui
+        — costuma ser link público, que não aceita gravação.`);
+      marcaSalvo();
+    }else if(c==='too_large'){
+      modo='local';
+      faixa(`O planejamento ficou grande demais pra sincronizar.
+        Salvando só neste navegador — exporte o JSON e me chame.`,true);
+    }else if(c==='rate_limited'){
+      ultimoEnvio=Date.now()+15000;sujo=true;
+    }else{
+      sujo=true;   // transitório: tenta de novo no próximo ciclo
+    }
+  }finally{enviando=false}
+}
+function pegarDelesEBaixar(){location.reload()}
+async function mandarPorCima(){
+  faixa('');
+  try{
+    await API.publish({[ARQ]:{content:JSON.stringify(D),contentType:'application/json'}});
+    remoto=JSON.stringify(D);ultimoEnvio=Date.now();marcaSalvo();
+  }catch(e){faixa('Não deu pra sobrescrever. Exporte o JSON antes de recarregar.',true)}
+}
+
+/* laço único: cópia local sempre, nuvem quando parar de mexer */
+let mudouEm=0, ultimoTxt='';
+setInterval(()=>{
+  const txt=JSON.stringify(D);
+  if(txt!==ultimoTxt){ultimoTxt=txt;mudouEm=Date.now();sujo=true}
+  if(sujo&&mudouEm&&Date.now()-mudouEm>=ESPERA)enviar();
+},1500);
+
 /* ================= INÍCIO ================= */
-(function(){
-  if(carregar()){
+(async function(){
+  try{API=await window.claude?.use?.('artifact')||null}catch(e){API=null}
+  modo=API?'nuvem':'local';
+
+  const daEquipe=API?await baixarEstado():null;
+  if(daEquipe){
+    D=daEquipe;remoto=JSON.stringify(D);ultimoSalvo='';
+    sel={t:'no',id:M()?.nos.find(n=>!n.pai)?.id||1};
+    tudo();salvar();
+  }else if(carregar()){
     sel={t:'no',id:M()?.nos.find(n=>!n.pai)?.id||1};
     tudo();marcaSalvo();
-    return;
+  }else{
+    /* primeira visita: liga o nó de campanha do exemplo */
+    const mp=D.mapas[0],r=mp.nos.find(n=>!n.pai);
+    mp.nos.push({id:mp.prox++,pai:r.id,t:'Dia D Botanika',campId:1,cor:0});
+    tudo();salvar();
   }
-  /* primeira visita: liga o nó de campanha do exemplo */
-  const mp=D.mapas[0],r=mp.nos.find(n=>!n.pai);
-  mp.nos.push({id:mp.prox++,pai:r.id,t:'Dia D Botanika',campId:1,cor:0});
-  tudo();salvar();
+  ultimoTxt=JSON.stringify(D);
+  marcaSalvo();
 })();
 </script>
 </body>
