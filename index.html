@@ -388,7 +388,7 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 
 <div class="pagina" id="pg-camp">
   <div class="abas" id="abas"></div>
-  <p class="dica">Clica em qualquer campo pra editar. Exporte antes de fechar — este protótipo ainda não salva sozinho.</p>
+  <p class="dica">Clica em qualquer campo pra editar. Salva sozinho neste navegador — o Exportar JSON serve pra levar pra outra máquina.</p>
   <div style="display:flex;gap:8px;margin-bottom:4px;flex-wrap:wrap">
     <button class="mini" onclick="duplicarTAP()">Duplicar TAP</button>
     <button class="mini" onclick="editarPeriodo()">Datas e meta</button>
@@ -404,7 +404,7 @@ tr.total .cel{font-weight:600;color:var(--verde)}
   <button onclick="exportarJSON()">Exportar JSON</button>
   <button onclick="importarJSON()">Importar JSON</button>
   <button class="perigo" onclick="zerar()">Zerar</button>
-  <span class="msg" id="msg">protótipo · exporte antes de fechar</span>
+  <span class="msg" id="msg">salvo</span>
 </div>
 </div>
 
@@ -1803,10 +1803,12 @@ function zerar(){
     mapas:[{id:1,mesId:1,nome:'Novo quadro',layout:'direita',prox:2,proxItem:1,itens:[],
       nos:[{id:1,pai:null,t:'🔥 AGOSTO',cor:0,raizMes:1,x:4500,y:3000}]}],
     campanhas:[]};
-  ativa=0;sel={t:'no',id:1};diaSel=null;pilha=[];pilhaR=[];tudo();aviso('Zerado.')
+  ativa=0;sel={t:'no',id:1};diaSel=null;pilha=[];pilhaR=[];
+  try{localStorage.removeItem(CHAVE)}catch(e){}
+  ultimoSalvo='';tudo();salvar();aviso('Zerado.')
 }
-function aviso(m){$('#msg').textContent=m;
-  setTimeout(()=>{$('#msg').textContent='protótipo · exporte antes de fechar'},4000)}
+function aviso(m){$('#msg').textContent=m;$('#msg').style.color='';
+  setTimeout(marcaSalvo,4000)}
 
 document.querySelectorAll('nav.paginas button').forEach(b=>{
   b.onclick=()=>{
@@ -1824,11 +1826,61 @@ function tudo(){
   const cps=campsMes();ativa=cps.length?D.campanhas.indexOf(cps[0]):0;
   pintarTAP();
 }
-/* liga o nó de campanha que já existe no exemplo */
+/* ================= SALVAR ================= */
+const CHAVE='botanika-planejamento-v1';
+let ultimoSalvo='';
+
+function salvar(){
+  try{
+    const txt=JSON.stringify(D);
+    if(txt===ultimoSalvo)return false;
+    localStorage.setItem(CHAVE,txt);
+    ultimoSalvo=txt;
+    marcaSalvo();
+    return true;
+  }catch(e){
+    // cota estourada ou navegador anônimo: avisa uma vez e segue sem salvar
+    if(!salvar.avisou){salvar.avisou=true;
+      $('#msg').textContent='não deu pra salvar neste navegador — exporte o JSON';
+      $('#msg').style.color='var(--amar)';}
+    return false;
+  }
+}
+function marcaSalvo(){
+  const m=$('#msg');if(!m)return;
+  const h=new Date();
+  m.style.color='';
+  m.textContent='salvo '+String(h.getHours()).padStart(2,'0')+':'+
+    String(h.getMinutes()).padStart(2,'0');
+}
+function carregar(){
+  let txt=null;
+  try{txt=localStorage.getItem(CHAVE)}catch(e){return false}
+  if(!txt)return false;
+  try{
+    const g=JSON.parse(txt);
+    if(!g||!Array.isArray(g.meses)||!g.meses.length)return false;
+    D=g;ultimoSalvo=txt;
+    return true;
+  }catch(e){return false}
+}
+/* Varre em vez de instrumentar cada mutação: são dezenas de pontos que mexem
+   em D e um esquecido viraria trabalho perdido sem ninguém perceber. */
+setInterval(salvar,1500);
+addEventListener('beforeunload',salvar);
+addEventListener('visibilitychange',()=>{if(document.hidden)salvar()});
+
+/* ================= INÍCIO ================= */
 (function(){
+  if(carregar()){
+    sel={t:'no',id:M()?.nos.find(n=>!n.pai)?.id||1};
+    tudo();marcaSalvo();
+    return;
+  }
+  /* primeira visita: liga o nó de campanha do exemplo */
   const mp=D.mapas[0],r=mp.nos.find(n=>!n.pai);
   mp.nos.push({id:mp.prox++,pai:r.id,t:'Dia D Botanika',campId:1,cor:0});
-  tudo();
+  tudo();salvar();
 })();
 </script>
 </body>

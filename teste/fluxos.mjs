@@ -20,6 +20,10 @@ p.on('dialog',async d=>{
   else if(d.type()==='confirm'){await d.accept();}
   else {errs.push('ALERT: '+d.message()); await d.accept();}
 });
+// limpa só na primeira carga — senão o reload da suíte apagaria o que quer testar
+await p.addInitScript(()=>{try{
+  if(!sessionStorage.getItem('__limpo')){localStorage.clear();sessionStorage.setItem('__limpo','1')}
+}catch(e){}});
 await p.goto('file://'+resolve(raiz,'index.html'),{waitUntil:'networkidle'});
 await p.waitForTimeout(400);
 const G=(f,a)=>p.evaluate(f,a);
@@ -162,6 +166,26 @@ ok('Livre já entra em modo de escrita', await G(()=>editando)===true);
 await p.keyboard.type('anotação solta'); await p.keyboard.press('Enter'); await p.waitForTimeout(350);
 ok('Livre grava o que foi escrito', await G(()=>M().nos.some(n=>n.t==='anotação solta')),
    'nós='+await G(()=>M().nos.map(n=>n.t).slice(-2).join(' | ')));
+
+// 3c. SALVA SOZINHO
+await p.click('nav.paginas button[data-pg="mapa"]'); await p.waitForTimeout(300);
+const antes=await G(()=>({camps:D.campanhas.length,nos:M().nos.length,
+  nomes:D.campanhas.map(c=>c.nome).join('|')}));
+ok('rodapé diz que salvou', /salvo/.test(await G(()=>document.querySelector('#msg').textContent)),
+   await G(()=>document.querySelector('#msg').textContent));
+await p.waitForTimeout(1700);   // deixa o autosave rodar
+ok('escreveu no localStorage', await G(()=>!!localStorage.getItem('botanika-planejamento-v1')));
+// recarrega SEM limpar o storage
+await p.evaluate(()=>location.reload());
+await p.waitForLoadState('networkidle'); await p.waitForTimeout(700);
+const depois=await G(()=>({camps:D.campanhas.length,nos:M().nos.length,
+  nomes:D.campanhas.map(c=>c.nome).join('|')}));
+ok('campanhas sobrevivem ao reload', depois.camps===antes.camps,
+   `${antes.camps} -> ${depois.camps}`);
+ok('mapa sobrevive ao reload', depois.nos===antes.nos, `${antes.nos} -> ${depois.nos}`);
+ok('nomes intactos', depois.nomes===antes.nomes, depois.nomes);
+ok('não duplicou o exemplo ao recarregar', !/Dia D Botanika\|.*Dia D Botanika/.test(depois.nomes));
+ok('reload mostra estado salvo', /salvo/.test(await G(()=>document.querySelector('#msg').textContent)));
 
 // 4. novo mes
 prompts=['09/2026','400000'];
