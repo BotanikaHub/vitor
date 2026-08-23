@@ -1,0 +1,1222 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "slideshow_8KKtNU": {
+      "type": "slideshow",
+      "blocks": {
+        "banner_1": {
+          "type": "slider_item",
+          "settings": {
+            "image": "shopify://shop_images/sf-banner-1-desktop.jpg",
+            "image_mobile": "shopify://shop_images/sf-banner-1-mobile.jpg",
+            "image_link": "/#mais-vendidos",
+            "overlay_opacity": 0,
+            "slider_effect": "effect_fadeinup",
+            "subheading": "",
+            "heading": "",
+            "description": "",
+            "first_button_label": "",
+            "first_button_link": "",
+            "first_button_style": false,
+            "second_button_label": "",
+            "second_button_link": "",
+            "second_button_style": false,
+            "content_alignment": "left",
+            "content_position": "middle-left",
+            "content_width": "full_width",
+            "content_max_width": 100,
+            "content_padding_block": 60,
+            "content_padding_inline": 120,
+            "show_content_background": false,
+            "content_background": "#ffffff",
+            "content_box_opacity": 100,
+            "content_alignment_mobile": "center"
+          }
+        },
+        "banner_2": {
+          "type": "slider_item",
+          "settings": {
+            "image": "shopify://shop_images/william01desktop.png",
+            "image_mobile": "shopify://shop_images/williammobile.png",
+            "image_link": "",
+            "overlay_opacity": 0,
+            "slider_effect": "effect_fadeinup",
+            "subheading": "",
+            "heading": "",
+            "description": "",
+            "first_button_label": "",
+            "first_button_link": "",
+            "first_button_style": false,
+            "second_button_label": "",
+            "second_button_link": "",
+            "second_button_style": false,
+            "content_alignment": "left",
+            "content_position": "middle-left",
+            "content_width": "full_width",
+            "content_max_width": 100,
+            "content_padding_block": 60,
+            "content_padding_inline": 120,
+            "show_content_background": false,
+            "content_background": "#ffffff",
+            "content_box_opacity": 100,
+            "content_alignment_mobile": "center"
+          }
+        },
+        "banner_3": {
+          "type": "slider_item",
+          "settings": {
+            "image": "shopify://shop_images/sf-banner-3-desktop.jpg",
+            "image_mobile": "shopify://shop_images/sf-banner-3-mobile.jpg",
+            "image_link": "shopify://products/kit-whey-balance-creatina-taurato",
+            "overlay_opacity": 0,
+            "slider_effect": "effect_fadeinup",
+            "subheading": "",
+            "heading": "",
+            "description": "",
+            "first_button_label": "",
+            "first_button_link": "",
+            "first_button_style": false,
+            "second_button_label": "",
+            "second_button_link": "",
+            "second_button_style": false,
+            "content_alignment": "left",
+            "content_position": "middle-left",
+            "content_width": "full_width",
+            "content_max_width": 100,
+            "content_padding_block": 60,
+            "content_padding_inline": 120,
+            "show_content_background": false,
+            "content_background": "#ffffff",
+            "content_box_opacity": 100,
+            "content_alignment_mobile": "center"
+          }
+        },
+        "banner_4": {
+          "type": "slider_item",
+          "settings": {
+            "image": "shopify://shop_images/sf-banner-4-desktop.jpg",
+            "image_mobile": "shopify://shop_images/sf-banner-4-mobile.jpg",
+            "image_link": "shopify://products/kit-da-imunidade",
+            "overlay_opacity": 0,
+            "slider_effect": "effect_fadeinup",
+            "subheading": "",
+            "heading": "",
+            "description": "",
+            "first_button_label": "",
+            "first_button_link": "",
+            "first_button_style": false,
+            "second_button_label": "",
+            "second_button_link": "",
+            "second_button_style": false,
+            "content_alignment": "left",
+            "content_position": "middle-left",
+            "content_width": "full_width",
+            "content_max_width": 100,
+            "content_padding_block": 60,
+            "content_padding_inline": 120,
+            "show_content_background": false,
+            "content_background": "#ffffff",
+            "content_box_opacity": 100,
+            "content_alignment_mobile": "center"
+          }
+        }
+      },
+      "block_order": [
+        "banner_1",
+        "banner_2",
+        "banner_3",
+        "banner_4"
+      ],
+      "custom_css": [
+        ".h-full_screen {--height-topbar: 41px;}",
+        "@media (max-width: 767.988px) {.sec__content {align-items: end; padding-bottom: 30px; }}"
+      ],
+      "settings": {
+        "section_width": "full_width",
+        "slide_height": "adapt",
+        "desktop_height": 910,
+        "mobile_height": 300,
+        "color_scheme": "scheme-3d10de96-a479-49bd-819c-e044746b4f3e",
+        "slide_effect": "fade",
+        "reveal_slideshow": false,
+        "show_arrow": true,
+        "carousel_pagination": "show_dots",
+        "pagination_position": "center",
+        "autoplay": true,
+        "autorotate_speed": 3,
+        "subheading_font_size": 18,
+        "subheading_font_weight": "subheading_weight",
+        "subheading_spacing_bottom": 15,
+        "heading_font_size": 60,
+        "heading_font_weight": "heading_weight",
+        "heading_uppercase": false,
+        "heading_spacing_bottom": 40,
+        "des_font_size": 19,
+        "des_font_weight": "heading_weight",
+        "des_spacing_bottom": 60,
+        "content_below_image": false,
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "reset_spacing": false
+      }
+    },
+    "promotion_banner_QPT7Gc": {
+      "type": "promotion-banner",
+      "blocks": {
+        "group_content_promotion_banner_HCfqwM": {
+          "type": "_group-content-promotion-banner",
+          "settings": {
+            "promotion_style": "vertical"
+          },
+          "blocks": {
+            "heading_wdyzRq": {
+              "type": "heading",
+              "settings": {
+                "heading": "",
+                "font_size": 32,
+                "font_weight": "heading_weight",
+                "uppercase": false,
+                "spacing_bottom": 10
+              },
+              "blocks": {}
+            },
+            "description_fdPrMC": {
+              "type": "description",
+              "settings": {
+                "text": "",
+                "font_size": 14,
+                "font_weight": "body_weight",
+                "spacing_bottom": 20
+              },
+              "blocks": {}
+            }
+          },
+          "block_order": [
+            "heading_wdyzRq",
+            "description_fdPrMC"
+          ]
+        },
+        "button_promotion_banner_3NYCRL": {
+          "type": "_button-promotion-banner",
+          "settings": {
+            "copy_button_label": "",
+            "copy_button_type": "primary",
+            "button_label": "Rastrear Meu Pedido",
+            "button_link": "shopify://pages/rastrear-pedidos",
+            "button_type": "primary"
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "group_content_promotion_banner_HCfqwM",
+        "button_promotion_banner_3NYCRL"
+      ],
+      "disabled": true,
+      "name": "t:sections.promotion_banner.name",
+      "settings": {
+        "section_width": "fluid_container",
+        "color_scheme": "scheme-bb1431b0-be4a-4b03-a450-f572c07e3904",
+        "background_image": "shopify://shop_images/rastreio_site.png",
+        "image_mobile": "shopify://shop_images/ChatGPT_Image_20_de_jul._de_2026_13_26_07.png",
+        "background_rounded": 0,
+        "content_alignment_mobile": "center",
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "reset_spacing": false
+      }
+    },
+    "icon_box_8VQnjt": {
+      "type": "icon-box",
+      "blocks": {
+        "icon_box_7WTrRT": {
+          "type": "icon_box",
+          "settings": {
+            "icon_svg": "leaf",
+            "custom_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewbox=\"0 0 24 24\" fill=\"#323C91\"><g fill=\"none\" stroke=\"#323C91\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" color=\"currentColor\"><path d=\"M7.646 15.71A6 6 0 0 1 7 13c0-3.215 2.5-5.5 6-6c4.082-.583 5.833-2.833 7-4c3.5 13-3 16-7 16a6 6 0 0 1-3-.803\"></path><path d=\"M3 21c.5-3 2.458-4.864 7-6c3.217-.804 5.463-2.82 7-4.945\"></path></g></svg>",
+            "heading": "Ingredientes naturais",
+            "description": "<p>100% naturais e selecionados</p>"
+          }
+        },
+        "icon_box_aBMCwe": {
+          "type": "icon_box",
+          "settings": {
+            "icon_svg": "check_badge",
+            "custom_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewbox=\"0 0 24 24\"><path fill=\"none\" stroke=\"#323C91\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" d=\"M21 11.183V8.28c0-1.64 0-2.46-.404-2.995s-1.318-.794-3.145-1.314a25 25 0 0 1-3.229-1.173C13.023 2.266 12.424 2 12 2s-1.023.266-2.222.798c-.88.39-1.98.818-3.229 1.173c-1.827.52-2.74.78-3.145 1.314C3 5.82 3 6.64 3 8.28v2.903c0 5.625 5.063 9 7.594 10.336c.607.32.91.481 1.406.481s.799-.16 1.406-.48C15.937 20.182 21 16.807 21 11.182\" color=\"currentColor\"></path></svg>",
+            "heading": "Suplementos aprovados",
+            "description": "<p>Certificação ANVISA</p>"
+          }
+        },
+        "icon_box_6NC3Dc": {
+          "type": "icon_box",
+          "settings": {
+            "icon_svg": "free_shipping",
+            "custom_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewbox=\"0 0 24 24\" fill=\"#323C91\"><g fill=\"none\" stroke=\"#323C91\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" color=\"currentColor\"><path d=\"M14 20s1 0 2 2c0 0 3.177-5 6-6m-4-2a34 34 0 0 0-.206-1.845c-.225-1.67-1.614-2.979-3.304-3.056A96 96 0 0 0 10.032 9a95 95 0 0 0-4.458.1c-1.69.076-3.08 1.385-3.305 3.055C2.122 13.245 2 14.362 2 15.5s.122 2.255.269 3.345c.226 1.67 1.615 2.979 3.305 3.056a96 96 0 0 0 5.926.089\"></path><path d=\"M5.5 9V6.5a4.5 4.5 0 0 1 9 0V9\"></path></g></svg>",
+            "heading": "Compra segura",
+            "description": "<p>Pagamento protegido</p>"
+          }
+        },
+        "icon_box_LBUHPq": {
+          "type": "icon_box",
+          "settings": {
+            "icon_svg": "truck",
+            "custom_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewbox=\"0 0 24 24\" fill=\"#323C91\"><g fill=\"none\" stroke=\"#323C91\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" color=\"currentColor\"><path d=\"M19.5 17.5a2.5 2.5 0 1 1-5 0a2.5 2.5 0 0 1 5 0m-10 0a2.5 2.5 0 1 1-5 0a2.5 2.5 0 0 1 5 0\"></path><path d=\"M14.5 17.5h-5m10 0h.763c.22 0 .33 0 .422-.012a1.5 1.5 0 0 0 1.303-1.302c.012-.093.012-.203.012-.423V13a6.5 6.5 0 0 0-6.5-6.5M2 4h10c1.414 0 2.121 0 2.56.44C15 4.878 15 5.585 15 7v8.5M2 12.75V15c0 .935 0 1.402.201 1.75a1.5 1.5 0 0 0 .549.549c.348.201.815.201 1.75.201M2 7h6m-6 3h4\"></path></g></svg>",
+            "heading": "Entrega rápida",
+            "description": "<p>Para todo o Brasil</p>"
+          }
+        }
+      },
+      "block_order": [
+        "icon_box_7WTrRT",
+        "icon_box_aBMCwe",
+        "icon_box_6NC3Dc",
+        "icon_box_LBUHPq"
+      ],
+      "custom_css": [
+        ".sec__icon-box-content-icon.icon-border.lh-1.align-self-center {background: rgba(63, 74, 156, 0.1); border: none;}"
+      ],
+      "name": "t:sections.icon_box.name",
+      "settings": {
+        "section_width": "fluid_container",
+        "color_scheme": "default",
+        "type": "default",
+        "column_gap": 30,
+        "icon_position": "left",
+        "icon_size": 32,
+        "spacing": 12,
+        "show_border": true,
+        "enable_background": false,
+        "background": "linear-gradient(46deg, rgba(52, 133, 236, 1) 13%, rgba(170, 248, 219, 1) 86%)",
+        "content_alignment": "left",
+        "heading_font_size": 16,
+        "heading_font_weight": "heading_weight",
+        "heading_uppercase": false,
+        "heading_spacing_bottom": 0,
+        "des_font_size": 14,
+        "des_font_weight": "body_weight",
+        "carousel_on_mobile": true,
+        "items_per_row_mobile": "1",
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "reset_spacing": false
+      }
+    },
+    "shopable_video_9LczTB": {
+      "type": "shopable-video",
+      "blocks": {
+        "video_T6D48t": {
+          "type": "video",
+          "settings": {
+            "product": "creatina-l-carnitina",
+            "local_video": "shopify://files/videos/b766d6f56e7a46d08c94ca7102020219.HD-720p-1.6Mbps-58750275.mp4"
+          }
+        },
+        "video_VzipKj": {
+          "type": "video",
+          "settings": {
+            "product": "sleep-inositol",
+            "local_video": "shopify://files/videos/a9f1204dde004b1080682c6674ec3bb5.HD-720p-4.5Mbps-58751475.mp4"
+          }
+        },
+        "video_c9BFDc": {
+          "type": "video",
+          "settings": {
+            "product": "super-vitamina-c",
+            "local_video": "shopify://files/videos/0c9b3c7a7b0549c8ada8c5a25b63bfa5.HD-720p-4.5Mbps-58751213.mp4"
+          }
+        },
+        "video_pTR4HY": {
+          "type": "video",
+          "settings": {
+            "product": "tetravit-d",
+            "local_video": "shopify://files/videos/2893df8575034e849486f5fda295127d.HD-720p-1.6Mbps-58751795.mp4"
+          }
+        },
+        "video_Cy9AMF": {
+          "type": "video",
+          "settings": {
+            "product": "tetravit-d",
+            "local_video": "shopify://files/videos/86a1e68b86f548088bf48341de0cb395.HD-720p-4.5Mbps-58751481.mp4"
+          }
+        },
+        "video_erAe9m": {
+          "type": "video",
+          "settings": {
+            "product": "tetravit-d",
+            "local_video": "shopify://files/videos/b60a2120102f490f9f4467ac9d0e6198.HD-720p-4.5Mbps-58751639.mp4"
+          }
+        }
+      },
+      "block_order": [
+        "video_T6D48t",
+        "video_VzipKj",
+        "video_c9BFDc",
+        "video_pTR4HY",
+        "video_Cy9AMF",
+        "video_erAe9m"
+      ],
+      "disabled": true,
+      "name": "t:sections.shopable-video.name",
+      "settings": {
+        "section_width": "fluid_container",
+        "color_scheme": "default",
+        "heading": "Elas confiam na Botanika",
+        "description": "",
+        "header_size": "medium",
+        "header_alignment": "center",
+        "image_ratio": "adapt",
+        "custom_ratio": "",
+        "video_autoplay": true,
+        "items_per_row": 4,
+        "column_gap": 30,
+        "show_arrow": true,
+        "carousel_pagination": "disable",
+        "infinite": true,
+        "autoplay": true,
+        "autorotate_speed": 5,
+        "reveal": false,
+        "items_per_row_mobile": 1,
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "reset_spacing": false
+      }
+    },
+    "frete_promo": {
+      "type": "custom-liquid",
+      "disabled": true,
+      "settings": {
+        "section_width": "fluid_container",
+        "color_scheme": "default",
+        "custom_liquid": "<style>.frete-mq{background:linear-gradient(100deg,#1a8f3c 0%,#2e9e4f 100%);color:#fff;overflow:hidden;white-space:nowrap;border-radius:16px;box-shadow:0 8px 22px rgba(26,143,60,.25)}.frete-mq__track{display:inline-flex;align-items:center;white-space:nowrap;padding:16px 0;will-change:transform;animation:freteMq 24s linear infinite}.frete-mq:hover .frete-mq__track{animation-play-state:paused}.frete-mq__item{font-size:clamp(15px,2.4vw,24px);font-weight:900;letter-spacing:.02em}.frete-mq__sep{padding:0 30px;opacity:.55;font-weight:400}@keyframes freteMq{from{transform:translateX(0)}to{transform:translateX(-50%)}}@media (prefers-reduced-motion:reduce){.frete-mq__track{animation:none;justify-content:center}}</style><div class=\"frete-mq\" aria-label=\"Frete grátis em todo o site acima de R$349\"><div class=\"frete-mq__track\">{%- assign frete_items = '🚚 FRETE GRÁTIS EM TODO O SITE|✅ ACIMA DE R$349|📦 ENTREGA PARA TODO O BRASIL|🔒 COMPRA 100% SEGURA' | split: '|' -%}{%- for i in (1..2) -%}{%- for it in frete_items -%}<span class=\"frete-mq__item\">{{ it }}</span><span class=\"frete-mq__sep\">•</span>{%- endfor -%}{%- endfor -%}</div></div>",
+        "padding_top": 16,
+        "padding_bottom": 8,
+        "reset_spacing": false
+      }
+    },
+    "anchor_mais_vendidos": {
+      "type": "custom-liquid",
+      "settings": {
+        "section_width": "full_width",
+        "color_scheme": "default",
+        "custom_liquid": "<div id=\"mais-vendidos\" style=\"scroll-margin-top:120px;\"></div>",
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "reset_spacing": true
+      }
+    },
+    "featured_collection_TCP844": {
+      "type": "featured-collection",
+      "custom_css": [
+        ".product__add-cart {background: #10c322; color: #fff;}"
+      ],
+      "name": "t:names.featured_collection",
+      "settings": {
+        "section_width": "fluid_container",
+        "color_scheme": "scheme-56a291db-253b-441b-9c66-3155338e1a03",
+        "heading": "Mais Vendidos",
+        "description": "Os favoritos dos nossos clientes",
+        "show_view_all_button": false,
+        "space_between_header": true,
+        "header_size": "medium",
+        "header_alignment": "center",
+        "show_header_on_mobile": false,
+        "enable_collection_deal": false,
+        "messages": "Corra! A oferta acaba em:",
+        "end_time": "09-22-2026",
+        "timer_style": "default",
+        "collections_type": "grid",
+        "collection": "frontpage",
+        "items_to_show": 8,
+        "items_per_row": 4,
+        "rows_on_desktop": 2,
+        "enable_load_more": false,
+        "button_label": "Carregar mais",
+        "column_gap": 50,
+        "show_arrow": true,
+        "carousel_pagination": "show_dots_on_mobile",
+        "infinite": true,
+        "autoplay": true,
+        "autorotate_speed": 5,
+        "reveal": false,
+        "equal_height_adjustment": false,
+        "sticky_block": false,
+        "content_width": 30,
+        "block_position": "left",
+        "carousel_on_mobile": false,
+        "items_per_row_mobile": 2,
+        "padding_top": 0,
+        "padding_bottom": 10,
+        "reset_spacing": false
+      }
+    },
+    "botanika_medical_authority": {
+      "type": "botanika-medical-authority",
+      "blocks": {
+        "doc_robson": {
+          "type": "doctor",
+          "settings": {
+            "image": "shopify://shop_images/medico-robson.jpg",
+            "photo_zoom": 100,
+            "photo_focus_x": 50,
+            "photo_focus_y": 30,
+            "name": "Dr. Robson Araújo",
+            "crm": "CRM-MG 93.787",
+            "specialty": "Emagrecimento e saúde integrativa",
+            "quote": "<p>Acompanho pacientes em processos de emagrecimento e vejo a Botanika como <strong>uma aliada segura</strong> na rotina deles.</p>",
+            "instagram": "",
+            "instagram_url": ""
+          }
+        },
+        "doc_raquel": {
+          "type": "doctor",
+          "settings": {
+            "image": "shopify://shop_images/medico-raquel.jpg",
+            "photo_zoom": 100,
+            "photo_focus_x": 50,
+            "photo_focus_y": 30,
+            "name": "Dra. Raquel Cembranelli",
+            "crm": "CRO-SP 83.705",
+            "specialty": "Cirurgiã-dentista · odontologia integrativa",
+            "quote": "<p>Na odontologia integrativa, qualidade não é opcional — por isso <strong>recomendo a Botanika</strong> aos meus pacientes.</p>",
+            "instagram": "",
+            "instagram_url": ""
+          }
+        },
+        "doc_eglife": {
+          "type": "doctor",
+          "settings": {
+            "image": "shopify://shop_images/medico-eglife.jpg",
+            "photo_zoom": 100,
+            "photo_focus_x": 50,
+            "photo_focus_y": 30,
+            "name": "Dr. Eglife Brauher",
+            "crm": "CRM-BA 32.688",
+            "specialty": "Médico",
+            "quote": "<p>Conheço de perto os protocolos da Botanika e <strong>recomendo com tranquilidade</strong>.</p>",
+            "instagram": "",
+            "instagram_url": ""
+          }
+        },
+        "doc_kalil": {
+          "type": "doctor",
+          "settings": {
+            "image": "shopify://shop_images/medico-kalil.jpg",
+            "photo_zoom": 100,
+            "photo_focus_x": 50,
+            "photo_focus_y": 30,
+            "name": "Dr. Kalil Gibran Ferreira Lima",
+            "crm": "CRM-BA 34.392",
+            "specialty": "Médico",
+            "quote": "<p>A Botanika entrega o <strong>padrão de qualidade</strong> que busco para indicar aos meus pacientes.</p>",
+            "instagram": "",
+            "instagram_url": ""
+          }
+        },
+        "doc_carlos": {
+          "type": "doctor",
+          "settings": {
+            "image": "shopify://shop_images/medico-carlos.jpg",
+            "photo_zoom": 105,
+            "photo_focus_x": 50,
+            "photo_focus_y": 20,
+            "name": "Dr. Carlos Mateus Santos Osório",
+            "crm": "CRM-SP 215.405",
+            "specialty": "Médico",
+            "quote": "<p>Recomendo a Botanika pela <strong>consistência e qualidade</strong> dos seus produtos.</p>",
+            "instagram": "",
+            "instagram_url": ""
+          }
+        },
+        "doc_grace": {
+          "type": "doctor",
+          "settings": {
+            "image": "shopify://shop_images/medico-grace.jpg",
+            "photo_zoom": 100,
+            "photo_focus_x": 50,
+            "photo_focus_y": 30,
+            "name": "Dra. Grace Dessirre",
+            "crm": "CFO-SP 084169",
+            "specialty": "Cirurgiã-dentista",
+            "quote": "<p>Incluo a Botanika no cuidado que ofereço, sempre com <strong>atenção à qualidade</strong>.</p>",
+            "instagram": "",
+            "instagram_url": ""
+          }
+        }
+      },
+      "block_order": [
+        "doc_robson",
+        "doc_raquel",
+        "doc_eglife",
+        "doc_kalil",
+        "doc_carlos",
+        "doc_grace"
+      ],
+      "settings": {
+        "section_width": "container",
+        "eyebrow": "AUTORIDADE MÉDICA",
+        "heading": "Profissionais de saúde que recomendam a Botanika",
+        "subheading": "<p>Médicos e especialistas que conhecem nossos protocolos e indicam para seus pacientes.</p>",
+        "columns": 2,
+        "neutral_quote": "Conheço os protocolos da Botanika e recomendo aos meus pacientes.",
+        "brand_color": "#d0473e",
+        "accent_color": "#10c322",
+        "padding_top": 64,
+        "padding_bottom": 64
+      }
+    },
+    "ugc_galeria": {
+      "type": "ugc-photos",
+      "blocks": {
+        "photo_KjXYyn": {
+          "type": "photo",
+          "settings": {
+            "photo": "shopify://shop_images/hf_20260724_210647_411433be-ca63-4ef4-8ef3-89bc30a1be27.png",
+            "name": "",
+            "caption": ""
+          }
+        },
+        "photo_3Hfy9b": {
+          "type": "photo",
+          "settings": {
+            "photo": "shopify://shop_images/UGC_TRI.png",
+            "name": "",
+            "caption": ""
+          }
+        },
+        "photo_mT8Eaf": {
+          "type": "photo",
+          "settings": {
+            "photo": "shopify://shop_images/UGC_HAIR.png",
+            "name": "",
+            "caption": ""
+          }
+        },
+        "p2": {
+          "type": "photo",
+          "settings": {
+            "photo": "shopify://shop_images/ugc_tetra2.png",
+            "name": "",
+            "caption": ""
+          }
+        },
+        "p3": {
+          "type": "photo",
+          "settings": {
+            "photo": "shopify://shop_images/ugc_vitc.png",
+            "name": "",
+            "caption": ""
+          }
+        },
+        "p4": {
+          "type": "photo",
+          "settings": {
+            "photo": "shopify://shop_images/ugc_sleep.png",
+            "name": "",
+            "caption": ""
+          }
+        },
+        "p5": {
+          "type": "photo",
+          "settings": {
+            "photo": "shopify://shop_images/ugc_tetra.png",
+            "name": "",
+            "caption": ""
+          }
+        },
+        "p1": {
+          "type": "photo",
+          "settings": {
+            "photo": "shopify://shop_images/ucg_omega3.png",
+            "name": "",
+            "caption": ""
+          }
+        },
+        "p6": {
+          "type": "photo",
+          "settings": {
+            "photo": "shopify://shop_images/ugc_whey.png",
+            "name": "",
+            "caption": ""
+          }
+        },
+        "photo_NKe6Aq": {
+          "type": "photo",
+          "settings": {
+            "photo": "shopify://shop_images/hf_20260724_210654_eaa2d1ca-6030-49bd-8899-41dd317dc906.png",
+            "name": "",
+            "caption": ""
+          }
+        }
+      },
+      "block_order": [
+        "photo_KjXYyn",
+        "photo_3Hfy9b",
+        "photo_mT8Eaf",
+        "p2",
+        "p3",
+        "p4",
+        "p5",
+        "p1",
+        "p6",
+        "photo_NKe6Aq"
+      ],
+      "settings": {
+        "color_scheme": "default",
+        "heading": "A Botanika na sua rotina",
+        "subheading": "Faça da Botanika parte do seu dia a dia."
+      }
+    },
+    "collection_list_VmEYkJ": {
+      "type": "collection-list",
+      "blocks": {
+        "collection_r7aTxN": {
+          "type": "collection",
+          "settings": {
+            "collection": "imunidade",
+            "collection_image": "shopify://shop_images/imunidade.png",
+            "collection_title": ""
+          }
+        },
+        "collection_YdhkPm": {
+          "type": "collection",
+          "settings": {
+            "collection": "imunidade",
+            "collection_image": "shopify://shop_images/energia.png",
+            "collection_title": ""
+          }
+        },
+        "collection_kUA3MH": {
+          "type": "collection",
+          "settings": {
+            "collection": "sono-e-relaxamento",
+            "collection_image": "shopify://shop_images/sono.png",
+            "collection_title": ""
+          }
+        },
+        "collection_ctTBpd": {
+          "type": "collection",
+          "settings": {
+            "collection": "estetica-e-beleza",
+            "collection_image": "shopify://shop_images/beleza.png",
+            "collection_title": ""
+          }
+        },
+        "collection_fyfMEN": {
+          "type": "collection",
+          "settings": {
+            "collection": "emagrecimento",
+            "collection_image": "shopify://shop_images/emagrecimento.png",
+            "collection_title": ""
+          }
+        },
+        "collection_qdMHYe": {
+          "type": "collection",
+          "settings": {
+            "collection": "saude-da-mulher",
+            "collection_image": "shopify://shop_images/saude-mulher.png",
+            "collection_title": ""
+          }
+        },
+        "collection_qqeCFR": {
+          "type": "collection",
+          "settings": {
+            "collection": "saude-do-homem",
+            "collection_image": "shopify://shop_images/saude-homem.png",
+            "collection_title": ""
+          }
+        },
+        "collection_DLWHJF": {
+          "type": "collection",
+          "settings": {
+            "collection": "vitaminas-e-minerais",
+            "collection_image": "shopify://shop_images/vitaminas.png",
+            "collection_title": ""
+          }
+        }
+      },
+      "block_order": [
+        "collection_r7aTxN",
+        "collection_YdhkPm",
+        "collection_kUA3MH",
+        "collection_ctTBpd",
+        "collection_fyfMEN",
+        "collection_qdMHYe",
+        "collection_qqeCFR",
+        "collection_DLWHJF"
+      ],
+      "custom_css": [
+        ".collection-item__information {display: none;}"
+      ],
+      "settings": {
+        "section_width": "fluid_container",
+        "color_scheme": "",
+        "heading": "Compre por Categoria",
+        "description": "<p>Encontre o suplemento ideal para seu objetivo</p>",
+        "show_view_all_button": false,
+        "header_size": "medium",
+        "header_alignment": "center",
+        "display_mode": "grid",
+        "image_ratio": "custom",
+        "custom_ratio": "286:192",
+        "items_per_row": 4,
+        "column_gap": 30,
+        "show_arrow": false,
+        "carousel_pagination": "show_dots",
+        "infinite": false,
+        "autoplay": false,
+        "autorotate_speed": 5,
+        "reveal": false,
+        "items_per_row_mobile": 3,
+        "design": "default",
+        "collection_information_position": "overlay_image",
+        "text_alignment": "center",
+        "show_product_count": false,
+        "show_icon": false,
+        "show_description": false,
+        "font_size": 16,
+        "font_weight": "heading_weight",
+        "information_spacing": 12,
+        "rounded_image": true,
+        "image_custom_width": true,
+        "image_width": 185,
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "reset_spacing": false
+      }
+    },
+    "flexible_section_UbEEzm": {
+      "type": "flexible-section",
+      "blocks": {
+        "image_mxeXgr": {
+          "type": "image",
+          "name": "t:sections.all.image.label",
+          "settings": {
+            "image_block": "shopify://shop_images/3.png",
+            "image_width": 500,
+            "spacing_bottom": 0
+          },
+          "blocks": {}
+        },
+        "image_BbmdFe": {
+          "type": "image",
+          "name": "t:sections.all.image.label",
+          "settings": {
+            "image_block": "shopify://shop_images/2.png",
+            "image_width": 500,
+            "spacing_bottom": 0
+          },
+          "blocks": {}
+        },
+        "image_Vc8EzV": {
+          "type": "image",
+          "name": "t:sections.all.image.label",
+          "settings": {
+            "image_block": "shopify://shop_images/1.png",
+            "image_width": 500,
+            "spacing_bottom": 0
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "image_mxeXgr",
+        "image_BbmdFe",
+        "image_Vc8EzV"
+      ],
+      "disabled": true,
+      "custom_css": [
+        ".sec__flexible-section .container .cols {display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 30px;}",
+        ".sec__content-img {width: auto !important;}"
+      ],
+      "name": "t:sections.flex_section.name",
+      "settings": {
+        "section_width": "fluid_container",
+        "custom_layout": "horizontal",
+        "vertical_on_mobile": true,
+        "horizontal_position": "center",
+        "content_alignment": "left",
+        "column_gap": 30,
+        "color_scheme": "",
+        "background_media": "none",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "featured_collection_yBMhWX": {
+      "type": "featured-collection",
+      "disabled": true,
+      "custom_css": [
+        ".product__add-cart {background: #10c322; color: #fff;}"
+      ],
+      "name": "t:names.featured_collection",
+      "settings": {
+        "section_width": "fluid_container",
+        "color_scheme": "scheme-56a291db-253b-441b-9c66-3155338e1a03",
+        "heading": "Novidades Botanika",
+        "description": "Conheça os lançamentos mais recentes da nossa linha",
+        "show_view_all_button": false,
+        "space_between_header": true,
+        "header_size": "medium",
+        "header_alignment": "center",
+        "show_header_on_mobile": false,
+        "enable_collection_deal": false,
+        "messages": "Corra! A oferta acaba em:",
+        "end_time": "09-22-2026",
+        "timer_style": "default",
+        "collections_type": "carousel",
+        "collection": "frontpage",
+        "items_to_show": 8,
+        "items_per_row": 4,
+        "rows_on_desktop": 2,
+        "enable_load_more": false,
+        "button_label": "Carregar mais",
+        "column_gap": 50,
+        "show_arrow": true,
+        "carousel_pagination": "show_dots_on_mobile",
+        "infinite": true,
+        "autoplay": true,
+        "autorotate_speed": 5,
+        "reveal": false,
+        "equal_height_adjustment": false,
+        "sticky_block": false,
+        "content_width": 30,
+        "block_position": "left",
+        "carousel_on_mobile": false,
+        "items_per_row_mobile": 2,
+        "padding_top": 0,
+        "padding_bottom": 10,
+        "reset_spacing": false
+      }
+    },
+    "divider_FcGgzn": {
+      "type": "divider",
+      "settings": {
+        "section_width": "full_width",
+        "border_height": 1,
+        "border_color": "#ebebeb",
+        "reset_spacing": true
+      }
+    },
+    "scrolling_text_U3mttg": {
+      "type": "scrolling-text",
+      "blocks": {
+        "scrolling_text_Bmp7bG": {
+          "type": "scrolling_text",
+          "settings": {
+            "image": "shopify://shop_images/icon.png",
+            "content": "Saúde da Mulher"
+          }
+        },
+        "scrolling_text_DJFXRw": {
+          "type": "scrolling_text",
+          "settings": {
+            "image": "shopify://shop_images/icon.png",
+            "content": "Saúde do Homem"
+          }
+        },
+        "scrolling_text_dcdkaY": {
+          "type": "scrolling_text",
+          "settings": {
+            "image": "shopify://shop_images/icon.png",
+            "content": "Energia"
+          }
+        },
+        "scrolling_text_89igiC": {
+          "type": "scrolling_text",
+          "settings": {
+            "image": "shopify://shop_images/icon.png",
+            "content": "Beleza"
+          }
+        },
+        "scrolling_text_yTd6Yb": {
+          "type": "scrolling_text",
+          "settings": {
+            "image": "shopify://shop_images/icon.png",
+            "content": "Imunidade"
+          }
+        }
+      },
+      "block_order": [
+        "scrolling_text_Bmp7bG",
+        "scrolling_text_DJFXRw",
+        "scrolling_text_dcdkaY",
+        "scrolling_text_89igiC",
+        "scrolling_text_yTd6Yb"
+      ],
+      "settings": {
+        "section_width": "full_width",
+        "color_scheme": "scheme-accf3b11-ba40-4a3e-bafb-243ece6683ec",
+        "direction": "left",
+        "icon_between_item": "image",
+        "icon_width": 20,
+        "speed": 13,
+        "space_between_text": 60,
+        "font_size": 26,
+        "font_weight": "subheading_weight",
+        "uppercase": false,
+        "use_heading_font": true,
+        "padding_top": 25,
+        "padding_bottom": 25,
+        "reset_spacing": true
+      }
+    },
+    "divider_xPQYgr": {
+      "type": "divider",
+      "settings": {
+        "section_width": "full_width",
+        "border_height": 1,
+        "border_color": "#ebebeb",
+        "reset_spacing": false
+      }
+    },
+    "product_with_banner_jkeBcP": {
+      "type": "product-with-banner",
+      "blocks": {
+        "product_banner_VdRcwF": {
+          "type": "product_banner",
+          "settings": {
+            "image": "shopify://shop_images/img_7acacbfc-94b9-4b2a-90db-a47ac8d77a5b.png",
+            "content_background_color": "#323c91",
+            "subheading": "",
+            "subheading_font_size": 14,
+            "subheading_font_weight": "subheading_weight",
+            "subheading_spacing_bottom": 15,
+            "heading": "Mais saúde para o seu dia",
+            "heading_font_size": 36,
+            "heading_font_weight": "heading_weight",
+            "heading_spacing_bottom": 24,
+            "description": "<p>Suplementos desenvolvidos com ingredientes de alta qualidade para apoiar seu corpo e sua mente.</p><p>✓ Ingredientes naturais e premium<br/>✓ Fórmulas cientificamente comprovadas<br/>✓ Selo de qualidade premium</p>",
+            "description_font_size": 14,
+            "description_spacing_bottom": 25,
+            "product": "",
+            "product_spacing_bottom": 25,
+            "button_label": "Conhecer produtos",
+            "button_link": "shopify://collections",
+            "button_type": "primary"
+          }
+        }
+      },
+      "block_order": [
+        "product_banner_VdRcwF"
+      ],
+      "custom_css": [
+        ".sec__product-banner {background: #323c91;}",
+        ".sec__product-banner,h2 {color: #fff !important;}",
+        ".btn-primary {background: #fff; color: #323c91;}"
+      ],
+      "name": "t:sections.carousel_with_banner.name",
+      "settings": {
+        "section_width": "fluid_container",
+        "heading": "",
+        "subheading": "",
+        "description": "",
+        "header_size": "medium",
+        "header_alignment": "center",
+        "column_gap": 30,
+        "content_alignment": "center",
+        "image_ratio": "adapt",
+        "custom_ratio": "",
+        "image_position": "left",
+        "show_arrow": false,
+        "carousel_pagination": false,
+        "infinite": false,
+        "autoplay": false,
+        "autorotate_speed": 5,
+        "padding_top": 40,
+        "padding_bottom": 40,
+        "reset_spacing": false
+      }
+    },
+    "flexible_section_bnDqHN": {
+      "type": "flexible-section",
+      "blocks": {
+        "image_xcwnQj": {
+          "type": "image",
+          "name": "t:sections.all.image.label",
+          "settings": {
+            "image_block": "shopify://shop_images/combos_793e5200-8d24-4713-823a-e156f2f38437.png",
+            "image_width": 900,
+            "spacing_bottom": 0
+          },
+          "blocks": {}
+        },
+        "image_zcd6UF": {
+          "type": "image",
+          "name": "t:sections.all.image.label",
+          "settings": {
+            "image_block": "shopify://shop_images/protocolo_00d647db-7449-4b31-ae7d-1f76eae72dfa.png",
+            "image_width": 900,
+            "spacing_bottom": 0
+          },
+          "blocks": {}
+        }
+      },
+      "block_order": [
+        "image_xcwnQj",
+        "image_zcd6UF"
+      ],
+      "disabled": true,
+      "custom_css": [
+        ".sec__flexible-section .container .cols {display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 30px;}",
+        ".sec__content-img {width: auto !important;}",
+        ".sec__content-img img {border-radius: 20px !important;}"
+      ],
+      "name": "t:sections.flex_section.name",
+      "settings": {
+        "section_width": "fluid_container",
+        "custom_layout": "horizontal",
+        "vertical_on_mobile": true,
+        "horizontal_position": "center",
+        "content_alignment": "left",
+        "column_gap": 30,
+        "color_scheme": "",
+        "background_media": "none",
+        "padding_top": 0,
+        "padding_bottom": 0
+      }
+    },
+    "product_testimonials_KNN6XE": {
+      "type": "product-testimonials",
+      "blocks": {
+        "testimonials_items_FQz4eH": {
+          "type": "testimonials_items",
+          "settings": {
+            "local_video": "shopify://files/videos/86a1e68b86f548088bf48341de0cb395.HD-720p-4.5Mbps-58751481.mp4",
+            "author_rating": 5,
+            "author_text": "<p>Tinha muitas dores de cabeça e ao começar a tomar o OMEGA 3,senti que minhas dores reduziram. 😍</p>",
+            "select_product": "super-omega-3-coq10",
+            "author_name": "Angela M."
+          }
+        },
+        "testimonials_items_dFExKp": {
+          "type": "testimonials_items",
+          "settings": {
+            "local_video": "shopify://files/videos/b766d6f56e7a46d08c94ca7102020219.HD-720p-1.6Mbps-58750275.mp4",
+            "author_rating": 5,
+            "author_text": "<p>O Magnésio fez toda a diferença na minha rotina e na da minha filha de 21 anos, enfrentava um quadro de ansiedade, notável a diferença em 30 dias, os exercícios na academia se tornaram mais felizes.</p>",
+            "select_product": "tri-mg-complex",
+            "author_name": "Rita M."
+          }
+        },
+        "testimonials_items_XFJ4bD": {
+          "type": "testimonials_items",
+          "settings": {
+            "local_video": "shopify://files/videos/b60a2120102f490f9f4467ac9d0e6198.HD-720p-4.5Mbps-58751639.mp4",
+            "author_rating": 5,
+            "author_text": "<p>Após duas semanas de uso do Sleep inositol, notei uma melhora na qualidade do sono e também na regulação da pressão arterial.</p>",
+            "select_product": "sleep-inositol",
+            "author_name": "Marina L."
+          }
+        }
+      },
+      "block_order": [
+        "testimonials_items_FQz4eH",
+        "testimonials_items_dFExKp",
+        "testimonials_items_XFJ4bD"
+      ],
+      "settings": {
+        "section_width": "fluid_container",
+        "color_scheme": "",
+        "heading": "O que dizem nossos clientes!",
+        "description": "<p>Nossos clientes amam nossos produtos e nos esforçamos para agradar a todos.</p>",
+        "header_alignment": "center",
+        "header_size": "medium",
+        "design": "default",
+        "show_image": false,
+        "show_verified_buyer": false,
+        "img_position": "left",
+        "image_ratio": "square",
+        "custom_ratio": "",
+        "img_width": 35,
+        "framed": true,
+        "rate_color": "#ff9c05",
+        "items_per_row": 2,
+        "column_gap": 30,
+        "show_arrow": false,
+        "carousel_pagination": "show_dots_on_mobile",
+        "infinite": true,
+        "autoplay": false,
+        "autorotate_speed": 5,
+        "reveal": false,
+        "items_per_row_mobile": 1,
+        "padding_top": 0,
+        "padding_bottom": 0,
+        "reset_spacing": false
+      }
+    },
+    "featured_collection_Pd7APa": {
+      "type": "featured-collection",
+      "custom_css": [
+        ".product__add-cart {background: #10c322; color: #fff;}"
+      ],
+      "name": "t:names.featured_collection",
+      "settings": {
+        "section_width": "fluid_container",
+        "color_scheme": "scheme-56a291db-253b-441b-9c66-3155338e1a03",
+        "heading": "Conheça também",
+        "description": "",
+        "show_view_all_button": false,
+        "space_between_header": true,
+        "header_size": "medium",
+        "header_alignment": "center",
+        "show_header_on_mobile": false,
+        "enable_collection_deal": false,
+        "messages": "Corra! A oferta acaba em:",
+        "end_time": "09-22-2026",
+        "timer_style": "default",
+        "collections_type": "carousel",
+        "collection": "frontpage",
+        "items_to_show": 8,
+        "items_per_row": 4,
+        "rows_on_desktop": 2,
+        "enable_load_more": false,
+        "button_label": "Carregar mais",
+        "column_gap": 50,
+        "show_arrow": true,
+        "carousel_pagination": "show_dots_on_mobile",
+        "infinite": true,
+        "autoplay": true,
+        "autorotate_speed": 5,
+        "reveal": false,
+        "equal_height_adjustment": false,
+        "sticky_block": false,
+        "content_width": 30,
+        "block_position": "left",
+        "carousel_on_mobile": false,
+        "items_per_row_mobile": 2,
+        "padding_top": 0,
+        "padding_bottom": 10,
+        "reset_spacing": false
+      }
+    }
+  },
+  "order": [
+    "slideshow_8KKtNU",
+    "promotion_banner_QPT7Gc",
+    "icon_box_8VQnjt",
+    "shopable_video_9LczTB",
+    "frete_promo",
+    "anchor_mais_vendidos",
+    "featured_collection_TCP844",
+    "botanika_medical_authority",
+    "ugc_galeria",
+    "collection_list_VmEYkJ",
+    "flexible_section_UbEEzm",
+    "featured_collection_yBMhWX",
+    "divider_FcGgzn",
+    "scrolling_text_U3mttg",
+    "divider_xPQYgr",
+    "product_with_banner_jkeBcP",
+    "flexible_section_bnDqHN",
+    "product_testimonials_KNN6XE",
+    "featured_collection_Pd7APa"
+  ]
+}

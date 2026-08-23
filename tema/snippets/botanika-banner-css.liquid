@@ -1,15 +1,13 @@
 {%- comment -%}
   ============================================================
-  Banners da home — arredondamento do carrossel e proporção da
-  faixa de rastreio.
+  Banner da home — cantos arredondados no mobile.
 
-  O arredondamento do carrossel é só mobile: no desktop ele
-  continua sangrando de ponta a ponta, que funciona bem em tela
-  larga. O respiro lateral não é enfeite — sem ele o canto some
-  contra a borda da tela e o arredondamento não aparece. É o que
-  faz a referência (Blessy) ler como um cartão.
+  Só mobile: no desktop o banner continua sangrando de ponta a
+  ponta, que é como está hoje e funciona bem em tela larga.
 
-  A faixa de rastreio, mais abaixo, vale para os dois tamanhos.
+  O respiro lateral não é enfeite — sem ele o arredondamento
+  quase não aparece, porque o canto some contra a borda da
+  tela. É o que faz a referência (Blessy) ler como um cartão.
   ============================================================
 {%- endcomment -%}
 <style>
@@ -33,46 +31,6 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-    }
-  }
-  /* ================= FAIXA "RASTREIE SUA ENCOMENDA" =================
-     A seção promotion-banner tem altura mínima e recebe a arte como
-     fundo em object-fit:cover. Quem manda na altura é o conteúdo —
-     aqui, só um botão — então a arte era esmagada num filete e
-     perdia o topo e o rodapé nos dois tamanhos de tela.
-
-     Nesta faixa a arte É a mensagem: o texto, a caixa e o mapa estão
-     dentro da imagem, não em blocos do tema. Então a caixa passa a
-     seguir a proporção da imagem e nada é cortado — o cover continua
-     lá, mas sem nada para cortar.
-
-     Os números são as dimensões reais dos arquivos:
-       desktop  rastreio_site.png      2171 × 713
-       mobile   ChatGPT_Image_...png   1774 × 887
-     Trocar a arte pede trocar a proporção aqui junto.
-     ================================================================ */
-  #shopify-section-promotion_banner_QPT7Gc .mh-120 {
-    min-height: 0 !important;
-    aspect-ratio: 2171 / 713;
-  }
-  #shopify-section-promotion_banner_QPT7Gc .background_image,
-  #shopify-section-promotion_banner_QPT7Gc .background_image .image-picture,
-  #shopify-section-promotion_banner_QPT7Gc .background_image motion-element {
-    width: 100%;
-    height: 100%;
-  }
-  #shopify-section-promotion_banner_QPT7Gc .background_image img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-  }
-
-  @media (max-width: 767.98px) {
-    /* 767px é o mesmo ponto de corte do <source> que o tema gera para
-       a imagem de mobile — se os dois não baterem, um tamanho de tela
-       fica com a proporção do outro. */
-    #shopify-section-promotion_banner_QPT7Gc .mh-120 {
-      aspect-ratio: 1774 / 887;
     }
   }
 </style>
