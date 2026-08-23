@@ -69,6 +69,8 @@
       padding-inline: max(20px, calc((100% - 1240px) / 2));
       padding-bottom: 6px;
       scroll-snap-type: x proximity;
+      /* o snap ancora na borda do trilho e ignora o padding sem isto */
+      scroll-padding-inline: max(20px, calc((100% - 1240px) / 2));
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
     }
@@ -104,7 +106,7 @@
 
     @media (max-width: 767.98px) {
       .bkc__cabeca { margin-bottom: 20px; }
-      .bkc__trilho { gap: 12px; padding-inline: 16px; }
+      .bkc__trilho { gap: 12px; padding-inline: 16px; scroll-padding-inline: 16px; }
       .bkc__item { width: 88px; }
       .bkc__circulo { width: 72px; height: 72px; }
       .bkc__nome { font-size: 12px; }

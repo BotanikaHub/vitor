@@ -1,28 +1,42 @@
 {%- comment -%}
+  ============================================================
   Botanika — Autoridade Médica.
-  Foto redonda + depoimento. Cada médico é um bloco "doctor".
-  Campo "quote" é opcional: vazio usa a "Frase neutra" da seção
-  (placeholder até termos o depoimento real de cada médico).
 
-  No celular a grade vira trilho: em coluna única os cards
-  empilhados empurravam o resto da home para muito longe, e o
-  corte no card seguinte mostra que existe mais gente na lista.
+  Formato da Blessy: cartão retangular com a foto ocupando a
+  metade de cima e as informações embaixo. A diferença é a cor —
+  o cartão é azul da marca sobre fundo verde claro, em vez do
+  branco sobre branco da referência, para o cartão destacar.
+
+  Nada de emoji: os símbolos vêm da família botanika-trust-icon,
+  a mesma da barra de confiança, do menu e dos selos.
+
+  O número de colunas é automático (auto-fit): com a foto grande,
+  um número fixo deixava o cartão largo demais em tela cheia e
+  espremido no meio-termo.
+
+  Campo "quote" é opcional: vazio usa a "Frase neutra" da seção.
 {%- endcomment -%}
 {%- liquid
   assign s = section.settings
 -%}
 <div
   class="bt-medauth"
-  style="--bt-brand: {{ s.brand_color }}; --bt-accent: {{ s.accent_color }}; --bt-pt: {{ s.padding_top }}px; --bt-pb: {{ s.padding_bottom }}px; --bt-cols: {{ s.columns }};"
+  style="--bt-brand: {{ s.brand_color }}; --bt-accent: {{ s.accent_color }}; --bt-bg: {{ s.bg_color }}; --bt-pt: {{ s.padding_top }}px; --bt-pb: {{ s.padding_bottom }}px;"
 >
   <div class="bt-medauth__wrap">
     {%- if s.eyebrow != blank or s.heading != blank or s.subheading != blank -%}
       <div class="bt-medauth__head">
-        {%- if s.eyebrow != blank -%}<p class="bt-medauth__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+        {%- if s.eyebrow != blank -%}
+          <p class="bt-medauth__eyebrow">
+            {%- render 'botanika-trust-icon', nome: 'pulso', tamanho: 13 -%}
+            <span>{{ s.eyebrow }}</span>
+          </p>
+        {%- endif -%}
         {%- if s.heading != blank -%}<h2 class="bt-medauth__title">{{ s.heading }}</h2>{%- endif -%}
         {%- if s.subheading != blank -%}<div class="bt-medauth__sub rich__text-m0">{{ s.subheading }}</div>{%- endif -%}
       </div>
     {%- endif -%}
+
     <div class="bt-medauth__grid">
       {%- for block in section.blocks -%}
         {%- assign b = block.settings -%}
@@ -34,32 +48,43 @@
           assign img_style = 'object-position: ' | append: focus_x | append: '% ' | append: focus_y | append: '%; transform: scale(' | append: zoom | append: ');'
         -%}
         <article class="bt-medauth__card" {{ block.shopify_attributes }}>
-          <div class="bt-medauth__avatar">
+          <div class="bt-medauth__foto">
             {%- if b.image != blank -%}
-              {{ b.image | image_url: width: 320 | image_tag: loading: 'lazy', widths: '160,240,320', class: 'bt-medauth__img', alt: b.name, style: img_style }}
+              {{ b.image | image_url: width: 720 | image_tag: loading: 'lazy', widths: '320,480,720', class: 'bt-medauth__img', alt: b.name, style: img_style }}
             {%- else -%}
-              <div class="bt-medauth__img bt-medauth__ph">
-                {%- render 'botanika-trust-icon', nome: 'pulso', tamanho: 34 -%}
+              <div class="bt-medauth__ph">
+                {%- render 'botanika-trust-icon', nome: 'pulso', tamanho: 40 -%}
               </div>
             {%- endif -%}
+            {%- if b.crm != blank -%}
+              <span class="bt-medauth__crm">
+                {%- render 'botanika-trust-icon', nome: 'selo', tamanho: 13 -%}
+                <span>{{ b.crm }}</span>
+              </span>
+            {%- endif -%}
           </div>
+
           <div class="bt-medauth__body">
+            <span class="bt-medauth__aspas" aria-hidden="true">
+              {%- render 'botanika-trust-icon', nome: 'aspas', tamanho: 22 -%}
+            </span>
             {%- if b.quote != blank -%}
               <div class="bt-medauth__quote">{{ b.quote }}</div>
             {%- elsif s.neutral_quote != blank -%}
               <div class="bt-medauth__quote"><p>{{ s.neutral_quote }}</p></div>
             {%- endif -%}
-            {%- if b.name != blank -%}<p class="bt-medauth__name">{{ b.name }}</p>{%- endif -%}
-            {%- if b.specialty != blank or b.crm != blank -%}
-              <p class="bt-medauth__meta">
-                {%- if b.specialty != blank -%}<span class="bt-medauth__esp">{{ b.specialty }}</span>{%- endif -%}
-                {%- if b.crm != blank -%}<span class="bt-medauth__crm">{{ b.crm }}</span>{%- endif -%}
-              </p>
-            {%- endif -%}
-            {%- if b.instagram != blank -%}
-              {%- assign ig = b.instagram | replace: '@', '' | strip -%}
-              <a class="bt-medauth__ig" href="{% if b.instagram_url != blank %}{{ b.instagram_url }}{% else %}https://instagram.com/{{ ig }}{% endif %}" target="_blank" rel="noopener nofollow" aria-label="Instagram de {{ b.name }}">@{{ ig }}</a>
-            {%- endif -%}
+
+            <div class="bt-medauth__assina">
+              {%- if b.name != blank -%}<p class="bt-medauth__name">{{ b.name }}</p>{%- endif -%}
+              {%- if b.specialty != blank -%}<p class="bt-medauth__esp">{{ b.specialty }}</p>{%- endif -%}
+              {%- if b.instagram != blank -%}
+                {%- assign ig = b.instagram | replace: '@', '' | strip -%}
+                <a class="bt-medauth__ig" href="{% if b.instagram_url != blank %}{{ b.instagram_url }}{% else %}https://instagram.com/{{ ig }}{% endif %}" target="_blank" rel="noopener nofollow" aria-label="Instagram de {{ b.name }}">
+                  {%- render 'botanika-trust-icon', nome: 'instagram', tamanho: 15 -%}
+                  <span>@{{ ig }}</span>
+                </a>
+              {%- endif -%}
+            </div>
           </div>
         </article>
       {%- endfor -%}
@@ -68,88 +93,96 @@
 </div>
 
 {% stylesheet %}
-  .bt-medauth { padding-top: var(--bt-pt, 56px); padding-bottom: var(--bt-pb, 56px); background: #F5F6FB; }
+  .bt-medauth { padding-top: var(--bt-pt, 56px); padding-bottom: var(--bt-pb, 56px); background: var(--bt-bg, #EDF2DF); }
   .bt-medauth__wrap { max-width: 1240px; margin: 0 auto; padding: 0 20px; }
   .bt-medauth__head { text-align: center; max-width: 720px; margin: 0 auto 34px; }
 
-  /* Sobre-título em pílula: o verde da marca não tem contraste como
-     texto sobre fundo claro, mas funciona como fundo. */
   .bt-medauth__eyebrow {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     margin: 0 0 14px;
-    padding: 5px 14px;
+    padding: 6px 16px;
     border-radius: 999px;
-    background: var(--bt-accent, #C4D78A);
-    color: #1B2560;
+    background: var(--bt-brand, #323C91);
+    color: #fff;
     font-weight: 800;
     letter-spacing: .14em;
     text-transform: uppercase;
     font-size: 11.5px;
   }
   .bt-medauth__title { color: var(--bt-brand, #323C91); font-weight: 800; letter-spacing: -.01em; font-size: clamp(24px, 2.8vw, 34px); line-height: 1.18; margin: 0 0 10px; }
-  .bt-medauth__sub { color: #6B7080; font-size: clamp(14px, 1.3vw, 16px); line-height: 1.55; }
+  .bt-medauth__sub { color: #55607A; font-size: clamp(14px, 1.3vw, 16px); line-height: 1.55; }
 
-  .bt-medauth__grid { display: grid; grid-template-columns: repeat(var(--bt-cols, 2), minmax(0, 1fr)); align-items: stretch; gap: 22px; }
+  /* auto-fit: com a foto grande, um número fixo de colunas deixava o
+     cartão largo demais em tela cheia e espremido no meio-termo. */
+  .bt-medauth__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(272px, 1fr));
+    align-items: stretch;
+    gap: 20px;
+  }
 
   .bt-medauth__card {
     display: flex;
-    gap: 22px;
-    align-items: center;
-    width: 100%;
+    flex-direction: column;
     height: 100%;
-    padding: 28px 30px;
-    border-radius: 22px;
-    background: #fff;
-    box-shadow: 0 8px 26px rgba(27, 37, 96, .06);
-    box-sizing: border-box;
-  }
-  /* O anel verde é o que amarra a foto à marca sem depender da foto,
-     que vem de fontes e enquadramentos diferentes. */
-  .bt-medauth__avatar {
-    flex: 0 0 auto;
-    width: 116px;
-    height: 116px;
-    border-radius: 50%;
     overflow: hidden;
-    background: #EDF2DF;
-    box-shadow: 0 0 0 3px #fff, 0 0 0 6px #C4D78A;
+    border-radius: 22px;
+    background: var(--bt-brand, #323C91);
+    box-shadow: 0 12px 30px rgba(27, 37, 96, .14);
   }
+
+  /* A foto ocupa a metade de cima, sangrando de borda a borda. */
+  .bt-medauth__foto { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: #1B2560; }
   .bt-medauth__img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .bt-medauth__ph { display: flex; align-items: center; justify-content: center; color: #323C91; }
-  .bt-medauth__body { flex: 1 1 auto; min-width: 0; }
+  .bt-medauth__ph { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: var(--bt-accent, #C4D78A); }
 
-  .bt-medauth__quote { color: #3C4152; font-size: 15px; line-height: 1.6; margin: 0 0 14px; }
-  .bt-medauth__quote p { margin: 0; }
-  .bt-medauth__quote p:first-child:before { content: '\201C'; }
-  .bt-medauth__quote p:last-child:after { content: '\201D'; }
-  .bt-medauth__quote strong, .bt-medauth__quote b { font-weight: 700; color: #1B2560; }
-
-  .bt-medauth__name { color: var(--bt-brand, #323C91); font-weight: 800; font-size: 18px; line-height: 1.2; margin: 0; }
-
-  /* Especialidade e registro em linhas separadas: a barra vertical
-     entre eles virava uma linha só, longa e difícil de ler. */
-  .bt-medauth__meta { margin: 6px 0 0; font-size: 13px; }
-  .bt-medauth__esp { display: block; color: #7A7F8C; }
+  /* Registro por cima da foto: é o dado que dá autoridade e some se
+     ficar no meio do texto. */
   .bt-medauth__crm {
-    display: inline-block;
-    margin-top: 6px;
-    padding: 2px 9px;
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
     border-radius: 999px;
-    background: #EEF0F8;
-    color: #323C91;
-    font-weight: 700;
+    background: var(--bt-accent, #C4D78A);
+    color: #1B2560;
+    font-size: 11.5px;
+    font-weight: 800;
     letter-spacing: .01em;
   }
-  .bt-medauth__ig { margin-top: 10px; display: inline-block; color: var(--bt-brand, #323C91); font-weight: 700; font-size: 13px; text-decoration: none; }
+  .bt-medauth__crm .ttb__ico { flex: 0 0 auto; }
+
+  .bt-medauth__body { display: flex; flex-direction: column; flex: 1 1 auto; padding: 18px 20px 20px; }
+  .bt-medauth__aspas { display: block; color: var(--bt-accent, #C4D78A); line-height: 0; margin-bottom: 8px; }
+
+  .bt-medauth__quote { color: rgba(255, 255, 255, .88); font-size: 14.5px; line-height: 1.55; margin: 0 0 16px; }
+  .bt-medauth__quote p { margin: 0; }
+  .bt-medauth__quote strong, .bt-medauth__quote b { color: #fff; font-weight: 700; }
+
+  /* Assinatura colada no rodapé: os depoimentos têm tamanhos
+     diferentes e sem isso o nome flutuava em alturas diferentes. */
+  .bt-medauth__assina { margin-top: auto; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, .18); }
+  .bt-medauth__name { color: #fff; font-weight: 800; font-size: 17px; line-height: 1.2; margin: 0; }
+  .bt-medauth__esp { color: rgba(255, 255, 255, .62); font-size: 13px; line-height: 1.35; margin: 4px 0 0; }
+  .bt-medauth__ig {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    color: var(--bt-accent, #C4D78A);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+  }
   .bt-medauth__ig:hover { text-decoration: underline; }
 
-  @media (max-width: 900px) {
-    .bt-medauth__card { padding: 24px 24px; gap: 18px; }
-    .bt-medauth__avatar { width: 96px; height: 96px; }
-  }
-
-  /* Trilho no celular. A margem negativa com o padding igual mantém
-     o primeiro card alinhado ao título e deixa o próximo aparecendo. */
+  /* Trilho no celular: seis cartões empilhados empurravam o resto da
+     home para muito longe, e o corte no próximo mostra que tem mais. */
   @media (max-width: 749px) {
     .bt-medauth__grid {
       display: flex;
@@ -159,12 +192,14 @@
       margin-inline: -20px;
       padding: 4px 20px 14px;
       scroll-snap-type: x proximity;
+      /* sem isso o navegador encosta o primeiro cartão na borda da
+         tela ao ancorar o snap, ignorando o padding do trilho */
+      scroll-padding-inline: 20px;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
     }
     .bt-medauth__grid::-webkit-scrollbar { display: none; }
-    .bt-medauth__card { flex: 0 0 82vw; max-width: 340px; scroll-snap-align: start; }
-    .bt-medauth__quote { font-size: 14.5px; }
+    .bt-medauth__card { flex: 0 0 76vw; max-width: 300px; scroll-snap-align: start; }
   }
 {% endstylesheet %}
 
@@ -174,21 +209,9 @@
   "tag": "section",
   "class": "section-bt-medauth",
   "settings": [
-    {
-      "type": "select",
-      "id": "section_width",
-      "label": "Largura",
-      "default": "container",
-      "options": [
-        { "value": "container", "label": "Container" },
-        { "value": "fluid_container", "label": "Fluido" },
-        { "value": "full_width", "label": "Largura total" }
-      ]
-    },
     { "type": "text", "id": "eyebrow", "label": "Sobre-título", "default": "AUTORIDADE MÉDICA" },
     { "type": "text", "id": "heading", "label": "Título", "default": "Profissionais de saúde que recomendam a Botanika" },
     { "type": "richtext", "id": "subheading", "label": "Subtítulo", "default": "<p>Médicos e especialistas que conhecem nossos protocolos.</p>" },
-    { "type": "range", "id": "columns", "label": "Colunas (desktop)", "min": 1, "max": 3, "step": 1, "default": 2 },
     {
       "type": "textarea",
       "id": "neutral_quote",
@@ -196,8 +219,11 @@
       "info": "Usada nos cards que ainda não têm depoimento real preenchido no bloco do médico.",
       "default": "Conheço os protocolos da Botanika e recomendo aos meus pacientes."
     },
-    { "type": "color", "id": "brand_color", "label": "Cor da marca", "default": "#323C91" },
+    { "type": "header", "content": "Cores" },
+    { "type": "color", "id": "brand_color", "label": "Cor do cartão", "default": "#323C91" },
     { "type": "color", "id": "accent_color", "label": "Cor de destaque", "default": "#C4D78A" },
+    { "type": "color", "id": "bg_color", "label": "Fundo da seção", "default": "#EDF2DF" },
+    { "type": "header", "content": "Espaçamento" },
     { "type": "range", "id": "padding_top", "label": "Espaço acima", "min": 0, "max": 140, "step": 4, "default": 56, "unit": "px" },
     { "type": "range", "id": "padding_bottom", "label": "Espaço abaixo", "min": 0, "max": 140, "step": 4, "default": 56, "unit": "px" }
   ],
@@ -213,7 +239,7 @@
         { "type": "text", "id": "name", "label": "Nome", "default": "Dr. Nome Sobrenome" },
         { "type": "text", "id": "crm", "label": "Registro (CRM / CRO / CFO)" },
         { "type": "text", "id": "specialty", "label": "Especialidade / papel" },
-        { "type": "richtext", "id": "quote", "label": "Frase / depoimento (opcional)", "info": "Selecione um trecho e use negrito para destacar, como no exemplo de referência." },
+        { "type": "richtext", "id": "quote", "label": "Frase / depoimento (opcional)", "info": "Selecione um trecho e use negrito para destacar." },
         { "type": "text", "id": "instagram", "label": "Instagram (sem @)" },
         { "type": "url", "id": "instagram_url", "label": "Link do Instagram (opcional)" }
       ]

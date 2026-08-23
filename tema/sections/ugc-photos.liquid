@@ -97,6 +97,9 @@
       margin-inline: -20px;
       padding: 4px 20px 14px;
       scroll-snap-type: x proximity;
+      /* alinha o primeiro card com o título: o snap ancora na borda
+         do trilho e ignora o padding sem isto */
+      scroll-padding-inline: 20px;
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
     }
@@ -137,7 +140,7 @@
     .ugc__caption { display: block; font-size: 13px; color: #6B7080; margin-top: 2px; }
 
     @media (min-width: 1000px) {
-      .ugc__row { margin-inline: 0; padding-inline: 0; }
+      .ugc__row { margin-inline: 0; padding-inline: 0; scroll-padding-inline: 0; }
       .ugc__card { width: calc((100% - 3 * 16px) / 4); }
     }
     @media (prefers-reduced-motion: reduce) {
