@@ -123,18 +123,24 @@
     gap: 20px;
   }
 
+  /* align-self:stretch em vez de height:100%: no trilho do celular o
+     height percentual não resolve contra um container de altura
+     indefinida, e os cartões acabavam com alturas diferentes. */
   .bt-medauth__card {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    align-self: stretch;
     overflow: hidden;
     border-radius: 22px;
     background: var(--bt-brand, #323C91);
     box-shadow: 0 12px 30px rgba(27, 37, 96, .14);
   }
 
-  /* A foto ocupa a metade de cima, sangrando de borda a borda. */
-  .bt-medauth__foto { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: #1B2560; }
+  /* 7/9 é a proporção exata dos arquivos (700x900, todos os seis).
+     Com a caixa na mesma proporção da foto, o "cover" não tem nada
+     para cortar — antes, numa caixa 4/3, ele comia a testa. Trocar
+     as fotos por outra proporção pede trocar este número junto. */
+  .bt-medauth__foto { position: relative; aspect-ratio: 7 / 9; overflow: hidden; background: #1B2560; }
   .bt-medauth__img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .bt-medauth__ph { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; color: var(--bt-accent, #C4D78A); }
 
@@ -199,6 +205,7 @@
       -webkit-overflow-scrolling: touch;
     }
     .bt-medauth__grid::-webkit-scrollbar { display: none; }
+    .bt-medauth__grid { align-items: stretch; }
     .bt-medauth__card { flex: 0 0 76vw; max-width: 300px; scroll-snap-align: start; }
   }
 {% endstylesheet %}
@@ -232,8 +239,8 @@
       "type": "doctor",
       "name": "Médico",
       "settings": [
-        { "type": "image_picker", "id": "image", "label": "Foto" },
-        { "type": "range", "id": "photo_zoom", "label": "Zoom da foto", "min": 100, "max": 200, "step": 5, "unit": "%", "default": 100 },
+        { "type": "image_picker", "id": "image", "label": "Foto", "info": "Todas na mesma proporção (as atuais são 700x900). Proporção diferente volta a cortar." },
+        { "type": "range", "id": "photo_zoom", "label": "Zoom da foto", "min": 100, "max": 200, "step": 5, "unit": "%", "default": 100, "info": "Acima de 100% a foto é cortada de propósito." },
         { "type": "range", "id": "photo_focus_x", "label": "Posição horizontal do rosto", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 50 },
         { "type": "range", "id": "photo_focus_y", "label": "Posição vertical do rosto", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 30 },
         { "type": "text", "id": "name", "label": "Nome", "default": "Dr. Nome Sobrenome" },
