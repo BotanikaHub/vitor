@@ -1,0 +1,153 @@
+{%- comment -%}
+  ============================================================
+  Card de produto — identidade Botanika.
+
+  Referência: Guday e Blessy. Cartão com fundo próprio e canto
+  arredondado, foto em branco por dentro, tudo centralizado, e
+  hierarquia de preço clara: riscado pequeno, preço grande,
+  parcelamento embaixo.
+
+  Vale para todos os grids de produto (home, coleção, busca),
+  não só "Mais Vendidos" — é o mesmo componente do tema, e
+  estilizar só um lugar deixaria o site com dois cards.
+
+  As variáveis de cor vêm do botanika-header-css, que carrega
+  antes deste no mesmo snippet toggle-menu.
+  ============================================================
+{%- endcomment -%}
+<style>
+  /* ---------- O cartão ---------- */
+  /* .product-grid separa o card de grade das versões em lista e
+     sticky, que usam o mesmo wrapper com outro layout. */
+  .product-item__wrapper.product-grid {
+    height: 100%;
+    padding: 10px 10px 16px;
+    border-radius: 20px;
+    background: #F5F6FB;
+  }
+  .product-item__wrapper.product-grid .product-item__inner {
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .product-item__wrapper.product-grid .product-item__information {
+    margin-top: 12px !important;
+    padding-inline: 6px;
+    text-align: center;
+  }
+
+  /* ---------- Selo de benefício ---------- */
+  /* O selo de kit vinha vermelho, que não é cor da Botanika. Vira o
+     verde da marca com texto azul; os demais ficam no azul sólido.
+
+     O limite de largura é o do tema menos a área do coração: sem
+     isso o selo longo passava por baixo do botão de favorito.
+
+     Selo longo quebra em duas linhas em vez de virar reticências —
+     "Proteína e c…" não diz nada; "Proteína e / colágeno" diz. */
+  .card-benefit-badge {
+    max-width: calc(100% - 66px) !important;
+    white-space: normal !important;
+    text-overflow: clip !important;
+    line-height: 1.2 !important;
+    background: var(--bk-azul) !important;
+    box-shadow: none !important;
+    font-size: 11px !important;
+    padding: 5px 11px !important;
+  }
+  .card-benefit-badge--red {
+    background: var(--bk-verde) !important;
+    color: var(--bk-azul-esc) !important;
+  }
+
+  /* ---------- Favorito ---------- */
+  .product-item__wrapper.product-grid .product-item__button-wishlist {
+    width: 36px !important;
+    height: 36px !important;
+    border: 0 !important;
+    color: var(--bk-azul);
+    box-shadow: 0 2px 8px rgba(27, 37, 96, .13) !important;
+  }
+  .product-item__wrapper.product-grid .product-item__button-wishlist svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  /* ---------- Nome ---------- */
+  /* Duas linhas fixas: sem isso o nome curto e o longo empurram o
+     preço para alturas diferentes e a linha de cards fica desalinhada. */
+  .product-item__wrapper.product-grid .product-item__name {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.6em;
+    color: var(--bk-azul-esc) !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+  }
+
+  /* ---------- Preços ---------- */
+  .product-item__wrapper.product-grid .product-item__price {
+    justify-content: center !important;
+    margin-top: 8px;
+  }
+  .product-item__wrapper.product-grid .card-product-price--installment {
+    align-items: center;
+    gap: 4px !important;
+  }
+  .botanika-off-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--bk-verde);
+    color: var(--bk-azul-esc);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .02em;
+  }
+  .product-item__wrapper.product-grid .compare-price {
+    font-size: 12.5px;
+    color: var(--bk-azul-esc);
+    opacity: .45;
+  }
+
+  /* ---------- Botão ---------- */
+  /* Só as versões de largura cheia: o mesmo nome de classe também
+     aparece nos botõezinhos redondos de 45px que surgem no hover. */
+  .product-item__button-submit.btn-primary,
+  .product-item__wrapper .product__add-cart.w-full {
+    min-height: 46px;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: var(--bk-azul) !important;
+    color: #fff !important;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .01em;
+    box-shadow: none !important;
+  }
+  .product-item__button-submit.btn-primary:hover,
+  .product-item__wrapper .product__add-cart.w-full:hover {
+    background: var(--bk-azul-esc) !important;
+    color: #fff !important;
+  }
+
+  @media (max-width: 767.98px) {
+    .product-item__wrapper.product-grid { padding: 8px 8px 14px; border-radius: 18px; }
+    .product-item__wrapper.product-grid .product-item__name { font-size: 13.5px !important; }
+    .product-item__button-submit.btn-primary,
+    .product-item__wrapper .product__add-cart.w-full { min-height: 44px; font-size: 13.5px; }
+
+    /* Em duas colunas o card fica com ~145px úteis. O parcelamento é
+       uma linha só (não pode quebrar e deixar "sem juros" sozinho),
+       então ele encolhe e perde o "ou" para caber inteiro. */
+    .product-item__wrapper.product-grid .installment-price--item .installment-price__cash { font-size: 1.8rem; }
+    .product-item__wrapper.product-grid .installment-price--item .installment-price__parc { font-size: 1.05rem; }
+    .product-item__wrapper.product-grid .installment-price__tag { padding: 1px 6px; margin-left: 1px; }
+    .product-item__wrapper.product-grid .installment-price__ou { display: none; }
+    .botanika-off-tag { font-size: 10.5px; padding: 3px 8px; }
+    .product-item__wrapper.product-grid .compare-price { font-size: 12px; }
+  }
+</style>

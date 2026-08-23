@@ -1,0 +1,71 @@
+{% comment %}
+  Preço do card e da página de produto.
+
+  Ordem: preço cheio primeiro, parcelamento embaixo — é a hierarquia
+  da referência (Guday/Blessy) e a que o cliente lê mais rápido. Antes
+  o parcelamento era o número grande e o preço à vista virava nota de
+  rodapé ("ou R$ X à vista"), o que enterrava o valor do produto.
+
+  @param price {number} preço unitário em centavos
+  @param scope {string} 'detail' | 'item' | 'sticky'
+{% endcomment %}
+{%- liquid
+  assign installments_free = 3
+  assign per_free = price | divided_by: installments_free
+  assign size_class = scope | default: 'item'
+-%}
+{%- if price and price > 0 -%}
+  <div class="installment-price installment-price--{{ size_class }}">
+    <span class="installment-price__cash">{{ price | money }}</span>
+    <span class="installment-price__parc">
+      <span class="installment-price__ou">ou </span>{{ installments_free }}x de {{ per_free | money }}
+      <span class="installment-price__tag">sem juros</span>
+    </span>
+  </div>
+{%- endif -%}
+
+{% stylesheet %}
+  .installment-price {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    gap: 2px;
+  }
+  .installment-price__cash {
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--bk-azul-esc, #1B2560);
+  }
+  /* nowrap: com "sem juros" em pílula, a quebra deixava o selo sozinho
+     numa linha e o card ficava torto. */
+  .installment-price__parc {
+    font-weight: 600;
+    white-space: nowrap;
+    color: var(--bk-azul, #323C91);
+    opacity: 0.85;
+  }
+  /* O "ou " some no card estreito (ver botanika-card-css): é a
+     palavra mais dispensável da linha e o que garante que ela caiba
+     inteira em duas colunas no celular. */
+  .installment-price__ou { display: inline; }
+  .installment-price__tag {
+    font-size: 0.85em;
+    font-weight: 700;
+    background: #EDF2DF;
+    color: #1B2560;
+    border-radius: 999px;
+    padding: 1px 7px;
+    margin-left: 2px;
+    vertical-align: middle;
+  }
+  .installment-price--item .installment-price__cash { font-size: 2rem; }
+  .installment-price--item .installment-price__parc { font-size: 1.25rem; }
+  /* Sticky */
+  .sticky__installment { flex: 0 0 auto; }
+  .installment-price--sticky { white-space: nowrap; }
+  .installment-price--sticky .installment-price__cash { font-size: 1.8rem; }
+  .installment-price--sticky .installment-price__parc { font-size: 1.15rem; }
+  /* Detail (PDP) */
+  .installment-price--detail .installment-price__cash { font-size: 3.2rem; }
+  .installment-price--detail .installment-price__parc { font-size: 1.5rem; }
+{% endstylesheet %}
