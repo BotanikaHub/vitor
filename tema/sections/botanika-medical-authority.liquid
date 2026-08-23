@@ -42,23 +42,24 @@
         {%- assign b = block.settings -%}
         {%- liquid
           assign focus_x = b.photo_focus_x | default: 50
-          assign focus_y = b.photo_focus_y | default: 30
-          assign zoom_pct = b.photo_zoom | default: 100
+          assign focus_y = b.photo_focus_y | default: 0
+          assign zoom_pct = b.photo_zoom | default: 105
           assign zoom = zoom_pct | times: 1.0 | divided_by: 100
 
           comment
             transform-origin junto com o zoom: sem ele o scale cresce
             a partir do centro, e as reguas de posicao nao mudavam
-            nada. Com a origem no ponto escolhido, zoom 150 com
-            posicao vertical 0 corta so o rodape do arquivo - que e
-            como se tira a tarja branca de uma foto mal exportada.
+            nada. Com a origem no ponto escolhido, zoom com posicao
+            vertical 0 apara so o rodape do arquivo - que e como se
+            tira a tarja branca de uma foto mal exportada, sem nunca
+            cortar a cabeca.
           endcomment
           assign img_style = 'object-position: ' | append: focus_x | append: '% ' | append: focus_y | append: '%; transform: scale(' | append: zoom | append: '); transform-origin: ' | append: focus_x | append: '% ' | append: focus_y | append: '%;'
         -%}
         <article class="bt-medauth__card" {{ block.shopify_attributes }}>
           <div class="bt-medauth__foto">
             {%- if b.image != blank -%}
-              {{ b.image | image_url: width: 720 | image_tag: loading: 'lazy', widths: '320,480,720', class: 'bt-medauth__img', alt: b.name, style: img_style }}
+              {{ b.image | image_url: width: 1100 | image_tag: loading: 'lazy', widths: '480,720,1100', class: 'bt-medauth__img', alt: b.name, style: img_style }}
             {%- else -%}
               <div class="bt-medauth__ph">
                 {%- render 'botanika-trust-icon', nome: 'pulso', tamanho: 40 -%}
@@ -248,9 +249,9 @@
       "name": "Médico",
       "settings": [
         { "type": "image_picker", "id": "image", "label": "Foto", "info": "Todas na mesma proporção (as atuais são 700x900). Proporção diferente volta a cortar." },
-        { "type": "range", "id": "photo_zoom", "label": "Zoom da foto", "min": 100, "max": 200, "step": 5, "unit": "%", "default": 100, "info": "Acima de 100% a foto é cortada de propósito. Use com a posição vertical em 0% para tirar tarja branca no rodapé do arquivo." },
+        { "type": "range", "id": "photo_zoom", "label": "Zoom da foto", "min": 100, "max": 200, "step": 5, "unit": "%", "default": 105, "info": "Com a posição vertical em 0%, o zoom apara só o rodapé do arquivo — é assim que se tira tarja branca. 105% é o padrão e some com sobras finas." },
         { "type": "range", "id": "photo_focus_x", "label": "Posição horizontal do rosto", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 50 },
-        { "type": "range", "id": "photo_focus_y", "label": "Posição vertical do rosto", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 30 },
+        { "type": "range", "id": "photo_focus_y", "label": "Posição vertical do rosto", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 0, "info": "0% ancora no topo: o zoom apara pelo rodapé e a cabeça nunca é cortada." },
         { "type": "text", "id": "name", "label": "Nome", "default": "Dr. Nome Sobrenome" },
         { "type": "text", "id": "crm", "label": "Registro (CRM / CRO / CFO)" },
         { "type": "text", "id": "specialty", "label": "Especialidade / papel" },
