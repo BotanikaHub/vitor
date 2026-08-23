@@ -2,8 +2,14 @@
   ============================================================
   Conteúdo extra da gaveta de menu (mobile).
 
-  Categorias em círculo, prévia de produtos e contato — no
-  espírito da Guday e da Blessy, com a paleta da Botanika.
+  Categorias em círculo e prévia de produtos ANTES da lista de
+  links; contato depois dela. É a ordem da Guday e da Blessy: o
+  que vende aparece primeiro, a navegação vem embaixo.
+
+  As categorias usam símbolo, não foto. As coleções não têm
+  imagem própria, então a foto caía sempre no mesmo produto e as
+  sete bolinhas ficavam idênticas — um ícone diz mais e não
+  depende de cadastro.
 
   POR QUE INJETADO POR JS: a gaveta é montada dentro de
   snippets/horizontal-menu.liquid, que tem 60 mil caracteres.
@@ -11,12 +17,13 @@
   um erro de transcrição derruba a loja. Aqui o conteúdo é
   renderizado pelo Liquid (imagens, preços e links vêm do
   servidor, não do navegador) e um script curto só o MOVE para
-  dentro da gaveta. Se o script falhar, o bloco fica escondido
-  e o menu continua funcionando como antes.
+  dentro da gaveta. Se o script falhar, os blocos ficam
+  escondidos e o menu continua funcionando como antes.
   ============================================================
 {%- endcomment -%}
 {%- liquid
   assign cats = 'imunidade,sono-e-relaxamento,estetica-e-beleza,emagrecimento,saude-da-mulher,saude-do-homem,vitaminas-e-minerais' | split: ','
+  assign icones = 'escudo,lua,brilho,chama,venus,marte,capsula' | split: ','
   assign vitrine = collections['frontpage']
 
   comment
@@ -34,9 +41,35 @@
     endif
   endif
 -%}
-<div id="bk-menu-extra" hidden>
 
-  {%- comment -%} Categorias — atalho visual, o que a Guday põe no topo {%- endcomment -%}
+{%- comment -%} ===== Vai ACIMA da lista de links ===== {%- endcomment -%}
+<div id="bk-menu-topo" hidden>
+
+  {%- if vitrine.products.size > 0 -%}
+    <div class="bkm__bloco">
+      <p class="bkm__titulo">Mais vendidos</p>
+      <div class="bkm__prods">
+        {%- for p in vitrine.products limit: 8 -%}
+          <a class="bkm__prod" href="{{ p.url }}">
+            <span class="bkm__prod-foto">
+              {%- if p.featured_image -%}
+                <img src="{{ p.featured_image | image_url: width: 300 }}" alt="{{ p.title | escape }}" loading="lazy" width="150" height="150">
+              {%- endif -%}
+            </span>
+            <span class="bkm__prod-nome">{{ p.title | truncate: 38 }}</span>
+            <span class="bkm__prod-preco">
+              {{- p.price | money -}}
+              {%- if p.compare_at_price > p.price -%}
+                <s class="bkm__prod-de">{{ p.compare_at_price | money }}</s>
+              {%- endif -%}
+            </span>
+          </a>
+        {%- endfor -%}
+      </div>
+      <a class="bkm__todos" href="{{ routes.all_products_collection_url }}">Ver todos os produtos →</a>
+    </div>
+  {%- endif -%}
+
   <div class="bkm__bloco">
     <p class="bkm__titulo">Categorias</p>
     <div class="bkm__cats">
@@ -44,12 +77,8 @@
         {%- assign c = collections[h] -%}
         {%- if c != empty -%}
           <a class="bkm__cat" href="{{ c.url }}">
-            <span class="bkm__cat-foto">
-              {%- if c.image -%}
-                <img src="{{ c.image | image_url: width: 160 }}" alt="{{ c.title | escape }}" loading="lazy" width="80" height="80">
-              {%- elsif c.products.first.featured_image -%}
-                <img src="{{ c.products.first.featured_image | image_url: width: 160 }}" alt="{{ c.title | escape }}" loading="lazy" width="80" height="80">
-              {%- endif -%}
+            <span class="bkm__cat-simbolo">
+              {%- render 'botanika-trust-icon', nome: icones[forloop.index0], tamanho: 30 -%}
             </span>
             <span class="bkm__cat-nome">{{ c.title }}</span>
           </a>
@@ -58,28 +87,10 @@
     </div>
   </div>
 
-  {%- comment -%} Prévia de produtos {%- endcomment -%}
-  {%- if vitrine.products.size > 0 -%}
-    <div class="bkm__bloco">
-      <p class="bkm__titulo">Mais vendidos</p>
-      <div class="bkm__prods">
-        {%- for p in vitrine.products limit: 6 -%}
-          <a class="bkm__prod" href="{{ p.url }}">
-            <span class="bkm__prod-foto">
-              {%- if p.featured_image -%}
-                <img src="{{ p.featured_image | image_url: width: 260 }}" alt="{{ p.title | escape }}" loading="lazy" width="130" height="130">
-              {%- endif -%}
-            </span>
-            <span class="bkm__prod-nome">{{ p.title | truncate: 34 }}</span>
-            <span class="bkm__prod-preco">{{ p.price | money }}</span>
-          </a>
-        {%- endfor -%}
-      </div>
-      <a class="bkm__todos" href="{{ routes.all_products_collection_url }}">Ver todos os produtos →</a>
-    </div>
-  {%- endif -%}
+</div>
 
-  {%- comment -%} Contato — o padrão de SAC da Blessy {%- endcomment -%}
+{%- comment -%} ===== Vai ABAIXO da lista de links ===== {%- endcomment -%}
+<div id="bk-menu-extra" hidden>
   {%- if wpp_url != blank -%}
     <a class="bkm__wpp" href="{{ wpp_url }}" target="_blank" rel="noopener">
       <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true">
@@ -93,17 +104,22 @@
 </div>
 
 <script>
-  /* Move o bloco para dentro da gaveta, logo abaixo da lista de links.
-     Roda uma vez; se a gaveta não existir, não faz nada. */
+  /* Leva os dois blocos para dentro da gaveta: um antes da lista
+     de links, outro depois. Roda uma vez; se a gaveta não
+     existir, não faz nada. */
   (function () {
-    function injetar() {
-      var bloco = document.getElementById('bk-menu-extra');
+    function mover(id, antes) {
+      var bloco = document.getElementById(id);
       if (!bloco || bloco.dataset.pronto) return;
       var lista = document.querySelector('nav.navigation.horizontal.mobile .horizontal-list');
       if (!lista || !lista.parentNode) return;
-      lista.parentNode.insertBefore(bloco, lista.nextSibling);
+      lista.parentNode.insertBefore(bloco, antes ? lista : lista.nextSibling);
       bloco.removeAttribute('hidden');
       bloco.dataset.pronto = '1';
+    }
+    function injetar() {
+      mover('bk-menu-topo', true);
+      mover('bk-menu-extra', false);
     }
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', injetar);
