@@ -280,6 +280,7 @@
         "icon_box_6NC3Dc",
         "icon_box_LBUHPq"
       ],
+      "disabled": true,
       "custom_css": [
         ".sec__icon-box-content-icon.icon-border.lh-1.align-self-center {background: rgba(63, 74, 156, 0.1); border: none;}"
       ],
@@ -307,6 +308,59 @@
         "padding_top": 0,
         "padding_bottom": 0,
         "reset_spacing": false
+      }
+    },
+    "botanika_selos": {
+      "type": "botanika-selos",
+      "blocks": {
+        "selo_natural": {
+          "type": "selo",
+          "settings": {
+            "icone": "folha",
+            "titulo": "Ingredientes naturais",
+            "texto": "100% naturais e selecionados"
+          }
+        },
+        "selo_anvisa": {
+          "type": "selo",
+          "settings": {
+            "icone": "selo",
+            "titulo": "Suplementos aprovados",
+            "texto": "Certificação ANVISA"
+          }
+        },
+        "selo_seguro": {
+          "type": "selo",
+          "settings": {
+            "icone": "cadeado",
+            "titulo": "Compra segura",
+            "texto": "Pagamento protegido"
+          }
+        },
+        "selo_entrega": {
+          "type": "selo",
+          "settings": {
+            "icone": "caminhao",
+            "titulo": "Entrega rápida",
+            "texto": "Para todo o Brasil"
+          }
+        }
+      },
+      "block_order": [
+        "selo_natural",
+        "selo_anvisa",
+        "selo_seguro",
+        "selo_entrega"
+      ],
+      "settings": {
+        "speed": 45,
+        "gap": 40,
+        "padding": 26,
+        "glifo": "brilho",
+        "bg_color": "#ffffff",
+        "pill_color": "#EDF2DF",
+        "icon_bg_color": "#ffffff",
+        "text_color": "#1B2560"
       }
     },
     "shopable_video_9LczTB": {
@@ -1202,6 +1256,7 @@
     "slideshow_8KKtNU",
     "promotion_banner_QPT7Gc",
     "icon_box_8VQnjt",
+    "botanika_selos",
     "shopable_video_9LczTB",
     "frete_promo",
     "anchor_mais_vendidos",

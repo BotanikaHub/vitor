@@ -1,0 +1,193 @@
+{%- comment -%}
+  ============================================================
+  Selos Botanika — esteira infinita.
+
+  Substitui a linha de ícones estática (icon-box), que no
+  celular virava carrossel com bolinhas: quem não desliza vê um
+  selo só. Em esteira, os quatro passam sozinhos.
+
+  A costura da esteira depende de duas coisas: os dois grupos
+  têm de ser idênticos e o glifo tem de vir DEPOIS DE TODOS os
+  selos, inclusive o último. Suprimir o último faz as metades
+  terem larguras diferentes e o translateX(-50%) dá um salto
+  visível a cada volta.
+  ============================================================
+{%- endcomment -%}
+{%- liquid
+  assign st = section.settings
+  assign itens = section.blocks
+-%}
+{%- if itens.size > 0 -%}
+  <div
+    class="bks"
+    style="--bks-bg:{{ st.bg_color }};--bks-pill:{{ st.pill_color }};--bks-text:{{ st.text_color }};--bks-icon-bg:{{ st.icon_bg_color }};--bks-speed:{{ st.speed }}s;--bks-gap:{{ st.gap }}px;--bks-pad:{{ st.padding }}px;"
+  >
+    <div class="bks__viewport">
+      <div class="bks__track">
+        {%- for passe in (1..2) -%}
+          <div class="bks__grupo"{% if passe == 2 %} aria-hidden="true"{% endif %}>
+            {%- for b in itens -%}
+              <div class="bks__selo" {{ b.shopify_attributes }}>
+                <span class="bks__icone">
+                  {%- render 'botanika-trust-icon', nome: b.settings.icone, tamanho: 21 -%}
+                </span>
+                <span class="bks__txt">
+                  <span class="bks__titulo">{{ b.settings.titulo }}</span>
+                  {%- if b.settings.texto != blank -%}
+                    <span class="bks__desc">{{ b.settings.texto }}</span>
+                  {%- endif -%}
+                </span>
+              </div>
+              <span class="bks__glifo" aria-hidden="true">
+                {%- render 'botanika-trust-icon', nome: st.glifo, tamanho: 15 -%}
+              </span>
+            {%- endfor -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+
+  {%- style -%}
+    .bks {
+      background: var(--bks-bg);
+      padding-block: var(--bks-pad);
+      overflow: hidden;
+      contain: content;
+    }
+    .bks__viewport { overflow: hidden; }
+    .bks__track {
+      display: flex;
+      width: max-content;
+      animation: bks-roda var(--bks-speed) linear infinite;
+      will-change: transform;
+    }
+    .bks:hover .bks__track { animation-play-state: paused; }
+    .bks__grupo { display: flex; align-items: center; }
+
+    .bks__selo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      white-space: nowrap;
+      padding: 11px 24px 11px 11px;
+      border-radius: 999px;
+      background: var(--bks-pill);
+      color: var(--bks-text);
+    }
+    .bks__icone {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--bks-icon-bg);
+      color: var(--bks-text);
+    }
+    .bks__txt { display: flex; flex-direction: column; line-height: 1.25; }
+    .bks__titulo { font-size: 15px; font-weight: 700; }
+    .bks__desc { font-size: 13px; opacity: .68; }
+
+    .bks__glifo {
+      display: inline-flex;
+      line-height: 0;
+      color: var(--bks-text);
+      opacity: .3;
+      padding-inline: calc(var(--bks-gap) / 2);
+    }
+
+    @keyframes bks-roda { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    @media (max-width: 749px) {
+      .bks__selo { gap: 10px; padding: 9px 20px 9px 9px; }
+      .bks__icone { width: 34px; height: 34px; }
+      .bks__titulo { font-size: 14px; }
+      .bks__desc { font-size: 12px; }
+      .bks__glifo { padding-inline: calc(var(--bks-gap) / 3); }
+    }
+
+    /* Sem animação, a esteira vira uma fila que estoura a tela. O
+       segundo grupo some e o primeiro pode rolar com o dedo. */
+    @media (prefers-reduced-motion: reduce) {
+      .bks__track { animation: none; }
+      .bks__grupo[aria-hidden="true"] { display: none; }
+      .bks__viewport { overflow-x: auto; }
+    }
+  {%- endstyle -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Selos Botanika (esteira)",
+  "tag": "section",
+  "class": "section-botanika-selos",
+  "disabled_on": { "groups": ["header", "footer"] },
+  "settings": [
+    { "type": "range", "id": "speed", "min": 15, "max": 120, "step": 5, "unit": "s", "label": "Velocidade (quanto maior, mais lento)", "default": 45 },
+    { "type": "range", "id": "gap", "min": 20, "max": 120, "step": 5, "unit": "px", "label": "Espaço entre selos", "default": 40 },
+    { "type": "range", "id": "padding", "min": 0, "max": 80, "step": 2, "unit": "px", "label": "Respiro acima e abaixo", "default": 26 },
+    {
+      "type": "select",
+      "id": "glifo",
+      "label": "Símbolo entre os selos",
+      "options": [
+        { "value": "brilho", "label": "Brilho" },
+        { "value": "folha", "label": "Folha" },
+        { "value": "estrela", "label": "Estrela" },
+        { "value": "coracao", "label": "Coração" }
+      ],
+      "default": "brilho"
+    },
+    { "type": "header", "content": "Cores" },
+    { "type": "color", "id": "bg_color", "label": "Fundo da faixa", "default": "#ffffff" },
+    { "type": "color", "id": "pill_color", "label": "Fundo do selo", "default": "#EDF2DF" },
+    { "type": "color", "id": "icon_bg_color", "label": "Fundo do ícone", "default": "#ffffff" },
+    { "type": "color", "id": "text_color", "label": "Texto e ícone", "default": "#1B2560" }
+  ],
+  "blocks": [
+    {
+      "type": "selo",
+      "name": "Selo",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icone",
+          "label": "Ícone",
+          "options": [
+            { "value": "folha", "label": "Folha" },
+            { "value": "selo", "label": "Selo de certificação" },
+            { "value": "cadeado", "label": "Cadeado" },
+            { "value": "caminhao", "label": "Caminhão" },
+            { "value": "escudo", "label": "Escudo" },
+            { "value": "estrela", "label": "Estrela" },
+            { "value": "frasco", "label": "Frasco" },
+            { "value": "capsula", "label": "Cápsula" },
+            { "value": "pulso", "label": "Pulso (curadoria médica)" },
+            { "value": "coracao", "label": "Coração" },
+            { "value": "raio", "label": "Raio" },
+            { "value": "brilho", "label": "Brilho" }
+          ],
+          "default": "folha"
+        },
+        { "type": "text", "id": "titulo", "label": "Título", "default": "Ingredientes naturais" },
+        { "type": "text", "id": "texto", "label": "Descrição", "default": "100% naturais e selecionados" }
+      ]
+    }
+  ],
+  "max_blocks": 10,
+  "presets": [
+    {
+      "name": "Selos Botanika (esteira)",
+      "category": "Banners",
+      "blocks": [
+        { "type": "selo", "settings": { "icone": "folha", "titulo": "Ingredientes naturais", "texto": "100% naturais e selecionados" } },
+        { "type": "selo", "settings": { "icone": "selo", "titulo": "Suplementos aprovados", "texto": "Certificação ANVISA" } },
+        { "type": "selo", "settings": { "icone": "cadeado", "titulo": "Compra segura", "texto": "Pagamento protegido" } },
+        { "type": "selo", "settings": { "icone": "caminhao", "titulo": "Entrega rápida", "texto": "Para todo o Brasil" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
