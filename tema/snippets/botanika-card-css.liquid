@@ -40,16 +40,18 @@
   /* O selo de kit vinha vermelho, que não é cor da Botanika. Vira o
      verde da marca com texto azul; os demais ficam no azul sólido.
 
-     O limite de largura é o do tema menos a área do coração: sem
-     isso o selo longo passava por baixo do botão de favorito.
+     O selo usa a largura inteira da foto — por isso o coração desceu
+     para o canto de baixo (ver abaixo). Dividindo o topo com ele
+     sobravam ~90px e até "Kit Imunidade" quebrava em três linhas.
 
-     Selo longo quebra em duas linhas em vez de virar reticências —
-     "Proteína e c…" não diz nada; "Proteína e / colágeno" diz. */
+     Quebra em vez de reticências: no celular de 375px os dois selos
+     mais longos ainda passam de uma linha, e "Proteína e c…" não
+     diz nada enquanto "Proteína e / colágeno" diz. */
   .card-benefit-badge {
-    max-width: calc(100% - 66px) !important;
+    max-width: calc(100% - 20px) !important;
     white-space: normal !important;
     text-overflow: clip !important;
-    line-height: 1.2 !important;
+    line-height: 1.15 !important;
     background: var(--bk-azul) !important;
     box-shadow: none !important;
     font-size: 11px !important;
@@ -61,6 +63,13 @@
   }
 
   /* ---------- Favorito ---------- */
+  /* Canto de baixo, como na referência: libera o topo inteiro para o
+     selo. O seletor de filho direto evita o outro botão de favorito,
+     o da coluna que aparece no hover do desktop. */
+  .product-item__wrapper.product-grid .product-item__inner > .product-item__button-wishlist {
+    top: auto !important;
+    bottom: 10px !important;
+  }
   .product-item__wrapper.product-grid .product-item__button-wishlist {
     width: 36px !important;
     height: 36px !important;
@@ -99,6 +108,7 @@
   .botanika-off-tag {
     display: inline-flex;
     align-items: center;
+    gap: 4px;
     padding: 3px 10px;
     border-radius: 999px;
     background: var(--bk-verde);

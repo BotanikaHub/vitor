@@ -1,0 +1,94 @@
+{%- comment -%}
+  ============================================================
+  Balãozinho de benefício no card do produto.
+
+  Símbolo + texto. O símbolo vem da família botanika-trust-icon,
+  a mesma da barra de confiança, do menu e dos selos: emoji muda
+  de desenho a cada sistema, não acompanha a cor do balão e
+  desalinha em relação ao texto.
+
+  Prioridade: metafield custom.card_badge -> mapa por handle.
+  Uso: {% render 'card-benefit-badge', card_product: card_product %}
+  ============================================================
+{%- endcomment -%}
+{%- liquid
+  assign badge = card_product.metafields.custom.card_badge
+  assign icone = 'brilho'
+  assign badge_red = false
+
+  if badge == blank and card_product.handle contains 'kit'
+    assign badge = 'Kit Imunidade'
+    assign icone = 'escudo'
+    assign badge_red = true
+  elsif badge == blank
+    case card_product.handle
+      when 'tri-mg-complex'
+        assign badge = 'Sono e relaxamento'
+        assign icone = 'lua'
+      when 'sleep-inositol'
+        assign badge = 'Noites tranquilas'
+        assign icone = 'lua'
+      when 'tetravit-d'
+        assign badge = 'Imunidade e ossos'
+        assign icone = 'escudo'
+      when 'super-omega-3-coq10'
+        assign badge = 'Saúde do coração'
+        assign icone = 'coracao'
+      when 'super-vitamina-c'
+        assign badge = 'Reforça a imunidade'
+        assign icone = 'escudo'
+      when 'creatina-l-carnitina'
+        assign badge = 'Energia e força'
+        assign icone = 'raio'
+      when 'hair-botanika'
+        assign badge = 'Cabelo, unhas e pele'
+        assign icone = 'flor'
+      when 'whey-balance-chocolate'
+        assign badge = 'Proteína e colágeno'
+        assign icone = 'frasco'
+    endcase
+  endif
+-%}
+{%- if badge != blank -%}
+  {%- capture _cbb_i -%}{% increment card_benefit_badge_css %}{%- endcapture -%}
+  {%- if _cbb_i == '0' -%}
+    <style>
+      .card-benefit-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 3;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        max-width: calc(100% - 20px);
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: linear-gradient(100deg, #303890 0%, #1f2670 100%);
+        color: #fff;
+        font-size: 11.5px;
+        font-weight: 700;
+        line-height: 1.1;
+        letter-spacing: 0.01em;
+        box-shadow: 0 2px 8px rgba(31, 38, 112, 0.28);
+        pointer-events: none;
+      }
+      /* O símbolo não encolhe junto com o texto quando o balão
+         chega no limite de largura. */
+      .card-benefit-badge .ttb__ico { flex: 0 0 auto; }
+      .card-benefit-badge--red {
+        background: linear-gradient(100deg, #e0201a 0%, #b3140f 100%);
+        box-shadow: 0 2px 8px rgba(200, 20, 15, 0.32);
+        white-space: normal;
+        line-height: 1.2;
+      }
+      @media (max-width: 575px) {
+        .card-benefit-badge { top: 8px; left: 8px; font-size: 10.5px; padding: 4px 8px; }
+      }
+    </style>
+  {%- endif -%}
+  <span class="card-benefit-badge{% if badge_red %} card-benefit-badge--red{% endif %}">
+    {%- render 'botanika-trust-icon', nome: icone, tamanho: 13 -%}
+    <span>{{ badge }}</span>
+  </span>
+{%- endif -%}
