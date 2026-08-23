@@ -2,10 +2,15 @@
   ============================================================
   Galeria estilo UGC — fotos de clientes / estilo de vida.
 
-  Trilho horizontal, 4 por linha no desktop. Cada card é uma
-  foto; se o bloco apontar para um produto, a foto vira link e
-  ganha a etiqueta do produto por cima — foto de cliente sem
-  caminho de compra é decoração, com caminho é vitrine.
+  Trilho horizontal, 4 por linha no desktop. Toda a informação
+  do card mora EM CIMA da foto (etiqueta no topo, nome/legenda e
+  produto embaixo, sobre um degradê) — é o formato da Guday: a
+  foto ocupa o card inteiro e o texto não empurra o próximo
+  card para baixo, então todos ficam do mesmo tamanho.
+
+  Abaixo do trilho existe uma linha de progresso: o cursor anda
+  junto com o dedo/scroll e mostra quanto ainda falta. Ela só
+  aparece quando há mais card do que cabe na tela.
 
   Cards vazios só aparecem no editor, não na loja.
   ============================================================
@@ -21,14 +26,17 @@
   endfor
 -%}
 {%- if has_photo or request.design_mode -%}
-  <div class="section ugc-wrap color-{{ st.color_scheme }} gradient">
+  <div class="section ugc-wrap color-{{ st.color_scheme }} gradient" data-ugc="{{ section.id }}">
     <div class="container">
       <div class="ugc__head">
         {%- if st.eyebrow != blank -%}<p class="ugc__eyebrow">{{ st.eyebrow }}</p>{%- endif -%}
-        {%- if st.heading != blank -%}<h2 class="ugc__title">{{ st.heading }}</h2>{%- endif -%}
+        {%- if st.heading != blank -%}
+          <h2 class="ugc__title">{{ st.heading }}<span class="ugc__risco" aria-hidden="true"></span></h2>
+        {%- endif -%}
         {%- if st.subheading != blank -%}<p class="ugc__sub">{{ st.subheading }}</p>{%- endif -%}
       </div>
-      <div class="ugc__row">
+
+      <div class="ugc__row" data-ugc-trilho>
         {%- for b in items -%}
           {%- liquid
             assign bs = b.settings
@@ -42,27 +50,46 @@
                 {%- else -%}
                   <div class="ugc__ph"></div>
                 {%- endif -%}
-                {%- if p != blank -%}
-                  <span class="ugc__tag">
-                    {%- if p.featured_image -%}
-                      <img class="ugc__tag-foto" src="{{ p.featured_image | image_url: width: 96 }}" alt="" loading="lazy" width="48" height="48">
+
+                {%- comment -%} Etiqueta do topo, no estilo da referência {%- endcomment -%}
+                {%- if bs.tag != blank -%}
+                  <span class="ugc__selo">{{ bs.tag }}</span>
+                {%- endif -%}
+
+                {%- comment -%}
+                  Tudo o que era texto embaixo do card agora vive
+                  sobre a foto, dentro do degradê que garante a
+                  leitura mesmo em foto clara.
+                {%- endcomment -%}
+                {%- if bs.name != blank or bs.caption != blank or p != blank -%}
+                  <div class="ugc__over">
+                    {%- if bs.name != blank -%}<span class="ugc__name">{{ bs.name }}</span>{%- endif -%}
+                    {%- if bs.caption != blank -%}<span class="ugc__caption">{{ bs.caption }}</span>{%- endif -%}
+                    {%- if p != blank -%}
+                      <span class="ugc__tag">
+                        {%- if p.featured_image -%}
+                          <img class="ugc__tag-foto" src="{{ p.featured_image | image_url: width: 96 }}" alt="" loading="lazy" width="48" height="48">
+                        {%- endif -%}
+                        <span class="ugc__tag-txt">
+                          <span class="ugc__tag-nome">{{ p.title | truncate: 26 }}</span>
+                          <span class="ugc__tag-preco">{{ p.price | money }}</span>
+                        </span>
+                        <span class="ugc__tag-seta" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+                        </span>
+                      </span>
                     {%- endif -%}
-                    <span class="ugc__tag-txt">
-                      <span class="ugc__tag-nome">{{ p.title | truncate: 28 }}</span>
-                      <span class="ugc__tag-preco">{{ p.price | money }}</span>
-                    </span>
-                  </span>
+                  </div>
                 {%- endif -%}
               </div>
-              {%- if bs.name != blank or bs.caption != blank -%}
-                <div class="ugc__info">
-                  {%- if bs.name != blank -%}<span class="ugc__name">{{ bs.name }}</span>{%- endif -%}
-                  {%- if bs.caption != blank -%}<span class="ugc__caption">{{ bs.caption }}</span>{%- endif -%}
-                </div>
-              {%- endif -%}
             </{% if p != blank %}a{% else %}div{% endif %}>
           {%- endif -%}
         {%- endfor -%}
+      </div>
+
+      {%- comment -%} Linha de progresso do arrasto {%- endcomment -%}
+      <div class="ugc__barra" data-ugc-barra aria-hidden="true">
+        <span class="ugc__barra-cursor" data-ugc-cursor></span>
       </div>
     </div>
   </div>
@@ -74,7 +101,7 @@
        cor de letra sobre fundo claro ele some. */
     .ugc__eyebrow {
       display: inline-block;
-      margin: 0 0 12px;
+      margin: 0 0 14px;
       padding: 5px 14px;
       border-radius: 999px;
       background: #C4D78A;
@@ -84,7 +111,31 @@
       letter-spacing: .14em;
       text-transform: uppercase;
     }
-    .ugc__title { margin: 0 0 8px; color: #1B2560; font-size: clamp(24px, 3.2vw, 34px); line-height: 1.15; letter-spacing: -.01em; }
+    /* Título maior e mais pesado, com um traço verde embaixo:
+       chama atenção sem precisar de outra cor de letra. */
+    /* precisa ser bloco: o sobre-título é inline-block e um título
+       inline-block ficaria na mesma linha que ele */
+    .ugc__title {
+      position: relative;
+      display: block;
+      margin: 0 0 14px;
+      padding-bottom: 12px;
+      color: #1B2560;
+      font-size: clamp(28px, 4.4vw, 44px);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -.02em;
+    }
+    .ugc__risco {
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+      width: 62px;
+      height: 5px;
+      border-radius: 999px;
+      background: #C4D78A;
+    }
     .ugc__sub { margin: 0 auto; max-width: 640px; color: #6B7080; font-size: 15px; }
 
     /* Sangra até a borda da tela: a margem negativa com o padding
@@ -117,36 +168,146 @@
     .ugc__ph { background: linear-gradient(135deg, #EEF0F8, #E3E7F4); }
     .ugc__card:hover .ugc__img { transform: scale(1.04); }
 
-    .ugc__tag {
+    /* Etiqueta do topo */
+    .ugc__selo {
       position: absolute;
-      left: 10px;
-      right: 10px;
-      bottom: 10px;
+      top: 12px;
+      left: 12px;
+      z-index: 2;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #C4D78A;
+      color: #1B2560;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      box-shadow: 0 2px 10px rgba(27, 37, 96, .18);
+    }
+
+    /* Degradê + textos por cima da foto */
+    .ugc__over {
+      position: absolute;
+      inset: auto 0 0 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 46px 12px 12px;
+      background: linear-gradient(to top, rgba(15, 21, 56, .86) 0%, rgba(15, 21, 56, .55) 45%, rgba(15, 21, 56, 0) 100%);
+    }
+    .ugc__name { color: #fff; font-weight: 700; font-size: 15px; line-height: 1.25; }
+    .ugc__caption {
+      color: rgba(255, 255, 255, .82);
+      font-size: 13px;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .ugc__tag {
       display: flex;
       align-items: center;
       gap: 9px;
+      margin-top: 10px;
       padding: 7px;
       border-radius: 14px;
-      background: rgba(255, 255, 255, .94);
+      background: rgba(255, 255, 255, .95);
       backdrop-filter: blur(6px);
     }
     .ugc__tag-foto { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; flex: 0 0 auto; background: #fff; }
-    .ugc__tag-txt { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+    .ugc__tag-txt { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; flex: 1 1 auto; }
     .ugc__tag-nome { color: #1B2560; font-size: 12.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .ugc__tag-preco { color: #323C91; font-size: 13px; font-weight: 800; }
+    .ugc__tag-seta {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #323C91;
+      color: #fff;
+    }
 
-    .ugc__info { padding: 12px 4px 0; text-align: center; }
-    .ugc__name { display: block; color: #1B2560; font-weight: 700; font-size: 15px; }
-    .ugc__caption { display: block; font-size: 13px; color: #6B7080; margin-top: 2px; }
+    /* Linha de progresso: fica escondida quando tudo cabe na tela */
+    .ugc__barra {
+      display: none;
+      position: relative;
+      height: 4px;
+      margin: 14px auto 0;
+      max-width: 260px;
+      border-radius: 999px;
+      background: #E1E5F2;
+      overflow: hidden;
+    }
+    .ugc-wrap.ugc--rola .ugc__barra { display: block; }
+    .ugc__barra-cursor {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 30%;
+      border-radius: 999px;
+      background: #323C91;
+      transition: transform .08s linear;
+      will-change: transform;
+    }
 
     @media (min-width: 1000px) {
       .ugc__row { margin-inline: 0; padding-inline: 0; scroll-padding-inline: 0; }
       .ugc__card { width: calc((100% - 3 * 16px) / 4); }
+      .ugc__over { padding: 56px 14px 14px; }
     }
     @media (prefers-reduced-motion: reduce) {
       .ugc__card:hover .ugc__img { transform: none; }
+      .ugc__barra-cursor { transition: none; }
     }
   {%- endstyle -%}
+
+  <script>
+    /* Linha de progresso do trilho: a largura do cursor é a fatia
+       visível e a posição segue o scroll. Some sozinha quando não
+       há o que arrastar. */
+    (function () {
+      var sec = document.querySelector('[data-ugc="{{ section.id }}"]');
+      if (!sec) return;
+      var trilho = sec.querySelector('[data-ugc-trilho]');
+      var cursor = sec.querySelector('[data-ugc-cursor]');
+      if (!trilho || !cursor) return;
+
+      var pendente = false;
+      function pintar() {
+        pendente = false;
+        var sobra = trilho.scrollWidth - trilho.clientWidth;
+        if (sobra <= 2) {
+          sec.classList.remove('ugc--rola');
+          return;
+        }
+        sec.classList.add('ugc--rola');
+        var fatia = Math.max(0.12, trilho.clientWidth / trilho.scrollWidth);
+        cursor.style.width = (fatia * 100) + '%';
+        var andado = Math.min(1, Math.max(0, trilho.scrollLeft / sobra));
+        /* anda dentro do que sobra da barra, por isso o (1 - fatia) */
+        cursor.style.transform = 'translateX(' + (andado * (1 - fatia) * 100 / fatia) + '%)';
+      }
+      function agendar() {
+        if (pendente) return;
+        pendente = true;
+        requestAnimationFrame(pintar);
+      }
+
+      trilho.addEventListener('scroll', agendar, { passive: true });
+      window.addEventListener('resize', agendar);
+      if (window.ResizeObserver) new ResizeObserver(agendar).observe(trilho);
+      /* as fotos entram com lazy load e mudam o scrollWidth */
+      window.addEventListener('load', agendar);
+      pintar();
+    })();
+  </script>
 {%- endif -%}
 
 {% schema %}
@@ -164,6 +325,7 @@
       "name": "Foto",
       "settings": [
         { "type": "image_picker", "id": "photo", "label": "Foto (cliente / estilo de vida)" },
+        { "type": "text", "id": "tag", "label": "Etiqueta do topo (opcional)", "info": "Aparece em cima da foto, no canto superior esquerdo. Ex.: BENEFÍCIOS, ROTINA, ANTES E DEPOIS." },
         { "type": "product", "id": "product", "label": "Produto da foto (opcional)", "info": "Com produto, a foto vira link e ganha a etiqueta com nome e preço." },
         { "type": "text", "id": "name", "label": "Nome (opcional)" },
         { "type": "text", "id": "caption", "label": "Legenda (opcional)" }
