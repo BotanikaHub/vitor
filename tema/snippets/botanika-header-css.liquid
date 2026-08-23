@@ -1,19 +1,6 @@
 {%- comment -%}
   ============================================================
-  Cabeçalho — identidade Botanika.
-
-  Duas decisões tomadas depois de duas tentativas falhas:
-
-  1. As larguras da logo levam !important. O tema define a
-     largura por variável própria e sem isso a regra dele
-     vencia — a logo não mudava de tamanho.
-
-  2. O ícone do menu continua sendo o SVG do tema, só que
-     maior e no azul da marca. A versão anterior escondia esse
-     SVG e desenhava três barras num pseudo-elemento com
-     máscara; quando a máscara não pintava, não sobrava nada
-     para clicar. Ícone que às vezes some é pior que ícone
-     genérico.
+  Cabeçalho e menu lateral — identidade Botanika.
 
   Renderizado por snippets/toggle-menu.liquid, presente no
   cabeçalho de todas as páginas.
@@ -22,20 +9,16 @@
 <style>
   :root {
     --bk-azul: #323C91;
+    --bk-azul-esc: #1B2560;
     --bk-verde: #C4D78A;
-    /* Largura da logo. No mobile ela pede mais do que cabe, então
-       o valor é alto de propósito e quem manda é o max-width:100%,
-       que a prende dentro da célula dela no grid. Assim ela fica
-       sempre no maior tamanho possível sem invadir a busca — que
-       foi o que aconteceu quando tirei esse teto. O espaço extra
-       vem de apertar os ícones, mais abaixo. */
     --bk-logo-mobile: 220px;
     --bk-logo-desktop: 140px;
   }
 
   /* ---------- Logo ---------- */
-  /* max-width:100% impede que ela transborde a célula do grid e
-     cubra a busca e o carrinho, como aconteceu antes. */
+  /* A width é alta de propósito: quem manda é o max-width:100%, que
+     prende a logo na célula dela. Assim ela fica sempre no maior
+     tamanho possível sem invadir a busca. */
   .header__logo { min-width: 0; }
   .header .header__logo .header__normal-logo img {
     width: var(--bk-logo-mobile) !important;
@@ -49,38 +32,30 @@
     }
   }
 
-  /* ---------- Ícones no azul da marca ---------- */
+  /* ---------- Ícones ---------- */
   .header .header-color,
   .header .header-icon,
   .header .nav-toggle { color: var(--bk-azul); }
 
-  /* Maiores no desenho, sem mexer na altura do alvo de toque. */
   .header__action .header-icon svg,
   .header__action a > svg,
   .header__action button > svg { width: 19px !important; height: auto !important; }
 
-  /* Espaço para a logo. Num celular de 390px o cabeçalho gasta
-     ~132px só com os três botões de 44 e mais o vão entre eles;
-     estreitar os botões para 38 e fechar o vão devolve uns 25px
-     para a logo. A ALTURA de 44 fica, que é o que importa no
-     toque — só a largura encolhe. */
-  @media (max-width: 767px) {
-    .header header-inner { gap: 4px !important; }
-    .header .nav-toggle.w-44,
-    .header__action .w-44 { width: 38px !important; }
-  }
-
-  /* ---------- Menu sanduíche ---------- */
   .header .nav-toggle > svg {
     width: 24px !important;
     height: 16px !important;
     color: var(--bk-azul);
   }
 
+  /* Espaço para a logo: estreita os botões sem mexer na altura,
+     que é o que importa no toque. */
+  @media (max-width: 767px) {
+    .header header-inner { gap: 4px !important; }
+    .header .nav-toggle.w-44,
+    .header__action .w-44 { width: 38px !important; }
+  }
+
   /* ---------- Contador do carrinho ---------- */
-  /* Verde da marca com número azul — o único ponto de cor do topo.
-     box-sizing segura o círculo: sem ele o padding soma por fora do
-     min-width e um dígito só já vira oval. */
   #cart-icon-bubble .cart-count {
     box-sizing: border-box;
     background: var(--bk-verde) !important;
@@ -94,8 +69,48 @@
     box-shadow: 0 0 0 2px var(--color-background, #fff);
   }
 
-  /* Em cabeçalho transparente na home vale a cor escolhida no tema. */
   .transparent .header-color,
   .transparent .header-icon,
   .transparent .nav-toggle { color: inherit; }
+
+  /* ================= MENU LATERAL (mobile) ================= */
+  /* A cor da barra do topo vem da configuração menu_mobile_background
+     do cabeçalho, não daqui — ela virou o azul da marca no
+     header-group.json. Aqui é só o acabamento. */
+  @media (max-width: 1024.98px) {
+    .menu-mobile-title { min-height: 62px !important; }
+    .menu-mobile-title a.active {
+      font-size: 17px;
+      letter-spacing: .005em;
+    }
+
+    /* Itens com mais respiro e na cor da marca. O menu é a segunda
+       tela mais vista do site no celular; texto miúdo aqui custa
+       navegação. */
+    .horizontal-list > li.level0 > menu-item > a {
+      font-size: 15.5px !important;
+      font-weight: 600 !important;
+      color: var(--bk-azul-esc) !important;
+    }
+    .horizontal-list > li.level0 > menu-item {
+      border-color: rgba(50, 60, 145, .13) !important;
+    }
+    open-children-toggle svg.icon-down { color: var(--bk-azul); opacity: .5; }
+
+    /* Entrar / Cadastrar deixa de ser mais um item da lista e vira
+       botão — é ação, não navegação. */
+    .horizontal-list a.account-login,
+    .horizontal-list a.account-url {
+      margin: 20px 0 8px !important;
+      border: 1.5px solid var(--bk-azul) !important;
+      border-radius: 999px !important;
+      min-height: 48px !important;
+      justify-content: center !important;
+      color: var(--bk-azul) !important;
+      font-weight: 700 !important;
+      gap: 8px;
+    }
+    .horizontal-list a.account-login svg,
+    .horizontal-list a.account-url svg { color: var(--bk-azul); }
+  }
 </style>
