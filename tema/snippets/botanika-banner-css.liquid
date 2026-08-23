@@ -1,0 +1,36 @@
+{%- comment -%}
+  ============================================================
+  Banner da home — cantos arredondados no mobile.
+
+  Só mobile: no desktop o banner continua sangrando de ponta a
+  ponta, que é como está hoje e funciona bem em tela larga.
+
+  O respiro lateral não é enfeite — sem ele o arredondamento
+  quase não aparece, porque o canto some contra a borda da
+  tela. É o que faz a referência (Blessy) ler como um cartão.
+  ============================================================
+{%- endcomment -%}
+<style>
+  @media (max-width: 767.98px) {
+    /* afasta o carrossel das bordas para o canto arredondado existir */
+    .slideshow .swiper.slideshow { margin-inline: 12px; }
+
+    /* o clip precisa estar nos dois: a mídia é absolute inset-0
+       dentro do inner, e sem overflow no inner o canto vaza */
+    .slideshow .swiper-slide .sec__inner,
+    .slideshow .banner__media {
+      border-radius: 22px;
+      overflow: hidden;
+    }
+
+    /* um pouco mais alto. A altura do tema vem de --aspect-ratio-mb;
+       um min-height por cima cresce sem mexer na proporção que o
+       editor calcula, e o cover cuida do corte. */
+    .slideshow .swiper-slide .sec__inner { min-height: 56vh; }
+    .slideshow .banner__media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+</style>
