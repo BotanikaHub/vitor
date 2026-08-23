@@ -20,7 +20,7 @@
 {%- if itens.size > 0 -%}
   <div
     class="bks"
-    style="--bks-bg:{{ st.bg_color }};--bks-pill:{{ st.pill_color }};--bks-text:{{ st.text_color }};--bks-icon-bg:{{ st.icon_bg_color }};--bks-speed:{{ st.speed }}s;--bks-gap:{{ st.gap }}px;--bks-pad:{{ st.padding }}px;"
+    style="--bks-bg:{{ st.bg_color }};--bks-pill:{{ st.pill_color }};--bks-text:{{ st.text_color }};--bks-icon-bg:{{ st.icon_bg_color }};--bks-speed:{{ st.speed }}s;--bks-gap:{{ st.gap }}px;--bks-pt:{{ st.padding_top }}px;--bks-pb:{{ st.padding_bottom }}px;"
   >
     <div class="bks__viewport">
       <div class="bks__track">
@@ -49,9 +49,18 @@
   </div>
 
   {%- style -%}
+    /* O respiro da faixa é só o que está aqui. O tema põe espaço
+       próprio em volta de cada seção, e somado ao nosso dava um vão
+       de mais de 100px acima das pílulas — por isso o invólucro
+       entra zerado e as duas medidas ficam sob controle do editor. */
+    #shopify-section-{{ section.id }} {
+      margin-block: 0 !important;
+      padding-block: 0 !important;
+    }
     .bks {
       background: var(--bks-bg);
-      padding-block: var(--bks-pad);
+      padding-top: var(--bks-pt);
+      padding-bottom: var(--bks-pb);
       overflow: hidden;
       contain: content;
     }
@@ -127,7 +136,8 @@
   "settings": [
     { "type": "range", "id": "speed", "min": 15, "max": 120, "step": 5, "unit": "s", "label": "Velocidade (quanto maior, mais lento)", "default": 45 },
     { "type": "range", "id": "gap", "min": 20, "max": 120, "step": 5, "unit": "px", "label": "Espaço entre selos", "default": 40 },
-    { "type": "range", "id": "padding", "min": 0, "max": 80, "step": 2, "unit": "px", "label": "Respiro acima e abaixo", "default": 26 },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 80, "step": 2, "unit": "px", "label": "Respiro acima", "default": 10 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 100, "step": 2, "unit": "px", "label": "Respiro abaixo", "default": 52 },
     {
       "type": "select",
       "id": "glifo",
