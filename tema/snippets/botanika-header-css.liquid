@@ -1,0 +1,87 @@
+{%- comment -%}
+  ============================================================
+  Cabeçalho — identidade Botanika.
+
+  O tema entrega ícones cinza-escuro genéricos e uma logo
+  pequena. Aqui o cabeçalho passa a usar o azul da marca, os
+  ícones ganham peso, e o carrinho ganha o verde — que é o
+  único ponto de cor do topo e por isso o que mais diz "somos
+  nós".
+
+  Renderizado a partir de snippets/toggle-menu.liquid, que
+  aparece no cabeçalho de todas as páginas.
+  ============================================================
+{%- endcomment -%}
+<style>
+  :root {
+    --bk-azul: #323C91;
+    --bk-verde: #C4D78A;
+    /* Larguras da logo. Mexa nestes dois números para
+       aumentar ou diminuir — o resto se ajusta sozinho. */
+    --bk-logo-mobile: 150px;
+    --bk-logo-desktop: 190px;
+  }
+
+  /* ---------- Logo ---------- */
+  .header__logo .header__normal-logo img {
+    width: var(--bk-logo-mobile);
+    height: auto;
+    max-width: none;
+  }
+  @media (min-width: 768px) {
+    .header__logo .header__normal-logo img { width: var(--bk-logo-desktop); }
+  }
+
+  /* ---------- Ícones no azul da marca ---------- */
+  .header .header-color,
+  .header .header-icon,
+  .header .nav-toggle { color: var(--bk-azul); }
+
+  /* Um pouco maiores. O alvo de toque continua 44px, então
+     cresce o desenho e não a área clicável. */
+  .header__action .header-icon svg,
+  .header__action a > svg,
+  .header__action button > svg { width: 19px; height: auto; }
+
+  /* ---------- Menu sanduíche ---------- */
+  /* Três barras com arremates arredondados e a do meio mais
+     curta. O SVG do tema sai de cena e entra uma máscara, que
+     é o que permite manter os cantos redondos da mesma família
+     dos ícones da barra de confiança. */
+  .nav-toggle > svg { display: none; }
+  .nav-toggle::before {
+    content: "";
+    width: 23px;
+    height: 17px;
+    background: currentColor;
+    -webkit-mask: var(--bk-burger) center / contain no-repeat;
+    mask: var(--bk-burger) center / contain no-repeat;
+  }
+  .nav-toggle {
+    --bk-burger: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 17'%3E%3Cg stroke='%23000' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M1.3 1.6h20.4'/%3E%3Cpath d='M1.3 8.5h13.6'/%3E%3Cpath d='M1.3 15.4h20.4'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* ---------- Contador do carrinho ---------- */
+  /* Verde da marca com número azul. O anel branco descola o
+     selo do ícone quando os dois se encostam. */
+  #cart-icon-bubble .cart-count {
+    /* box-sizing é o que segura o círculo: sem ele o padding soma
+       por fora do min-width e um único dígito já vira oval. */
+    box-sizing: border-box;
+    background: var(--bk-verde);
+    color: var(--bk-azul);
+    font-weight: 700;
+    font-size: 10.5px;
+    min-width: 18px;
+    height: 18px;
+    padding-inline: 4px;
+    border-radius: 9px;
+    box-shadow: 0 0 0 2px var(--color-background, #fff);
+  }
+
+  /* Em cabeçalho transparente na home, quem manda é a cor
+     escolhida no tema — não sobrescrever. */
+  .transparent .header-color,
+  .transparent .header-icon,
+  .transparent .nav-toggle { color: inherit; }
+</style>
