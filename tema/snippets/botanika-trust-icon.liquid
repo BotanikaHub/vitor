@@ -1,0 +1,66 @@
+{%- comment -%}
+  ============================================================
+  Ícones da barra de confiança — família Botanika.
+
+  Todos no mesmo grid de 24, mesma espessura de traço (1.7) e
+  mesmos cantos arredondados, para lerem como um conjunto
+  desenhado e não como emojis avulsos. Herdam a cor do texto
+  via currentColor, então acompanham qualquer esquema de cor.
+
+  Uso: {%- render 'botanika-trust-icon', nome: 'folha' -%}
+  ============================================================
+{%- endcomment -%}
+{%- liquid
+  assign n = nome | default: 'folha'
+  assign s = tamanho | default: 17
+-%}
+<svg class="ttb__ico" width="{{ s }}" height="{{ s }}" viewBox="0 0 24 24" fill="none"
+  stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+  aria-hidden="true" focusable="false">
+  {%- case n -%}
+
+    {%- when 'folha' -%}
+      <path d="M20.5 3.5c0 9-5.9 13.8-11.4 13.8A5.6 5.6 0 0 1 3.5 11.7C3.5 5.4 12 3.5 20.5 3.5Z"/>
+      <path d="M4.2 20.5c3.4-6.2 8.2-10 13.4-12.2"/>
+
+    {%- when 'selo' -%}
+      <circle cx="12" cy="9.3" r="6.3"/>
+      <path d="m9.3 9.4 1.9 1.9 3.5-3.7"/>
+      <path d="m8.5 14.9-1.2 5.6 4.7-2.4 4.7 2.4-1.2-5.6"/>
+
+    {%- when 'caminhao' -%}
+      <path d="M2.8 5.8h10.4v9.4H2.8z"/>
+      <path d="M13.2 9.2h3.6l3.4 3.4v2.6h-7z"/>
+      <circle cx="6.6" cy="17.6" r="1.9"/>
+      <circle cx="16.6" cy="17.6" r="1.9"/>
+
+    {%- when 'cadeado' -%}
+      <rect x="4.2" y="10.2" width="15.6" height="9.6" rx="2.6"/>
+      <path d="M8.2 10.2V7.6a3.8 3.8 0 0 1 7.6 0v2.6"/>
+      <path d="M12 14v2.2"/>
+
+    {%- when 'estrela' -%}
+      <path d="m12 3.3 2.7 5.5 6 .9-4.3 4.2 1 6-5.4-2.8-5.4 2.8 1-6-4.3-4.2 6-.9z"/>
+
+    {%- when 'frasco' -%}
+      <path d="M9.6 3.2h4.8v2.9l2 2.4a4 4 0 0 1 .9 2.6v7.7a2.2 2.2 0 0 1-2.2 2.2H8.9a2.2 2.2 0 0 1-2.2-2.2v-7.7a4 4 0 0 1 .9-2.6l2-2.4z"/>
+      <path d="M9.4 13.6h5.2M12 11v5.2"/>
+
+    {%- when 'pulso' -%}
+      <path d="M2.8 12.2h3.9l2.1-5.4 3.4 11.4 2.4-6h6.6"/>
+
+    {%- when 'escudo' -%}
+      <path d="M12 3.2 5.2 6v5.4c0 4.3 2.8 7.8 6.8 9.4 4-1.6 6.8-5.1 6.8-9.4V6z"/>
+      <path d="m9.2 11.9 2 2 3.8-4"/>
+
+    {%- when 'coracao' -%}
+      <path d="M12 20.3S3.8 15.5 3.8 9.6a4.4 4.4 0 0 1 8.2-2.3 4.4 4.4 0 0 1 8.2 2.3c0 5.9-8.2 10.7-8.2 10.7Z"/>
+
+    {%- when 'raio' -%}
+      <path d="M13.4 2.8 4.6 13.6h6.2l-1.2 7.6 8.8-10.8h-6.2z"/>
+
+    {%- when 'brilho' -%}
+      <path d="M12 2.4 14.1 9.9 21.6 12l-7.5 2.1L12 21.6 9.9 14.1 2.4 12l7.5-2.1z"/>
+
+  {%- endcase -%}
+</svg>

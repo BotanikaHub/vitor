@@ -1,0 +1,298 @@
+{%- comment -%}
+  ============================================================
+  Barra superior de confiança (marquee).
+
+  Dois tipos de bloco se alternam na esteira:
+
+  - Mensagem: ícone SVG da família Botanika + texto de benefício.
+  - Frase da marca: texto na fonte da logo, caixa alta, com um
+    glifo no meio. É a pausa visual entre os benefícios, no
+    espírito do "DELICIOUS ✧ GUMMIES" da Guday.
+
+  Os ícones vêm de snippets/botanika-trust-icon.liquid — mesmo
+  grid, mesma espessura, herdando a cor do texto. Nada de emoji:
+  emoji muda de desenho a cada sistema operacional e nunca vai
+  pertencer à identidade da marca.
+  ============================================================
+{%- endcomment -%}
+{%- liquid
+  assign st = section.settings
+  assign items = section.blocks
+-%}
+{%- capture fs_norm -%}{%- render 'botanika-freeship-weekend', mode: 'normal_label' -%}{%- endcapture -%}
+{%- capture fs_lbl -%}{%- render 'botanika-freeship-weekend', mode: 'label' -%}{%- endcapture -%}
+{%- assign fs_norm = fs_norm | strip -%}
+{%- assign fs_lbl = fs_lbl | strip -%}
+{%- if items.size > 0 -%}
+  {%- if st.brand_font != blank -%}
+    {{ st.brand_font | font_face: font_display: 'swap' }}
+  {%- endif -%}
+  <div
+    class="ttb{% if st.hide_mobile %} ttb--desk-only{% endif %}"
+    style="
+      --ttb-bg:{{ st.bg_color }};
+      --ttb-text:{{ st.text_color }};
+      --ttb-accent:{{ st.accent_color }};
+      --ttb-speed:{{ st.speed }}s;
+      --ttb-gap:{{ st.gap }}px;
+      --ttb-size:{{ st.font_size }}px;
+      {%- if st.brand_font != blank %}--ttb-brand-family:{{ st.brand_font.family }}, {{ st.brand_font.fallback_families }};--ttb-brand-weight:{{ st.brand_font.weight }};{% endif -%}
+    "
+  >
+    <div class="ttb__viewport">
+      <div class="ttb__track">
+        {%- for pass in (1..2) -%}
+          <div class="ttb__group"{% if pass == 2 %} aria-hidden="true"{% endif %}>
+            {%- for block in items -%}
+
+              {%- if block.type == 'brand_phrase' -%}
+                {%- if block.settings.text != blank -%}
+                  <span class="ttb__item ttb__item--brand" {{ block.shopify_attributes }}>
+                    <span class="ttb__brand">
+                      {%- assign partes = block.settings.text | split: '|' -%}
+                      {%- if partes.size > 1 -%}
+                        <span>{{ partes[0] | strip }}</span>
+                        <span class="ttb__glifo">
+                          {%- render 'botanika-trust-icon', nome: block.settings.glifo, tamanho: 13 -%}
+                        </span>
+                        <span>{{ partes[1] | strip }}</span>
+                      {%- else -%}
+                        <span>{{ block.settings.text }}</span>
+                      {%- endif -%}
+                    </span>
+                  </span>
+                {%- endif -%}
+
+              {%- else -%}
+                {%- if block.settings.text != blank -%}
+                  <span class="ttb__item" {{ block.shopify_attributes }}>
+                    {%- if block.settings.icone != 'nenhum' -%}
+                      <span class="ttb__icon">
+                        {%- render 'botanika-trust-icon', nome: block.settings.icone -%}
+                      </span>
+                    {%- endif -%}
+                    <span class="ttb__text">{{ block.settings.text | replace: fs_norm, fs_lbl }}</span>
+                  </span>
+                {%- endif -%}
+              {%- endif -%}
+
+              {%- comment -%}
+                O separador vem depois de TODO item, nas duas passagens.
+                As duas cópias precisam ter exatamente a mesma largura,
+                senão o translateX(-50%) não fecha e a esteira pula ao
+                reiniciar.
+              {%- endcomment -%}
+              <span class="ttb__sep" aria-hidden="true">
+                  {%- if st.separator_tipo == 'glifo' -%}
+                    {%- render 'botanika-trust-icon', nome: st.separator_glifo, tamanho: 10 -%}
+                  {%- else -%}
+                    {{ st.separator }}
+                  {%- endif -%}
+              </span>
+
+            {%- endfor -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+
+  {%- style -%}
+    .ttb {
+      background: var(--ttb-bg);
+      color: var(--ttb-text);
+      overflow: hidden;
+      font-size: var(--ttb-size);
+      font-weight: 600;
+      line-height: 1;
+      /* a barra é a primeira coisa que pinta na tela: reservar a altura
+         evita o pulo de layout enquanto a fonte da marca carrega */
+      contain: content;
+    }
+    .ttb__viewport { overflow: hidden; }
+    .ttb__track {
+      display: flex;
+      width: max-content;
+      animation: ttb-scroll var(--ttb-speed) linear infinite;
+      will-change: transform;
+    }
+    .ttb:hover .ttb__track { animation-play-state: paused; }
+    .ttb__group { display: flex; align-items: center; padding: 9px 0; }
+
+    .ttb__item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+      padding-inline: calc(var(--ttb-gap) / 2);
+    }
+    .ttb__icon { display: inline-flex; line-height: 0; opacity: .92; }
+    .ttb__ico { display: block; }
+    .ttb__text { display: inline-block; }
+
+    /* Frase da marca — na fonte da logo, caixa alta e com respiro
+       maior, para funcionar como pausa entre os benefícios. */
+    .ttb__item--brand { padding-inline: calc(var(--ttb-gap) / 1.5); }
+    .ttb__brand {
+      display: inline-flex;
+      align-items: center;
+      gap: .5em;
+      font-family: var(--ttb-brand-family, inherit);
+      font-weight: var(--ttb-brand-weight, 700);
+      font-size: 1.12em;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--ttb-accent);
+      white-space: nowrap;
+    }
+    .ttb__glifo { display: inline-flex; line-height: 0; }
+    .ttb__glifo .ttb__ico { stroke-width: 2; }
+
+    .ttb__sep {
+      display: inline-flex;
+      align-items: center;
+      opacity: .5;
+      line-height: 0;
+    }
+
+    @keyframes ttb-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* Mobile: texto e ícone encolhem juntos e o espaçamento cai pela
+       metade, senão sobra vão muito grande entre as mensagens numa
+       tela estreita e a esteira parece vazia. */
+    @media (max-width: 749px) {
+      .ttb {
+        font-size: calc(var(--ttb-size) - 1px);
+        -webkit-text-size-adjust: 100%;
+      }
+      .ttb__group { padding: 8px 0; }
+      .ttb__item { gap: 6px; padding-inline: calc(var(--ttb-gap) / 3.2); }
+      .ttb__item--brand { padding-inline: calc(var(--ttb-gap) / 2.6); }
+      .ttb__ico { width: 15px; height: 15px; }
+      .ttb__brand { font-size: 1.08em; letter-spacing: .03em; }
+      .ttb--desk-only { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ttb__track { animation: none; }
+    }
+  {%- endstyle -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Barra de confiança (topo)",
+  "class": "section-top-trust-bar",
+  "enabled_on": { "groups": ["header"] },
+  "settings": [
+    { "type": "range", "id": "speed", "min": 15, "max": 80, "step": 5, "unit": "s", "label": "Velocidade (quanto maior, mais lento)", "default": 40 },
+    { "type": "range", "id": "gap", "min": 20, "max": 120, "step": 5, "unit": "px", "label": "Espaço entre mensagens", "default": 60 },
+    { "type": "range", "id": "font_size", "min": 11, "max": 17, "step": 1, "unit": "px", "label": "Tamanho do texto", "default": 13 },
+    { "type": "header", "content": "Fonte da marca" },
+    {
+      "type": "font_picker",
+      "id": "brand_font",
+      "label": "Fonte das frases da marca",
+      "info": "Use a mesma fonte da logo. Se ela não estiver nesta lista, é uma fonte customizada — me avise que eu carrego o arquivo no tema.",
+      "default": "assistant_n7"
+    },
+    { "type": "header", "content": "Separador" },
+    {
+      "type": "select",
+      "id": "separator_tipo",
+      "label": "Tipo de separador",
+      "options": [
+        { "value": "glifo", "label": "Símbolo da marca" },
+        { "value": "texto", "label": "Caractere de texto" }
+      ],
+      "default": "glifo"
+    },
+    {
+      "type": "select",
+      "id": "separator_glifo",
+      "label": "Símbolo",
+      "options": [
+        { "value": "brilho", "label": "Brilho" },
+        { "value": "folha", "label": "Folha" },
+        { "value": "estrela", "label": "Estrela" }
+      ],
+      "default": "brilho"
+    },
+    { "type": "text", "id": "separator", "label": "Caractere", "default": "•" },
+    { "type": "header", "content": "Cores" },
+    { "type": "color", "id": "bg_color", "label": "Cor de fundo", "default": "#323C91" },
+    { "type": "color", "id": "text_color", "label": "Cor do texto", "default": "#ffffff" },
+    { "type": "color", "id": "accent_color", "label": "Cor das frases da marca", "default": "#C4D78A" },
+    { "type": "checkbox", "id": "hide_mobile", "label": "Ocultar no mobile", "default": false }
+  ],
+  "blocks": [
+    {
+      "type": "trust_item",
+      "name": "Mensagem",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icone",
+          "label": "Ícone",
+          "options": [
+            { "value": "folha", "label": "Folha" },
+            { "value": "selo", "label": "Selo de certificação" },
+            { "value": "caminhao", "label": "Caminhão" },
+            { "value": "cadeado", "label": "Cadeado" },
+            { "value": "estrela", "label": "Estrela" },
+            { "value": "frasco", "label": "Frasco" },
+            { "value": "pulso", "label": "Pulso (curadoria médica)" },
+            { "value": "escudo", "label": "Escudo" },
+            { "value": "coracao", "label": "Coração" },
+            { "value": "raio", "label": "Raio" },
+            { "value": "nenhum", "label": "Sem ícone" }
+          ],
+          "default": "folha"
+        },
+        { "type": "text", "id": "text", "label": "Texto", "default": "Entregamos para todo o Brasil" }
+      ]
+    },
+    {
+      "type": "brand_phrase",
+      "name": "Frase da marca",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Frase",
+          "info": "Use | para separar as duas metades e o símbolo entra no meio. Ex: SUPLEMENTO | DE VERDADE",
+          "default": "BOTANIKA | BRASIL"
+        },
+        {
+          "type": "select",
+          "id": "glifo",
+          "label": "Símbolo do meio",
+          "options": [
+            { "value": "brilho", "label": "Brilho" },
+            { "value": "folha", "label": "Folha" },
+            { "value": "estrela", "label": "Estrela" },
+            { "value": "coracao", "label": "Coração" },
+            { "value": "raio", "label": "Raio" }
+          ],
+          "default": "folha"
+        }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "Barra de confiança (topo)",
+      "blocks": [
+        { "type": "trust_item", "settings": { "icone": "pulso", "text": "Fórmulas com curadoria médica" } },
+        { "type": "brand_phrase", "settings": { "text": "SUPLEMENTO | DE VERDADE", "glifo": "folha" } },
+        { "type": "trust_item", "settings": { "icone": "estrela", "text": "97% de clientes satisfeitos" } },
+        { "type": "trust_item", "settings": { "icone": "caminhao", "text": "Frete grátis acima de R$349" } },
+        { "type": "brand_phrase", "settings": { "text": "BOTANIKA | BRASIL", "glifo": "brilho" } },
+        { "type": "trust_item", "settings": { "icone": "cadeado", "text": "Compra 100% segura" } },
+        { "type": "trust_item", "settings": { "icone": "selo", "text": "Suplementos com certificação ANVISA" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
