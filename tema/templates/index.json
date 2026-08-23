@@ -547,9 +547,9 @@
           "type": "doctor",
           "settings": {
             "image": "shopify://shop_images/medico-eglife.jpg",
-            "photo_zoom": 100,
+            "photo_zoom": 150,
             "photo_focus_x": 50,
-            "photo_focus_y": 30,
+            "photo_focus_y": 0,
             "name": "Dr. Eglife Brauher",
             "crm": "CRM-BA 32.688",
             "specialty": "Médico",

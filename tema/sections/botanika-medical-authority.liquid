@@ -45,7 +45,15 @@
           assign focus_y = b.photo_focus_y | default: 30
           assign zoom_pct = b.photo_zoom | default: 100
           assign zoom = zoom_pct | times: 1.0 | divided_by: 100
-          assign img_style = 'object-position: ' | append: focus_x | append: '% ' | append: focus_y | append: '%; transform: scale(' | append: zoom | append: ');'
+
+          comment
+            transform-origin junto com o zoom: sem ele o scale cresce
+            a partir do centro, e as reguas de posicao nao mudavam
+            nada. Com a origem no ponto escolhido, zoom 150 com
+            posicao vertical 0 corta so o rodape do arquivo - que e
+            como se tira a tarja branca de uma foto mal exportada.
+          endcomment
+          assign img_style = 'object-position: ' | append: focus_x | append: '% ' | append: focus_y | append: '%; transform: scale(' | append: zoom | append: '); transform-origin: ' | append: focus_x | append: '% ' | append: focus_y | append: '%;'
         -%}
         <article class="bt-medauth__card" {{ block.shopify_attributes }}>
           <div class="bt-medauth__foto">
@@ -240,7 +248,7 @@
       "name": "Médico",
       "settings": [
         { "type": "image_picker", "id": "image", "label": "Foto", "info": "Todas na mesma proporção (as atuais são 700x900). Proporção diferente volta a cortar." },
-        { "type": "range", "id": "photo_zoom", "label": "Zoom da foto", "min": 100, "max": 200, "step": 5, "unit": "%", "default": 100, "info": "Acima de 100% a foto é cortada de propósito." },
+        { "type": "range", "id": "photo_zoom", "label": "Zoom da foto", "min": 100, "max": 200, "step": 5, "unit": "%", "default": 100, "info": "Acima de 100% a foto é cortada de propósito. Use com a posição vertical em 0% para tirar tarja branca no rodapé do arquivo." },
         { "type": "range", "id": "photo_focus_x", "label": "Posição horizontal do rosto", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 50 },
         { "type": "range", "id": "photo_focus_y", "label": "Posição vertical do rosto", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 30 },
         { "type": "text", "id": "name", "label": "Nome", "default": "Dr. Nome Sobrenome" },
