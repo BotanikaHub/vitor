@@ -630,6 +630,7 @@
           "type": "photo",
           "settings": {
             "photo": "shopify://shop_images/hf_20260724_210647_411433be-ca63-4ef4-8ef3-89bc30a1be27.png",
+            "tag": "IMUNIDADE",
             "name": "",
             "caption": ""
           }
@@ -638,6 +639,7 @@
           "type": "photo",
           "settings": {
             "photo": "shopify://shop_images/UGC_TRI.png",
+            "tag": "DISPOSIÇÃO",
             "name": "",
             "caption": ""
           }
@@ -646,6 +648,7 @@
           "type": "photo",
           "settings": {
             "photo": "shopify://shop_images/UGC_HAIR.png",
+            "tag": "CABELOS E UNHAS",
             "name": "",
             "caption": ""
           }
@@ -654,6 +657,7 @@
           "type": "photo",
           "settings": {
             "photo": "shopify://shop_images/ugc_tetra2.png",
+            "tag": "VITAMINA D",
             "name": "",
             "caption": ""
           }
@@ -662,6 +666,7 @@
           "type": "photo",
           "settings": {
             "photo": "shopify://shop_images/ugc_vitc.png",
+            "tag": "ANTIOXIDANTE",
             "name": "",
             "caption": ""
           }
@@ -670,6 +675,7 @@
           "type": "photo",
           "settings": {
             "photo": "shopify://shop_images/ugc_sleep.png",
+            "tag": "SONO",
             "name": "",
             "caption": ""
           }
@@ -678,6 +684,7 @@
           "type": "photo",
           "settings": {
             "photo": "shopify://shop_images/ugc_tetra.png",
+            "tag": "IMUNIDADE",
             "name": "",
             "caption": ""
           }
@@ -686,6 +693,7 @@
           "type": "photo",
           "settings": {
             "photo": "shopify://shop_images/ucg_omega3.png",
+            "tag": "CORAÇÃO",
             "name": "",
             "caption": ""
           }
@@ -694,6 +702,7 @@
           "type": "photo",
           "settings": {
             "photo": "shopify://shop_images/ugc_whey.png",
+            "tag": "PROTEÍNA",
             "name": "",
             "caption": ""
           }
@@ -702,6 +711,7 @@
           "type": "photo",
           "settings": {
             "photo": "shopify://shop_images/hf_20260724_210654_eaa2d1ca-6030-49bd-8899-41dd317dc906.png",
+            "tag": "ROTINA",
             "name": "",
             "caption": ""
           }
