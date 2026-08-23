@@ -23,13 +23,13 @@
   :root {
     --bk-azul: #323C91;
     --bk-verde: #C4D78A;
-    /* Largura da logo. No mobile a medida é proporcional à tela:
-       em pixels fixos a logo batia no teto da célula do grid e
-       parava de crescer, então 158px e 172px davam exatamente o
-       mesmo resultado. O teto em px evita que ela fique enorme
-       em celular largo ou tablet. */
-    --bk-logo-mobile: 50vw;
-    --bk-logo-mobile-max: 200px;
+    /* Largura da logo. No mobile ela pede mais do que cabe, então
+       o valor é alto de propósito e quem manda é o max-width:100%,
+       que a prende dentro da célula dela no grid. Assim ela fica
+       sempre no maior tamanho possível sem invadir a busca — que
+       foi o que aconteceu quando tirei esse teto. O espaço extra
+       vem de apertar os ícones, mais abaixo. */
+    --bk-logo-mobile: 220px;
     --bk-logo-desktop: 140px;
   }
 
@@ -39,7 +39,7 @@
   .header__logo { min-width: 0; }
   .header .header__logo .header__normal-logo img {
     width: var(--bk-logo-mobile) !important;
-    max-width: var(--bk-logo-mobile-max) !important;
+    max-width: 100% !important;
     height: auto !important;
   }
   @media (min-width: 768px) {
@@ -54,10 +54,21 @@
   .header .header-icon,
   .header .nav-toggle { color: var(--bk-azul); }
 
-  /* Maiores no desenho; o alvo de toque continua 44px. */
+  /* Maiores no desenho, sem mexer na altura do alvo de toque. */
   .header__action .header-icon svg,
   .header__action a > svg,
   .header__action button > svg { width: 19px !important; height: auto !important; }
+
+  /* Espaço para a logo. Num celular de 390px o cabeçalho gasta
+     ~132px só com os três botões de 44 e mais o vão entre eles;
+     estreitar os botões para 38 e fechar o vão devolve uns 25px
+     para a logo. A ALTURA de 44 fica, que é o que importa no
+     toque — só a largura encolhe. */
+  @media (max-width: 767px) {
+    .header header-inner { gap: 4px !important; }
+    .header .nav-toggle.w-44,
+    .header__action .w-44 { width: 38px !important; }
+  }
 
   /* ---------- Menu sanduíche ---------- */
   .header .nav-toggle > svg {
