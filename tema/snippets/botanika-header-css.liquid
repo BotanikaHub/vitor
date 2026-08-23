@@ -18,7 +18,7 @@
     --bk-verde: #C4D78A;
     /* Larguras da logo. Mexa nestes dois números para
        aumentar ou diminuir — o resto se ajusta sozinho. */
-    --bk-logo-mobile: 118px;
+    --bk-logo-mobile: 145px;
     --bk-logo-desktop: 155px;
   }
 
@@ -55,11 +55,21 @@
   .nav-toggle > svg { display: none; }
   .nav-toggle::before {
     content: "";
+    /* sem display de bloco o pseudo-elemento nasce inline e ignora
+       largura e altura — foi assim que o menu sumiu por completo */
+    display: block;
+    flex: none;
     width: 23px;
     height: 17px;
     background: currentColor;
-    -webkit-mask: var(--bk-burger) center / contain no-repeat;
-    mask: var(--bk-burger) center / contain no-repeat;
+    -webkit-mask-image: var(--bk-burger);
+    mask-image: var(--bk-burger);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
   }
   .nav-toggle {
     --bk-burger: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 23 17'%3E%3Cg stroke='%23000' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M1.3 1.6h20.4'/%3E%3Cpath d='M1.3 8.5h13.6'/%3E%3Cpath d='M1.3 15.4h20.4'/%3E%3C/g%3E%3C/svg%3E");
