@@ -23,8 +23,13 @@
   :root {
     --bk-azul: #323C91;
     --bk-verde: #C4D78A;
-    /* Largura da logo — é aqui que se ajusta. */
-    --bk-logo-mobile: 172px;
+    /* Largura da logo. No mobile a medida é proporcional à tela:
+       em pixels fixos a logo batia no teto da célula do grid e
+       parava de crescer, então 158px e 172px davam exatamente o
+       mesmo resultado. O teto em px evita que ela fique enorme
+       em celular largo ou tablet. */
+    --bk-logo-mobile: 50vw;
+    --bk-logo-mobile-max: 200px;
     --bk-logo-desktop: 140px;
   }
 
@@ -34,12 +39,13 @@
   .header__logo { min-width: 0; }
   .header .header__logo .header__normal-logo img {
     width: var(--bk-logo-mobile) !important;
-    max-width: 100% !important;
+    max-width: var(--bk-logo-mobile-max) !important;
     height: auto !important;
   }
   @media (min-width: 768px) {
     .header .header__logo .header__normal-logo img {
       width: var(--bk-logo-desktop) !important;
+      max-width: var(--bk-logo-desktop) !important;
     }
   }
 
