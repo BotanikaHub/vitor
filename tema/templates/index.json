@@ -613,11 +613,9 @@
         "doc_grace"
       ],
       "settings": {
-        "section_width": "container",
         "eyebrow": "AUTORIDADE MÉDICA",
         "heading": "Profissionais de saúde que recomendam a Botanika",
         "subheading": "<p>Médicos e especialistas que conhecem nossos protocolos e indicam para seus pacientes.</p>",
-        "columns": 2,
         "neutral_quote": "Conheço os protocolos da Botanika e recomendo aos meus pacientes.",
         "brand_color": "#323C91",
         "accent_color": "#C4D78A",
