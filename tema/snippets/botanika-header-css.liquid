@@ -18,15 +18,19 @@
     --bk-verde: #C4D78A;
     /* Larguras da logo. Mexa nestes dois números para
        aumentar ou diminuir — o resto se ajusta sozinho. */
-    --bk-logo-mobile: 150px;
-    --bk-logo-desktop: 190px;
+    --bk-logo-mobile: 118px;
+    --bk-logo-desktop: 155px;
   }
 
   /* ---------- Logo ---------- */
+  /* max-width:100% é obrigatório: a logo mora numa célula de grid
+     entre o menu e os ícones. Sem esse teto ela transborda a célula
+     e passa por cima da busca e do carrinho no mobile. */
+  .header__logo { min-width: 0; }
   .header__logo .header__normal-logo img {
     width: var(--bk-logo-mobile);
+    max-width: 100%;
     height: auto;
-    max-width: none;
   }
   @media (min-width: 768px) {
     .header__logo .header__normal-logo img { width: var(--bk-logo-desktop); }
