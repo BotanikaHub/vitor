@@ -1,0 +1,187 @@
+{%- comment -%}
+  ============================================================
+  Compre por categoria — trilho de símbolos.
+
+  Substitui a grade de fotos. As fotos eram bancos de imagem sem
+  relação com o produto (uma plantação, alguém correndo) e, em
+  três colunas no celular, o nome da categoria ficava ilegível
+  por cima delas. Símbolo grande em círculo diz a mesma coisa,
+  lê em qualquer tamanho e é da marca.
+
+  Trilho horizontal em vez de grade: cabe mais categoria sem
+  crescer a página, e o corte no último item convida a arrastar.
+  ============================================================
+{%- endcomment -%}
+{%- liquid
+  assign st = section.settings
+  assign itens = section.blocks
+-%}
+{%- if itens.size > 0 -%}
+  <div
+    class="bkc"
+    style="--bkc-pt:{{ st.padding_top }}px;--bkc-pb:{{ st.padding_bottom }}px;--bkc-circulo:{{ st.circle_color }};--bkc-simbolo:{{ st.icon_color }};--bkc-texto:{{ st.text_color }};"
+  >
+    <div class="bkc__cabeca">
+      {%- if st.heading != blank -%}<h2 class="bkc__titulo">{{ st.heading }}</h2>{%- endif -%}
+      {%- if st.subheading != blank -%}<p class="bkc__sub">{{ st.subheading }}</p>{%- endif -%}
+    </div>
+
+    <div class="bkc__trilho">
+      {%- for b in itens -%}
+        {%- liquid
+          assign c = collections[b.settings.collection]
+          assign nome = b.settings.titulo | default: c.title
+        -%}
+        {%- if c != empty or request.design_mode -%}
+          <a class="bkc__item" href="{{ c.url | default: '#' }}" {{ b.shopify_attributes }}>
+            <span class="bkc__circulo"{% if b.settings.cor != blank %} style="--bkc-circulo:{{ b.settings.cor }}"{% endif %}>
+              {%- render 'botanika-trust-icon', nome: b.settings.icone, tamanho: 34 -%}
+            </span>
+            <span class="bkc__nome">{{ nome }}</span>
+          </a>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+
+  {%- style -%}
+    #shopify-section-{{ section.id }} {
+      margin-block: 0 !important;
+      padding-block: 0 !important;
+    }
+    .bkc { padding-top: var(--bkc-pt); padding-bottom: var(--bkc-pb); }
+    .bkc__cabeca { text-align: center; padding-inline: 20px; margin-bottom: 26px; }
+    .bkc__titulo {
+      margin: 0 0 8px;
+      color: var(--bkc-texto);
+      font-size: clamp(24px, 3.2vw, 34px);
+      line-height: 1.15;
+      letter-spacing: -.01em;
+    }
+    .bkc__sub { margin: 0; color: var(--bkc-texto); opacity: .65; font-size: 15px; }
+
+    /* Sangra até a borda: a margem negativa mais o padding igual
+       alinham o primeiro item com o texto e deixam o último respirar. */
+    .bkc__trilho {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      padding-inline: max(20px, calc((100% - 1240px) / 2));
+      padding-bottom: 6px;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .bkc__trilho::-webkit-scrollbar { display: none; }
+
+    .bkc__item {
+      flex: 0 0 auto;
+      width: 104px;
+      scroll-snap-align: start;
+      text-align: center;
+      text-decoration: none;
+      color: var(--bkc-texto);
+    }
+    .bkc__circulo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 84px;
+      height: 84px;
+      margin: 0 auto 10px;
+      border-radius: 50%;
+      background: var(--bkc-circulo);
+      color: var(--bkc-simbolo);
+      transition: transform .18s ease;
+    }
+    .bkc__item:hover .bkc__circulo { transform: translateY(-3px); }
+    .bkc__nome {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    @media (max-width: 767.98px) {
+      .bkc__cabeca { margin-bottom: 20px; }
+      .bkc__trilho { gap: 12px; padding-inline: 16px; }
+      .bkc__item { width: 88px; }
+      .bkc__circulo { width: 72px; height: 72px; }
+      .bkc__nome { font-size: 12px; }
+    }
+
+    /* Sem animação de rolagem lateral, a barra volta a aparecer para
+       quem navega com o teclado ou com o mouse na barra. */
+    @media (prefers-reduced-motion: reduce) {
+      .bkc__trilho { scroll-behavior: auto; scrollbar-width: thin; }
+      .bkc__trilho::-webkit-scrollbar { display: block; height: 6px; }
+    }
+  {%- endstyle -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Categorias Botanika",
+  "tag": "section",
+  "class": "section-botanika-categorias",
+  "disabled_on": { "groups": ["header", "footer"] },
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Título", "default": "Compre por Categoria" },
+    { "type": "text", "id": "subheading", "label": "Subtítulo", "default": "Encontre o suplemento ideal para seu objetivo" },
+    { "type": "header", "content": "Cores" },
+    { "type": "color", "id": "circle_color", "label": "Fundo do círculo", "default": "#C4D78A" },
+    { "type": "color", "id": "icon_color", "label": "Símbolo", "default": "#1B2560" },
+    { "type": "color", "id": "text_color", "label": "Texto", "default": "#1B2560" },
+    { "type": "header", "content": "Espaçamento" },
+    { "type": "range", "id": "padding_top", "min": 0, "max": 100, "step": 2, "unit": "px", "label": "Respiro acima", "default": 40 },
+    { "type": "range", "id": "padding_bottom", "min": 0, "max": 100, "step": 2, "unit": "px", "label": "Respiro abaixo", "default": 40 }
+  ],
+  "blocks": [
+    {
+      "type": "categoria",
+      "name": "Categoria",
+      "settings": [
+        { "type": "collection", "id": "collection", "label": "Coleção" },
+        { "type": "text", "id": "titulo", "label": "Nome (opcional)", "info": "Vazio usa o nome da coleção." },
+        {
+          "type": "select",
+          "id": "icone",
+          "label": "Símbolo",
+          "options": [
+            { "value": "escudo", "label": "Escudo — imunidade" },
+            { "value": "raio", "label": "Raio — energia" },
+            { "value": "lua", "label": "Lua — sono" },
+            { "value": "brilho", "label": "Brilho — beleza" },
+            { "value": "flor", "label": "Flor — beleza" },
+            { "value": "chama", "label": "Chama — emagrecimento" },
+            { "value": "venus", "label": "Vênus — saúde da mulher" },
+            { "value": "marte", "label": "Marte — saúde do homem" },
+            { "value": "capsula", "label": "Cápsula — vitaminas" },
+            { "value": "coracao", "label": "Coração" },
+            { "value": "folha", "label": "Folha" },
+            { "value": "frasco", "label": "Frasco" },
+            { "value": "pulso", "label": "Pulso" },
+            { "value": "selo", "label": "Selo" },
+            { "value": "estrela", "label": "Estrela" }
+          ],
+          "default": "escudo"
+        },
+        { "type": "color", "id": "cor", "label": "Cor do círculo (opcional)" }
+      ]
+    }
+  ],
+  "max_blocks": 14,
+  "presets": [
+    {
+      "name": "Categorias Botanika",
+      "category": "Coleções",
+      "blocks": [
+        { "type": "categoria", "settings": { "icone": "escudo" } },
+        { "type": "categoria", "settings": { "icone": "lua" } },
+        { "type": "categoria", "settings": { "icone": "brilho" } },
+        { "type": "categoria", "settings": { "icone": "chama" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

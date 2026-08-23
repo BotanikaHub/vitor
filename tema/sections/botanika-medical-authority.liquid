@@ -1,0 +1,230 @@
+{%- comment -%}
+  Botanika — Autoridade Médica.
+  Foto redonda + depoimento. Cada médico é um bloco "doctor".
+  Campo "quote" é opcional: vazio usa a "Frase neutra" da seção
+  (placeholder até termos o depoimento real de cada médico).
+
+  No celular a grade vira trilho: em coluna única os cards
+  empilhados empurravam o resto da home para muito longe, e o
+  corte no card seguinte mostra que existe mais gente na lista.
+{%- endcomment -%}
+{%- liquid
+  assign s = section.settings
+-%}
+<div
+  class="bt-medauth"
+  style="--bt-brand: {{ s.brand_color }}; --bt-accent: {{ s.accent_color }}; --bt-pt: {{ s.padding_top }}px; --bt-pb: {{ s.padding_bottom }}px; --bt-cols: {{ s.columns }};"
+>
+  <div class="bt-medauth__wrap">
+    {%- if s.eyebrow != blank or s.heading != blank or s.subheading != blank -%}
+      <div class="bt-medauth__head">
+        {%- if s.eyebrow != blank -%}<p class="bt-medauth__eyebrow">{{ s.eyebrow }}</p>{%- endif -%}
+        {%- if s.heading != blank -%}<h2 class="bt-medauth__title">{{ s.heading }}</h2>{%- endif -%}
+        {%- if s.subheading != blank -%}<div class="bt-medauth__sub rich__text-m0">{{ s.subheading }}</div>{%- endif -%}
+      </div>
+    {%- endif -%}
+    <div class="bt-medauth__grid">
+      {%- for block in section.blocks -%}
+        {%- assign b = block.settings -%}
+        {%- liquid
+          assign focus_x = b.photo_focus_x | default: 50
+          assign focus_y = b.photo_focus_y | default: 30
+          assign zoom_pct = b.photo_zoom | default: 100
+          assign zoom = zoom_pct | times: 1.0 | divided_by: 100
+          assign img_style = 'object-position: ' | append: focus_x | append: '% ' | append: focus_y | append: '%; transform: scale(' | append: zoom | append: ');'
+        -%}
+        <article class="bt-medauth__card" {{ block.shopify_attributes }}>
+          <div class="bt-medauth__avatar">
+            {%- if b.image != blank -%}
+              {{ b.image | image_url: width: 320 | image_tag: loading: 'lazy', widths: '160,240,320', class: 'bt-medauth__img', alt: b.name, style: img_style }}
+            {%- else -%}
+              <div class="bt-medauth__img bt-medauth__ph">
+                {%- render 'botanika-trust-icon', nome: 'pulso', tamanho: 34 -%}
+              </div>
+            {%- endif -%}
+          </div>
+          <div class="bt-medauth__body">
+            {%- if b.quote != blank -%}
+              <div class="bt-medauth__quote">{{ b.quote }}</div>
+            {%- elsif s.neutral_quote != blank -%}
+              <div class="bt-medauth__quote"><p>{{ s.neutral_quote }}</p></div>
+            {%- endif -%}
+            {%- if b.name != blank -%}<p class="bt-medauth__name">{{ b.name }}</p>{%- endif -%}
+            {%- if b.specialty != blank or b.crm != blank -%}
+              <p class="bt-medauth__meta">
+                {%- if b.specialty != blank -%}<span class="bt-medauth__esp">{{ b.specialty }}</span>{%- endif -%}
+                {%- if b.crm != blank -%}<span class="bt-medauth__crm">{{ b.crm }}</span>{%- endif -%}
+              </p>
+            {%- endif -%}
+            {%- if b.instagram != blank -%}
+              {%- assign ig = b.instagram | replace: '@', '' | strip -%}
+              <a class="bt-medauth__ig" href="{% if b.instagram_url != blank %}{{ b.instagram_url }}{% else %}https://instagram.com/{{ ig }}{% endif %}" target="_blank" rel="noopener nofollow" aria-label="Instagram de {{ b.name }}">@{{ ig }}</a>
+            {%- endif -%}
+          </div>
+        </article>
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  .bt-medauth { padding-top: var(--bt-pt, 56px); padding-bottom: var(--bt-pb, 56px); background: #F5F6FB; }
+  .bt-medauth__wrap { max-width: 1240px; margin: 0 auto; padding: 0 20px; }
+  .bt-medauth__head { text-align: center; max-width: 720px; margin: 0 auto 34px; }
+
+  /* Sobre-título em pílula: o verde da marca não tem contraste como
+     texto sobre fundo claro, mas funciona como fundo. */
+  .bt-medauth__eyebrow {
+    display: inline-block;
+    margin: 0 0 14px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: var(--bt-accent, #C4D78A);
+    color: #1B2560;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    font-size: 11.5px;
+  }
+  .bt-medauth__title { color: var(--bt-brand, #323C91); font-weight: 800; letter-spacing: -.01em; font-size: clamp(24px, 2.8vw, 34px); line-height: 1.18; margin: 0 0 10px; }
+  .bt-medauth__sub { color: #6B7080; font-size: clamp(14px, 1.3vw, 16px); line-height: 1.55; }
+
+  .bt-medauth__grid { display: grid; grid-template-columns: repeat(var(--bt-cols, 2), minmax(0, 1fr)); align-items: stretch; gap: 22px; }
+
+  .bt-medauth__card {
+    display: flex;
+    gap: 22px;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 28px 30px;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 8px 26px rgba(27, 37, 96, .06);
+    box-sizing: border-box;
+  }
+  /* O anel verde é o que amarra a foto à marca sem depender da foto,
+     que vem de fontes e enquadramentos diferentes. */
+  .bt-medauth__avatar {
+    flex: 0 0 auto;
+    width: 116px;
+    height: 116px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #EDF2DF;
+    box-shadow: 0 0 0 3px #fff, 0 0 0 6px #C4D78A;
+  }
+  .bt-medauth__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .bt-medauth__ph { display: flex; align-items: center; justify-content: center; color: #323C91; }
+  .bt-medauth__body { flex: 1 1 auto; min-width: 0; }
+
+  .bt-medauth__quote { color: #3C4152; font-size: 15px; line-height: 1.6; margin: 0 0 14px; }
+  .bt-medauth__quote p { margin: 0; }
+  .bt-medauth__quote p:first-child:before { content: '\201C'; }
+  .bt-medauth__quote p:last-child:after { content: '\201D'; }
+  .bt-medauth__quote strong, .bt-medauth__quote b { font-weight: 700; color: #1B2560; }
+
+  .bt-medauth__name { color: var(--bt-brand, #323C91); font-weight: 800; font-size: 18px; line-height: 1.2; margin: 0; }
+
+  /* Especialidade e registro em linhas separadas: a barra vertical
+     entre eles virava uma linha só, longa e difícil de ler. */
+  .bt-medauth__meta { margin: 6px 0 0; font-size: 13px; }
+  .bt-medauth__esp { display: block; color: #7A7F8C; }
+  .bt-medauth__crm {
+    display: inline-block;
+    margin-top: 6px;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: #EEF0F8;
+    color: #323C91;
+    font-weight: 700;
+    letter-spacing: .01em;
+  }
+  .bt-medauth__ig { margin-top: 10px; display: inline-block; color: var(--bt-brand, #323C91); font-weight: 700; font-size: 13px; text-decoration: none; }
+  .bt-medauth__ig:hover { text-decoration: underline; }
+
+  @media (max-width: 900px) {
+    .bt-medauth__card { padding: 24px 24px; gap: 18px; }
+    .bt-medauth__avatar { width: 96px; height: 96px; }
+  }
+
+  /* Trilho no celular. A margem negativa com o padding igual mantém
+     o primeiro card alinhado ao título e deixa o próximo aparecendo. */
+  @media (max-width: 749px) {
+    .bt-medauth__grid {
+      display: flex;
+      grid-template-columns: none;
+      gap: 14px;
+      overflow-x: auto;
+      margin-inline: -20px;
+      padding: 4px 20px 14px;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .bt-medauth__grid::-webkit-scrollbar { display: none; }
+    .bt-medauth__card { flex: 0 0 82vw; max-width: 340px; scroll-snap-align: start; }
+    .bt-medauth__quote { font-size: 14.5px; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Autoridade Médica",
+  "tag": "section",
+  "class": "section-bt-medauth",
+  "settings": [
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Largura",
+      "default": "container",
+      "options": [
+        { "value": "container", "label": "Container" },
+        { "value": "fluid_container", "label": "Fluido" },
+        { "value": "full_width", "label": "Largura total" }
+      ]
+    },
+    { "type": "text", "id": "eyebrow", "label": "Sobre-título", "default": "AUTORIDADE MÉDICA" },
+    { "type": "text", "id": "heading", "label": "Título", "default": "Profissionais de saúde que recomendam a Botanika" },
+    { "type": "richtext", "id": "subheading", "label": "Subtítulo", "default": "<p>Médicos e especialistas que conhecem nossos protocolos.</p>" },
+    { "type": "range", "id": "columns", "label": "Colunas (desktop)", "min": 1, "max": 3, "step": 1, "default": 2 },
+    {
+      "type": "textarea",
+      "id": "neutral_quote",
+      "label": "Frase neutra (placeholder)",
+      "info": "Usada nos cards que ainda não têm depoimento real preenchido no bloco do médico.",
+      "default": "Conheço os protocolos da Botanika e recomendo aos meus pacientes."
+    },
+    { "type": "color", "id": "brand_color", "label": "Cor da marca", "default": "#323C91" },
+    { "type": "color", "id": "accent_color", "label": "Cor de destaque", "default": "#C4D78A" },
+    { "type": "range", "id": "padding_top", "label": "Espaço acima", "min": 0, "max": 140, "step": 4, "default": 56, "unit": "px" },
+    { "type": "range", "id": "padding_bottom", "label": "Espaço abaixo", "min": 0, "max": 140, "step": 4, "default": 56, "unit": "px" }
+  ],
+  "blocks": [
+    {
+      "type": "doctor",
+      "name": "Médico",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Foto" },
+        { "type": "range", "id": "photo_zoom", "label": "Zoom da foto", "min": 100, "max": 200, "step": 5, "unit": "%", "default": 100 },
+        { "type": "range", "id": "photo_focus_x", "label": "Posição horizontal do rosto", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 50 },
+        { "type": "range", "id": "photo_focus_y", "label": "Posição vertical do rosto", "min": 0, "max": 100, "step": 5, "unit": "%", "default": 30 },
+        { "type": "text", "id": "name", "label": "Nome", "default": "Dr. Nome Sobrenome" },
+        { "type": "text", "id": "crm", "label": "Registro (CRM / CRO / CFO)" },
+        { "type": "text", "id": "specialty", "label": "Especialidade / papel" },
+        { "type": "richtext", "id": "quote", "label": "Frase / depoimento (opcional)", "info": "Selecione um trecho e use negrito para destacar, como no exemplo de referência." },
+        { "type": "text", "id": "instagram", "label": "Instagram (sem @)" },
+        { "type": "url", "id": "instagram_url", "label": "Link do Instagram (opcional)" }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "Autoridade Médica",
+      "blocks": [ { "type": "doctor" }, { "type": "doctor" }, { "type": "doctor" } ]
+    }
+  ]
+}
+{% endschema %}

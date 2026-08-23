@@ -18,8 +18,17 @@
 <style>
   /* ---------- O cartão ---------- */
   /* .product-grid separa o card de grade das versões em lista e
-     sticky, que usam o mesmo wrapper com outro layout. */
+     sticky, que usam o mesmo wrapper com outro layout.
+
+     Coluna flexível de ponta a ponta (item da grade -> wrapper ->
+     informação) para o botão poder ser empurrado para o rodapé do
+     card. Sem isso o botão fica logo abaixo do preço, e como um
+     produto tem selo de desconto e preço riscado e outro não, os
+     botões da mesma linha param em alturas diferentes. */
+  .product-item { height: 100%; }
   .product-item__wrapper.product-grid {
+    display: flex;
+    flex-direction: column;
     height: 100%;
     padding: 10px 10px 16px;
     border-radius: 20px;
@@ -31,9 +40,35 @@
     background: #fff;
   }
   .product-item__wrapper.product-grid .product-item__information {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
     margin-top: 12px !important;
     padding-inline: 6px;
     text-align: center;
+  }
+  /* O último filho é o formulário do botão. */
+  .product-item__wrapper.product-grid .product-item__information > *:last-child {
+    margin-top: auto;
+    padding-top: 12px;
+  }
+
+  /* ---------- A foto ---------- */
+  /* Quadrado fixo para todos. O tema usa a proporção do arquivo, e
+     como as fotos foram exportadas em formatos diferentes cada card
+     ficava com uma altura de imagem. Com "contain" a embalagem
+     aparece inteira, centralizada, sem corte. */
+  .product-item__wrapper.product-grid .product-item__media--ratio {
+    --aspect-ratio: 1 !important;
+    aspect-ratio: 1 / 1 !important;
+    height: auto !important;
+  }
+  .product-item__wrapper.product-grid .product-item__media--ratio img,
+  .product-item__wrapper.product-grid .product__media img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    padding: 6px;
   }
 
   /* ---------- Selo de benefício ---------- */

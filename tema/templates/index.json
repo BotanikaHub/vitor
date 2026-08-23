@@ -355,7 +355,6 @@
       "settings": {
         "speed": 45,
         "gap": 40,
-        "padding": 26,
         "glifo": "brilho",
         "bg_color": "#ffffff",
         "pill_color": "#EDF2DF",
@@ -620,8 +619,8 @@
         "subheading": "<p>Médicos e especialistas que conhecem nossos protocolos e indicam para seus pacientes.</p>",
         "columns": 2,
         "neutral_quote": "Conheço os protocolos da Botanika e recomendo aos meus pacientes.",
-        "brand_color": "#d0473e",
-        "accent_color": "#10c322",
+        "brand_color": "#323C91",
+        "accent_color": "#C4D78A",
         "padding_top": 64,
         "padding_bottom": 64
       }
@@ -806,6 +805,7 @@
         "collection_qqeCFR",
         "collection_DLWHJF"
       ],
+      "disabled": true,
       "custom_css": [
         ".collection-item__information {display: none;}"
       ],
@@ -844,6 +844,85 @@
         "padding_top": 0,
         "padding_bottom": 0,
         "reset_spacing": false
+      }
+    },
+    "botanika_categorias": {
+      "type": "botanika-categorias",
+      "blocks": {
+        "cat_imunidade": {
+          "type": "categoria",
+          "settings": {
+            "collection": "imunidade",
+            "titulo": "",
+            "icone": "escudo"
+          }
+        },
+        "cat_sono_e_relaxamento": {
+          "type": "categoria",
+          "settings": {
+            "collection": "sono-e-relaxamento",
+            "titulo": "",
+            "icone": "lua"
+          }
+        },
+        "cat_estetica_e_beleza": {
+          "type": "categoria",
+          "settings": {
+            "collection": "estetica-e-beleza",
+            "titulo": "",
+            "icone": "brilho"
+          }
+        },
+        "cat_emagrecimento": {
+          "type": "categoria",
+          "settings": {
+            "collection": "emagrecimento",
+            "titulo": "",
+            "icone": "chama"
+          }
+        },
+        "cat_saude_da_mulher": {
+          "type": "categoria",
+          "settings": {
+            "collection": "saude-da-mulher",
+            "titulo": "",
+            "icone": "venus"
+          }
+        },
+        "cat_saude_do_homem": {
+          "type": "categoria",
+          "settings": {
+            "collection": "saude-do-homem",
+            "titulo": "",
+            "icone": "marte"
+          }
+        },
+        "cat_vitaminas_e_minerais": {
+          "type": "categoria",
+          "settings": {
+            "collection": "vitaminas-e-minerais",
+            "titulo": "",
+            "icone": "capsula"
+          }
+        }
+      },
+      "block_order": [
+        "cat_imunidade",
+        "cat_sono_e_relaxamento",
+        "cat_estetica_e_beleza",
+        "cat_emagrecimento",
+        "cat_saude_da_mulher",
+        "cat_saude_do_homem",
+        "cat_vitaminas_e_minerais"
+      ],
+      "settings": {
+        "heading": "Compre por Categoria",
+        "subheading": "Encontre o suplemento ideal para seu objetivo",
+        "circle_color": "#C4D78A",
+        "icon_color": "#1B2560",
+        "text_color": "#1B2560",
+        "padding_top": 40,
+        "padding_bottom": 40
       }
     },
     "flexible_section_UbEEzm": {
@@ -1047,7 +1126,7 @@
             "heading_font_size": 36,
             "heading_font_weight": "heading_weight",
             "heading_spacing_bottom": 24,
-            "description": "<p>Suplementos desenvolvidos com ingredientes de alta qualidade para apoiar seu corpo e sua mente.</p><p>✓ Ingredientes naturais e premium<br/>✓ Fórmulas cientificamente comprovadas<br/>✓ Selo de qualidade premium</p>",
+            "description": "<p>Suplementos desenvolvidos com ingredientes de alta qualidade para apoiar seu corpo e sua mente.</p><p>✓ Ingredientes naturais e premium</p><p>✓ Fórmulas cientificamente comprovadas</p><p>✓ Selo de qualidade premium</p>",
             "description_font_size": 14,
             "description_spacing_bottom": 25,
             "product": "",
@@ -1264,6 +1343,7 @@
     "botanika_medical_authority",
     "ugc_galeria",
     "collection_list_VmEYkJ",
+    "botanika_categorias",
     "flexible_section_UbEEzm",
     "featured_collection_yBMhWX",
     "divider_FcGgzn",

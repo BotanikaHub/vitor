@@ -1,0 +1,180 @@
+{%- comment -%}
+  ============================================================
+  Galeria estilo UGC — fotos de clientes / estilo de vida.
+
+  Trilho horizontal, 4 por linha no desktop. Cada card é uma
+  foto; se o bloco apontar para um produto, a foto vira link e
+  ganha a etiqueta do produto por cima — foto de cliente sem
+  caminho de compra é decoração, com caminho é vitrine.
+
+  Cards vazios só aparecem no editor, não na loja.
+  ============================================================
+{%- endcomment -%}
+{%- liquid
+  assign st = section.settings
+  assign items = section.blocks
+  assign has_photo = false
+  for b in items
+    if b.settings.photo != blank
+      assign has_photo = true
+    endif
+  endfor
+-%}
+{%- if has_photo or request.design_mode -%}
+  <div class="section ugc-wrap color-{{ st.color_scheme }} gradient">
+    <div class="container">
+      <div class="ugc__head">
+        {%- if st.eyebrow != blank -%}<p class="ugc__eyebrow">{{ st.eyebrow }}</p>{%- endif -%}
+        {%- if st.heading != blank -%}<h2 class="ugc__title">{{ st.heading }}</h2>{%- endif -%}
+        {%- if st.subheading != blank -%}<p class="ugc__sub">{{ st.subheading }}</p>{%- endif -%}
+      </div>
+      <div class="ugc__row">
+        {%- for b in items -%}
+          {%- liquid
+            assign bs = b.settings
+            assign p = bs.product
+          -%}
+          {%- if bs.photo != blank or request.design_mode -%}
+            <{% if p != blank %}a href="{{ p.url }}"{% else %}div{% endif %} class="ugc__card" {{ b.shopify_attributes }}>
+              <div class="ugc__media">
+                {%- if bs.photo != blank -%}
+                  {{ bs.photo | image_url: width: 800 | image_tag: loading: 'lazy', class: 'ugc__img', alt: bs.name | default: 'Botanika' }}
+                {%- else -%}
+                  <div class="ugc__ph"></div>
+                {%- endif -%}
+                {%- if p != blank -%}
+                  <span class="ugc__tag">
+                    {%- if p.featured_image -%}
+                      <img class="ugc__tag-foto" src="{{ p.featured_image | image_url: width: 96 }}" alt="" loading="lazy" width="48" height="48">
+                    {%- endif -%}
+                    <span class="ugc__tag-txt">
+                      <span class="ugc__tag-nome">{{ p.title | truncate: 28 }}</span>
+                      <span class="ugc__tag-preco">{{ p.price | money }}</span>
+                    </span>
+                  </span>
+                {%- endif -%}
+              </div>
+              {%- if bs.name != blank or bs.caption != blank -%}
+                <div class="ugc__info">
+                  {%- if bs.name != blank -%}<span class="ugc__name">{{ bs.name }}</span>{%- endif -%}
+                  {%- if bs.caption != blank -%}<span class="ugc__caption">{{ bs.caption }}</span>{%- endif -%}
+                </div>
+              {%- endif -%}
+            </{% if p != blank %}a{% else %}div{% endif %}>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+
+  {%- style -%}
+    .ugc-wrap { padding: 48px 0; }
+    .ugc__head { text-align: center; margin-bottom: 28px; }
+    /* Verde da marca só funciona como fundo em texto pequeno: como
+       cor de letra sobre fundo claro ele some. */
+    .ugc__eyebrow {
+      display: inline-block;
+      margin: 0 0 12px;
+      padding: 5px 14px;
+      border-radius: 999px;
+      background: #C4D78A;
+      color: #1B2560;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .ugc__title { margin: 0 0 8px; color: #1B2560; font-size: clamp(24px, 3.2vw, 34px); line-height: 1.15; letter-spacing: -.01em; }
+    .ugc__sub { margin: 0 auto; max-width: 640px; color: #6B7080; font-size: 15px; }
+
+    /* Sangra até a borda da tela: a margem negativa com o padding
+       igual alinha o primeiro card ao título e deixa o próximo
+       aparecendo, que é o que mostra que dá para arrastar. */
+    .ugc__row {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      margin-inline: -20px;
+      padding: 4px 20px 14px;
+      scroll-snap-type: x proximity;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .ugc__row::-webkit-scrollbar { display: none; }
+
+    .ugc__card { flex: 0 0 auto; width: min(74vw, 290px); scroll-snap-align: start; text-decoration: none; color: inherit; }
+    .ugc__media {
+      position: relative;
+      aspect-ratio: 3 / 4;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #EEF0F8;
+    }
+    .ugc__img, .ugc__ph { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .35s ease; }
+    .ugc__ph { background: linear-gradient(135deg, #EEF0F8, #E3E7F4); }
+    .ugc__card:hover .ugc__img { transform: scale(1.04); }
+
+    .ugc__tag {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .94);
+      backdrop-filter: blur(6px);
+    }
+    .ugc__tag-foto { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; flex: 0 0 auto; background: #fff; }
+    .ugc__tag-txt { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+    .ugc__tag-nome { color: #1B2560; font-size: 12.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .ugc__tag-preco { color: #323C91; font-size: 13px; font-weight: 800; }
+
+    .ugc__info { padding: 12px 4px 0; text-align: center; }
+    .ugc__name { display: block; color: #1B2560; font-weight: 700; font-size: 15px; }
+    .ugc__caption { display: block; font-size: 13px; color: #6B7080; margin-top: 2px; }
+
+    @media (min-width: 1000px) {
+      .ugc__row { margin-inline: 0; padding-inline: 0; }
+      .ugc__card { width: calc((100% - 3 * 16px) / 4); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .ugc__card:hover .ugc__img { transform: none; }
+    }
+  {%- endstyle -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Galeria Botanika",
+  "settings": [
+    { "type": "color_scheme", "id": "color_scheme", "label": "Esquema de cor", "default": "default" },
+    { "type": "text", "id": "eyebrow", "label": "Sobre-título", "default": "NA VIDA REAL" },
+    { "type": "text", "id": "heading", "label": "Título", "default": "A Botanika na sua rotina" },
+    { "type": "text", "id": "subheading", "label": "Subtítulo", "default": "Faça da Botanika parte do seu dia a dia." }
+  ],
+  "blocks": [
+    {
+      "type": "photo",
+      "name": "Foto",
+      "settings": [
+        { "type": "image_picker", "id": "photo", "label": "Foto (cliente / estilo de vida)" },
+        { "type": "product", "id": "product", "label": "Produto da foto (opcional)", "info": "Com produto, a foto vira link e ganha a etiqueta com nome e preço." },
+        { "type": "text", "id": "name", "label": "Nome (opcional)" },
+        { "type": "text", "id": "caption", "label": "Legenda (opcional)" }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "Galeria Botanika",
+      "blocks": [
+        { "type": "photo" }, { "type": "photo" }, { "type": "photo" }, { "type": "photo" }
+      ]
+    }
+  ]
+}
+{% endschema %}
