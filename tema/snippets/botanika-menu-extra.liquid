@@ -1,0 +1,114 @@
+{%- comment -%}
+  ============================================================
+  Conteúdo extra da gaveta de menu (mobile).
+
+  Categorias em círculo, prévia de produtos e contato — no
+  espírito da Guday e da Blessy, com a paleta da Botanika.
+
+  POR QUE INJETADO POR JS: a gaveta é montada dentro de
+  snippets/horizontal-menu.liquid, que tem 60 mil caracteres.
+  Reescrever esse arquivo por API para inserir um bloco é onde
+  um erro de transcrição derruba a loja. Aqui o conteúdo é
+  renderizado pelo Liquid (imagens, preços e links vêm do
+  servidor, não do navegador) e um script curto só o MOVE para
+  dentro da gaveta. Se o script falhar, o bloco fica escondido
+  e o menu continua funcionando como antes.
+  ============================================================
+{%- endcomment -%}
+{%- liquid
+  assign cats = 'imunidade,sono-e-relaxamento,estetica-e-beleza,emagrecimento,saude-da-mulher,saude-do-homem,vitaminas-e-minerais' | split: ','
+  assign vitrine = collections['frontpage']
+
+  comment
+    O id da configuracao de WhatsApp muda de tema para tema. Em vez de
+    apostar em um, tenta os que o Glozin usa; se nenhum estiver
+    preenchido, o botao simplesmente nao aparece.
+  endcomment
+  assign wpp = settings.whatsapp | default: settings.whatsapp_number | default: settings.whatsapp_link | default: settings.social_whatsapp_link
+  if wpp != blank
+    if wpp contains 'http'
+      assign wpp_url = wpp
+    else
+      assign so_digitos = wpp | remove: '+' | remove: '-' | remove: ' ' | remove: '(' | remove: ')'
+      assign wpp_url = 'https://wa.me/' | append: so_digitos
+    endif
+  endif
+-%}
+<div id="bk-menu-extra" hidden>
+
+  {%- comment -%} Categorias — atalho visual, o que a Guday põe no topo {%- endcomment -%}
+  <div class="bkm__bloco">
+    <p class="bkm__titulo">Categorias</p>
+    <div class="bkm__cats">
+      {%- for h in cats -%}
+        {%- assign c = collections[h] -%}
+        {%- if c != empty -%}
+          <a class="bkm__cat" href="{{ c.url }}">
+            <span class="bkm__cat-foto">
+              {%- if c.image -%}
+                <img src="{{ c.image | image_url: width: 160 }}" alt="{{ c.title | escape }}" loading="lazy" width="80" height="80">
+              {%- elsif c.products.first.featured_image -%}
+                <img src="{{ c.products.first.featured_image | image_url: width: 160 }}" alt="{{ c.title | escape }}" loading="lazy" width="80" height="80">
+              {%- endif -%}
+            </span>
+            <span class="bkm__cat-nome">{{ c.title }}</span>
+          </a>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+
+  {%- comment -%} Prévia de produtos {%- endcomment -%}
+  {%- if vitrine.products.size > 0 -%}
+    <div class="bkm__bloco">
+      <p class="bkm__titulo">Mais vendidos</p>
+      <div class="bkm__prods">
+        {%- for p in vitrine.products limit: 6 -%}
+          <a class="bkm__prod" href="{{ p.url }}">
+            <span class="bkm__prod-foto">
+              {%- if p.featured_image -%}
+                <img src="{{ p.featured_image | image_url: width: 260 }}" alt="{{ p.title | escape }}" loading="lazy" width="130" height="130">
+              {%- endif -%}
+            </span>
+            <span class="bkm__prod-nome">{{ p.title | truncate: 34 }}</span>
+            <span class="bkm__prod-preco">{{ p.price | money }}</span>
+          </a>
+        {%- endfor -%}
+      </div>
+      <a class="bkm__todos" href="{{ routes.all_products_collection_url }}">Ver todos os produtos →</a>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} Contato — o padrão de SAC da Blessy {%- endcomment -%}
+  {%- if wpp_url != blank -%}
+    <a class="bkm__wpp" href="{{ wpp_url }}" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor" aria-hidden="true">
+        <path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.5.1l-.7.9c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.1-.2 0-.4.1-.5l.4-.5c.1-.2.1-.3 0-.5l-.7-1.7c-.2-.4-.4-.4-.5-.4h-.5a1 1 0 0 0-.7.3c-.3.3-.9.9-.9 2.1s.9 2.5 1 2.6a9.3 9.3 0 0 0 3.7 3.3c1.3.5 1.8.6 2.5.5.7-.1 1.4-.6 1.6-1.2.2-.6.2-1.1.1-1.2Z"/>
+      </svg>
+      Falar no WhatsApp
+    </a>
+  {%- endif -%}
+
+  <p class="bkm__assinatura">Suplemento <span>✦</span> de verdade</p>
+</div>
+
+<script>
+  /* Move o bloco para dentro da gaveta, logo abaixo da lista de links.
+     Roda uma vez; se a gaveta não existir, não faz nada. */
+  (function () {
+    function injetar() {
+      var bloco = document.getElementById('bk-menu-extra');
+      if (!bloco || bloco.dataset.pronto) return;
+      var lista = document.querySelector('nav.navigation.horizontal.mobile .horizontal-list');
+      if (!lista || !lista.parentNode) return;
+      lista.parentNode.insertBefore(bloco, lista.nextSibling);
+      bloco.removeAttribute('hidden');
+      bloco.dataset.pronto = '1';
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', injetar);
+    } else {
+      injetar();
+    }
+  })();
+</script>

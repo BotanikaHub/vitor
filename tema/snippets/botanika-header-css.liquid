@@ -73,44 +73,214 @@
   .transparent .header-icon,
   .transparent .nav-toggle { color: inherit; }
 
-  /* ================= MENU LATERAL (mobile) ================= */
-  /* A cor da barra do topo vem da configuração menu_mobile_background
-     do cabeçalho, não daqui — ela virou o azul da marca no
-     header-group.json. Aqui é só o acabamento. */
+  /* ================= GAVETA DE MENU (mobile) =================
+     Referência: Guday e Blessy. Painel inteiro na cor da marca,
+     cantos arredondados do lado que fica dentro da tela, e
+     conteúdo além dos links — categorias, produtos e contato.
+
+     A gaveta é `fixed inset-0` com largura vinda do tema. O
+     overflow-y:auto aqui serve a dois fins: recorta o canto
+     arredondado (raio só aparece com overflow diferente de
+     visible) e mantém o menu rolável quando a lista é longa.
+     ============================================================ */
   @media (max-width: 1024.98px) {
-    .menu-mobile-title { min-height: 62px !important; }
-    .menu-mobile-title a.active {
+    nav.navigation.horizontal.mobile {
+      background: var(--bk-azul) !important;
+      border-radius: 0 26px 26px 0;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    /* A barra do topo some como faixa e vira só um cabeçalho:
+       mesma cor do painel, separada por um fio claro. */
+    nav.navigation.horizontal.mobile .menu-mobile-title {
+      background: transparent !important;
+      min-height: 62px !important;
+      border-bottom: 1px solid rgba(255, 255, 255, .16);
+    }
+    nav.navigation.horizontal.mobile .menu-mobile-title a {
+      color: #fff !important;
       font-size: 17px;
       letter-spacing: .005em;
     }
+    nav.navigation.horizontal.mobile .menu-mobile-title a:not(.active) { opacity: .6; }
+    nav.navigation.horizontal.mobile > close-menu svg { color: #fff !important; }
 
-    /* Itens com mais respiro e na cor da marca. O menu é a segunda
-       tela mais vista do site no celular; texto miúdo aqui custa
-       navegação. */
-    .horizontal-list > li.level0 > menu-item > a {
+    /* Itens de primeiro nível */
+    nav.navigation.horizontal.mobile .horizontal-list > li.level0 > menu-item > a {
       font-size: 15.5px !important;
       font-weight: 600 !important;
-      color: var(--bk-azul-esc) !important;
+      color: #fff !important;
     }
-    .horizontal-list > li.level0 > menu-item {
-      border-color: rgba(50, 60, 145, .13) !important;
+    nav.navigation.horizontal.mobile .horizontal-list > li.level0 > menu-item {
+      border-color: rgba(255, 255, 255, .14) !important;
     }
-    open-children-toggle svg.icon-down { color: var(--bk-azul); opacity: .5; }
+    nav.navigation.horizontal.mobile open-children-toggle svg.icon-down {
+      color: #fff;
+      opacity: .65;
+    }
 
-    /* Entrar / Cadastrar deixa de ser mais um item da lista e vira
-       botão — é ação, não navegação. */
-    .horizontal-list a.account-login,
-    .horizontal-list a.account-url {
+    /* Submenus continuam por cima da gaveta; ficam na mesma cor
+       para não abrir um retângulo branco no meio do painel. */
+    nav.navigation.horizontal.mobile .submenu {
+      background: var(--bk-azul) !important;
+      --gradient-background: var(--bk-azul);
+    }
+    nav.navigation.horizontal.mobile .submenu a,
+    nav.navigation.horizontal.mobile .submenu back-menu,
+    nav.navigation.horizontal.mobile .submenu .heading-style { color: #fff !important; }
+    nav.navigation.horizontal.mobile .submenu .grey-bg {
+      background: rgba(255, 255, 255, .08) !important;
+      border-color: rgba(255, 255, 255, .14) !important;
+    }
+    nav.navigation.horizontal.mobile .submenu menu-item,
+    nav.navigation.horizontal.mobile .submenu .border-bottom {
+      border-color: rgba(255, 255, 255, .14) !important;
+    }
+
+    /* Entrar / Cadastrar é ação, não navegação — vira botão. */
+    nav.navigation.horizontal.mobile .horizontal-list a.account-login,
+    nav.navigation.horizontal.mobile .horizontal-list a.account-url {
       margin: 20px 0 8px !important;
-      border: 1.5px solid var(--bk-azul) !important;
+      border: 1.5px solid rgba(255, 255, 255, .55) !important;
       border-radius: 999px !important;
       min-height: 48px !important;
       justify-content: center !important;
-      color: var(--bk-azul) !important;
+      color: #fff !important;
       font-weight: 700 !important;
       gap: 8px;
     }
-    .horizontal-list a.account-login svg,
-    .horizontal-list a.account-url svg { color: var(--bk-azul); }
+    nav.navigation.horizontal.mobile .horizontal-list a.account-login svg,
+    nav.navigation.horizontal.mobile .horizontal-list a.account-url svg { color: #fff; }
+
+    nav.navigation.horizontal.mobile .lang__currency-on-nav {
+      border-color: rgba(255, 255, 255, .16) !important;
+      color: #fff;
+    }
+    nav.navigation.horizontal.mobile .lang__currency-on-nav a,
+    nav.navigation.horizontal.mobile .lang__currency-on-nav button,
+    nav.navigation.horizontal.mobile .lang__currency-on-nav span { color: #fff !important; }
+
+    /* ---------- Conteúdo extra (snippet botanika-menu-extra) ---------- */
+    /* O padding de 30px acompanha o px-30 da lista de links, para
+       que categoria, produto e link nasçam na mesma margem. */
+    #bk-menu-extra {
+      padding: 24px 30px 34px;
+      color: #fff;
+    }
+    .bkm__bloco { margin-bottom: 26px; }
+    .bkm__titulo {
+      margin: 0 0 12px;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      opacity: .6;
+    }
+
+    /* Trilhos horizontais sangram até a borda: a margem negativa
+       mais o padding igual fazem o primeiro item alinhar com o
+       texto e o último respirar antes de acabar a tela. */
+    .bkm__cats,
+    .bkm__prods {
+      display: flex;
+      overflow-x: auto;
+      margin-inline: -30px;
+      padding-inline: 30px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .bkm__cats::-webkit-scrollbar,
+    .bkm__prods::-webkit-scrollbar { display: none; }
+
+    .bkm__cats { gap: 14px; }
+    .bkm__cat {
+      flex: 0 0 auto;
+      width: 74px;
+      text-align: center;
+      text-decoration: none;
+      color: #fff;
+    }
+    .bkm__cat-foto {
+      display: block;
+      width: 66px;
+      height: 66px;
+      margin: 0 auto 7px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: rgba(255, 255, 255, .14);
+    }
+    .bkm__cat-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .bkm__cat-nome { display: block; font-size: 11px; line-height: 1.25; font-weight: 600; }
+
+    .bkm__prods { gap: 12px; padding-bottom: 4px; }
+    .bkm__prod {
+      flex: 0 0 134px;
+      padding: 8px 8px 12px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .1);
+      text-decoration: none;
+      color: #fff;
+    }
+    .bkm__prod-foto {
+      display: block;
+      margin-bottom: 8px;
+      border-radius: 11px;
+      overflow: hidden;
+      background: #fff;
+      aspect-ratio: 1 / 1;
+    }
+    .bkm__prod-foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .bkm__prod-nome {
+      display: block;
+      min-height: 2.6em;
+      font-size: 12px;
+      line-height: 1.3;
+      font-weight: 600;
+    }
+    .bkm__prod-preco {
+      display: block;
+      margin-top: 4px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--bk-verde);
+    }
+    .bkm__todos {
+      display: inline-block;
+      margin-top: 12px;
+      color: var(--bk-verde);
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .bkm__wpp {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 48px;
+      border-radius: 999px;
+      background: var(--bk-verde);
+      color: var(--bk-azul-esc);
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .bkm__assinatura {
+      margin: 22px 0 0;
+      text-align: center;
+      font-size: 11.5px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      opacity: .55;
+    }
+    .bkm__assinatura span { color: var(--bk-verde); }
+  }
+
+  /* No desktop a gaveta não existe; o bloco extra também não. */
+  @media (min-width: 1025px) {
+    #bk-menu-extra { display: none !important; }
   }
 </style>
