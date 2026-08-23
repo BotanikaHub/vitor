@@ -10,9 +10,9 @@
   Nada de emoji: os símbolos vêm da família botanika-trust-icon,
   a mesma da barra de confiança, do menu e dos selos.
 
-  O número de colunas é automático (auto-fit): com a foto grande,
-  um número fixo deixava o cartão largo demais em tela cheia e
-  espremido no meio-termo.
+  Trilho horizontal em qualquer largura, com setas no desktop.
+  Em grade, seis médicos viravam duas linhas — quatro em cima e
+  dois sobrando embaixo, que lê como sobra e não como lista.
 
   Campo "quote" é opcional: vazio usa a "Frase neutra" da seção.
 {%- endcomment -%}
@@ -36,6 +36,15 @@
         {%- if s.subheading != blank -%}<div class="bt-medauth__sub rich__text-m0">{{ s.subheading }}</div>{%- endif -%}
       </div>
     {%- endif -%}
+
+    <div class="bt-medauth__setas">
+      <button class="bt-medauth__nav bt-medauth__nav--prev" type="button" aria-label="Anterior">
+        <svg width="9" height="15" viewBox="0 0 9 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 1.5 1.5 7.5l6 6"/></svg>
+      </button>
+      <button class="bt-medauth__nav bt-medauth__nav--next" type="button" aria-label="Próximo">
+        <svg width="9" height="15" viewBox="0 0 9 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m1.5 1.5 6 6-6 6"/></svg>
+      </button>
+    </div>
 
     <div class="bt-medauth__grid">
       {%- for block in section.blocks -%}
@@ -101,6 +110,43 @@
   </div>
 </div>
 
+<script>
+  /* Setas do trilho. O estado (fim/começo, e se há o que rolar) é
+     recalculado no scroll e no resize — a quantidade de cartões
+     visíveis muda com a largura da janela. */
+  (function () {
+    function ligar(sec) {
+      var rail = sec.querySelector('.bt-medauth__grid');
+      var prev = sec.querySelector('.bt-medauth__nav--prev');
+      var next = sec.querySelector('.bt-medauth__nav--next');
+      if (!rail || !prev || !next) return;
+
+      function passo() {
+        var card = rail.querySelector('.bt-medauth__card');
+        return card ? card.getBoundingClientRect().width + 20 : 300;
+      }
+      prev.addEventListener('click', function () { rail.scrollBy({ left: -passo(), behavior: 'smooth' }); });
+      next.addEventListener('click', function () { rail.scrollBy({ left: passo(), behavior: 'smooth' }); });
+
+      function estado() {
+        var sobra = rail.scrollWidth - rail.clientWidth;
+        sec.classList.toggle('bt-medauth--rola', sobra > 2);
+        prev.disabled = rail.scrollLeft <= 2;
+        next.disabled = rail.scrollLeft >= sobra - 2;
+      }
+      rail.addEventListener('scroll', estado, { passive: true });
+      window.addEventListener('resize', estado);
+      estado();
+    }
+    function iniciar() { document.querySelectorAll('.bt-medauth').forEach(ligar); }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', iniciar);
+    } else {
+      iniciar();
+    }
+  })();
+</script>
+
 {% stylesheet %}
   .bt-medauth { padding-top: var(--bt-pt, 56px); padding-bottom: var(--bt-pb, 56px); background: var(--bt-bg, #EDF2DF); }
   .bt-medauth__wrap { max-width: 1240px; margin: 0 auto; padding: 0 20px; }
@@ -123,22 +169,52 @@
   .bt-medauth__title { color: var(--bt-brand, #323C91); font-weight: 800; letter-spacing: -.01em; font-size: clamp(24px, 2.8vw, 34px); line-height: 1.18; margin: 0 0 10px; }
   .bt-medauth__sub { color: #55607A; font-size: clamp(14px, 1.3vw, 16px); line-height: 1.55; }
 
-  /* auto-fit: com a foto grande, um número fixo de colunas deixava o
-     cartão largo demais em tela cheia e espremido no meio-termo. */
+  /* Trilho em qualquer largura, nunca grade. Em grade, seis médicos
+     viravam duas linhas no desktop — quatro em cima e dois sobrando
+     embaixo, que lê como sobra e não como lista. Numa linha só, o
+     corte no card seguinte diz que a lista continua. */
   .bt-medauth__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(272px, 1fr));
+    display: flex;
     align-items: stretch;
     gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scroll-snap-type: x proximity;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
+  .bt-medauth__grid::-webkit-scrollbar { display: none; }
+  .bt-medauth__card { flex: 0 0 280px; scroll-snap-align: start; }
 
-  /* align-self:stretch em vez de height:100%: no trilho do celular o
-     height percentual não resolve contra um container de altura
-     indefinida, e os cartões acabavam com alturas diferentes. */
+  /* As setas só existem quando há o que rolar (classe posta pelo
+     script) e no desktop — no toque, arrastar já é o gesto. */
+  .bt-medauth__setas { display: none; }
+  .bt-medauth--rola .bt-medauth__setas {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin: -12px 0 16px;
+  }
+  .bt-medauth__nav {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--bt-brand, #323C91);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--bt-brand, #323C91);
+    cursor: pointer;
+    transition: background .18s ease, color .18s ease, opacity .18s ease;
+  }
+  .bt-medauth__nav:hover:not(:disabled) { background: var(--bt-brand, #323C91); color: #fff; }
+  .bt-medauth__nav:disabled { opacity: .3; cursor: default; }
+
   .bt-medauth__card {
     display: flex;
     flex-direction: column;
-    align-self: stretch;
     overflow: hidden;
     border-radius: 22px;
     background: var(--bt-brand, #323C91);
@@ -196,26 +272,17 @@
   }
   .bt-medauth__ig:hover { text-decoration: underline; }
 
-  /* Trilho no celular: seis cartões empilhados empurravam o resto da
-     home para muito longe, e o corte no próximo mostra que tem mais. */
   @media (max-width: 749px) {
+    /* Sangra até a borda da tela. O scroll-padding é o que impede o
+       navegador de encostar o primeiro cartão na borda ao ancorar o
+       snap — o padding do trilho sozinho ele ignora. */
     .bt-medauth__grid {
-      display: flex;
-      grid-template-columns: none;
       gap: 14px;
-      overflow-x: auto;
       margin-inline: -20px;
       padding: 4px 20px 14px;
-      scroll-snap-type: x proximity;
-      /* sem isso o navegador encosta o primeiro cartão na borda da
-         tela ao ancorar o snap, ignorando o padding do trilho */
       scroll-padding-inline: 20px;
-      scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
     }
-    .bt-medauth__grid::-webkit-scrollbar { display: none; }
-    .bt-medauth__grid { align-items: stretch; }
-    .bt-medauth__card { flex: 0 0 76vw; max-width: 300px; scroll-snap-align: start; }
+    .bt-medauth__card { flex: 0 0 76vw; max-width: 300px; }
   }
 {% endstylesheet %}
 
