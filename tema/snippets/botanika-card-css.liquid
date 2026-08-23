@@ -26,6 +26,12 @@
      produto tem selo de desconto e preço riscado e outro não, os
      botões da mesma linha param em alturas diferentes. */
   .product-item { height: 100%; }
+  /* No carrossel a fatia nasce do tamanho do próprio conteúdo, então
+     um card com selo ou nome de duas linhas ficava mais alto que o
+     vizinho. O :has restringe aos carrosséis de produto — os de
+     depoimento e categoria continuam como estão. */
+  .swiper-wrapper:has(.product-item__wrapper.product-grid) { align-items: stretch; }
+  .swiper-slide:has(.product-item__wrapper.product-grid) { height: auto; }
   .product-item__wrapper.product-grid {
     display: flex;
     flex-direction: column;
@@ -34,14 +40,21 @@
     border-radius: 20px;
     background: #F5F6FB;
   }
-  /* O invólucro deixa de ser a moldura branca e vira uma coluna: o
-     selo entra no fluxo, em cima, e a foto fica logo abaixo. Antes o
-     selo era absoluto por cima da embalagem e tapava o produto. Em
-     fluxo ele também pode quebrar em duas linhas sem invadir nada. */
+  /* O invólucro deixa de ser a moldura branca e vira uma coluna com
+     uma faixa livre em cima para o selo. Antes o selo ficava por cima
+     da embalagem e tapava o produto; aqui ele fica acima da foto e
+     pode até quebrar em duas linhas sem invadir nada. */
   .product-item__wrapper.product-grid .product-item__inner {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    /* Faixa reservada para o selo. Ela existe em TODO card, tenha
+       selo ou não: com o selo em fluxo, quem tinha selo empurrava a
+       foto para baixo e os cards da mesma linha começavam em alturas
+       diferentes. Com a faixa fixa, toda foto começa no mesmo ponto.
+       48px no mobile porque lá o selo mais longo quebra em 2 linhas. */
+    padding-top: 34px;
     border-radius: 0;
     overflow: visible;
     background: transparent;
@@ -88,10 +101,15 @@
   /* ---------- Selo de benefício ---------- */
   /* Verde da marca com texto azul em todos: sobre o cinza claro do
      cartão é o par que mais salta. Azul sólido sobre branco lia como
-     etiqueta de sistema, não como chamada. */
+     etiqueta de sistema, não como chamada.
+
+     Absoluto de novo, mas ancorado na faixa livre do topo — fora do
+     fluxo ele não mexe na altura de nada e nunca cai sobre a foto. */
   .product-item__wrapper.product-grid .card-benefit-badge {
-    position: static !important;
-    align-self: flex-start;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: auto !important;
     max-width: 100% !important;
     white-space: normal !important;
     text-overflow: clip !important;
@@ -193,6 +211,7 @@
 
   @media (max-width: 767.98px) {
     .product-item__wrapper.product-grid { padding: 6px 6px 14px; border-radius: 18px; }
+    .product-item__wrapper.product-grid .product-item__inner { padding-top: 48px; }
     .product-item__wrapper.product-grid .product-item__name { font-size: 13.5px !important; }
     .product-item__wrapper.product-grid .product-item__button-submit.btn-primary,
     .product-item__wrapper.product-grid .product__add-cart.w-full { min-height: 44px; font-size: 13.5px; }

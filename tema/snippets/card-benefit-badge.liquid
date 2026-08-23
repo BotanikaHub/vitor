@@ -17,7 +17,16 @@
   assign badge_red = false
 
   if badge == blank and card_product.handle contains 'kit'
-    assign badge = 'Kit Imunidade'
+    comment
+      Só o kit da imunidade se chama assim. Antes qualquer handle com
+      'kit' herdava esse texto, e o kit de whey + creatina aparecia
+      como "Kit Imunidade", que é outro produto.
+    endcomment
+    if card_product.handle == 'kit-da-imunidade'
+      assign badge = 'Kit Imunidade'
+    else
+      assign badge = 'Kit Botanika'
+    endif
     assign icone = 'escudo'
     assign badge_red = true
   elsif badge == blank
@@ -44,6 +53,9 @@
         assign badge = 'Cabelo, unhas e pele'
         assign icone = 'flor'
       when 'whey-balance-chocolate'
+        assign badge = 'Proteína e colágeno'
+        assign icone = 'frasco'
+      when 'whey-balance-sem-sabor'
         assign badge = 'Proteína e colágeno'
         assign icone = 'frasco'
     endcase
