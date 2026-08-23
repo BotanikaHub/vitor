@@ -81,8 +81,12 @@
 
      Quebra em vez de reticências: no celular de 375px os dois selos
      mais longos ainda passam de uma linha, e "Proteína e c…" não
-     diz nada enquanto "Proteína e / colágeno" diz. */
-  .card-benefit-badge {
+     diz nada enquanto "Proteína e / colágeno" diz.
+
+     Tudo daqui vale só na grade: no card deitado (upsell do
+     carrinho, listas) a foto tem 76px e o selo cobria a imagem
+     inteira. Lá ele é escondido — ver botanika-cart-css. */
+  .product-item__wrapper.product-grid .card-benefit-badge {
     max-width: calc(100% - 20px) !important;
     white-space: normal !important;
     text-overflow: clip !important;
@@ -92,7 +96,7 @@
     font-size: 11px !important;
     padding: 5px 11px !important;
   }
-  .card-benefit-badge--red {
+  .product-item__wrapper.product-grid .card-benefit-badge--red {
     background: var(--bk-verde) !important;
     color: var(--bk-azul-esc) !important;
   }
@@ -140,6 +144,8 @@
     align-items: center;
     gap: 4px !important;
   }
+  /* Global de propósito: o selo de OFF é do preço, não do cartão, e
+     aparece igual no card deitado e na página de produto. */
   .botanika-off-tag {
     display: inline-flex;
     align-items: center;
@@ -159,10 +165,11 @@
   }
 
   /* ---------- Botão ---------- */
-  /* Só as versões de largura cheia: o mesmo nome de classe também
-     aparece nos botõezinhos redondos de 45px que surgem no hover. */
-  .product-item__button-submit.btn-primary,
-  .product-item__wrapper .product__add-cart.w-full {
+  /* Só as versões de largura cheia da grade: o mesmo nome de classe
+     aparece nos botõezinhos redondos de 45px que surgem no hover e
+     no card deitado do upsell, que tem largura de sobra menor. */
+  .product-item__wrapper.product-grid .product-item__button-submit.btn-primary,
+  .product-item__wrapper.product-grid .product__add-cart.w-full {
     min-height: 46px;
     border: 0 !important;
     border-radius: 999px !important;
@@ -173,8 +180,8 @@
     letter-spacing: .01em;
     box-shadow: none !important;
   }
-  .product-item__button-submit.btn-primary:hover,
-  .product-item__wrapper .product__add-cart.w-full:hover {
+  .product-item__wrapper.product-grid .product-item__button-submit.btn-primary:hover,
+  .product-item__wrapper.product-grid .product__add-cart.w-full:hover {
     background: var(--bk-azul-esc) !important;
     color: #fff !important;
   }
@@ -182,8 +189,8 @@
   @media (max-width: 767.98px) {
     .product-item__wrapper.product-grid { padding: 8px 8px 14px; border-radius: 18px; }
     .product-item__wrapper.product-grid .product-item__name { font-size: 13.5px !important; }
-    .product-item__button-submit.btn-primary,
-    .product-item__wrapper .product__add-cart.w-full { min-height: 44px; font-size: 13.5px; }
+    .product-item__wrapper.product-grid .product-item__button-submit.btn-primary,
+    .product-item__wrapper.product-grid .product__add-cart.w-full { min-height: 44px; font-size: 13.5px; }
 
     /* Em duas colunas o card fica com ~145px úteis. O parcelamento é
        uma linha só (não pode quebrar e deixar "sem juros" sozinho),

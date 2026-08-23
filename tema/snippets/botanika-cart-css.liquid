@@ -1,0 +1,173 @@
+{%- comment -%}
+  ============================================================
+  Gaveta do carrinho — identidade Botanika.
+
+  Duas coisas aqui: a cara da gaveta (barra de frete, botões,
+  títulos) e o conserto do card de upsell.
+
+  O card de upsell usa o mesmo componente do card de produto,
+  mas no modo deitado (type: 'list'): foto pequena à esquerda,
+  texto à direita. O CSS da grade não vale ali — e o que vazava
+  cobria a foto de 76px com o selo de benefício e esticava o
+  botão para além do cartão. Aqui ele ganha as medidas dele.
+  ============================================================
+{%- endcomment -%}
+<style>
+  /* ================= A GAVETA ================= */
+  .minicart-heading,
+  .minicart__header .cart-count-drawer { color: var(--bk-azul-esc); }
+
+  /* Barra de frete grátis: trilho no azul claro da marca, preenchimento
+     no verde. O verde sozinho sobre branco quase não aparece. */
+  .minicart .progress-bar.cart_bar_w {
+    background: #E7EAF4;
+    height: 6px;
+    overflow: hidden;
+  }
+  .minicart .progress.percent_shipping_bar {
+    background: var(--bk-verde) !important;
+    height: 100%;
+  }
+  .minicart .cart_shipping.grey-bg { background: #F5F6FB !important; }
+  .minicart .free-shipping-message { color: var(--bk-azul-esc); font-size: 13.5px; }
+  .minicart .free-shipping-message strong,
+  .minicart .free-shipping-message b { color: var(--bk-azul); }
+
+  /* Contagem regressiva: aviso, não alarme. */
+  .minicart .cart-countdown-time { color: var(--bk-azul-esc); }
+
+  .minicart .subtotal,
+  .minicart .subtotal-price { color: var(--bk-azul-esc); font-weight: 800; }
+
+  /* Botões do rodapé */
+  .minicart .btn-checkout,
+  .cart-footer .btn-checkout {
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: var(--bk-azul) !important;
+    color: #fff !important;
+    min-height: 52px;
+    font-weight: 700;
+    letter-spacing: .01em;
+  }
+  .minicart .btn-checkout:hover,
+  .cart-footer .btn-checkout:hover { background: var(--bk-azul-esc) !important; }
+
+  .minicart .viewcart,
+  .cart-footer .viewcart {
+    border: 1.5px solid var(--bk-azul) !important;
+    border-radius: 999px !important;
+    background: transparent !important;
+    color: var(--bk-azul) !important;
+    min-height: 50px;
+    font-weight: 700;
+  }
+  .minicart .viewcart:hover,
+  .cart-footer .viewcart:hover {
+    background: var(--bk-azul) !important;
+    color: #fff !important;
+  }
+
+  /* ================= CARD DE UPSELL ================= */
+  .cart-upsell-item .product-item__wrapper,
+  .swiper-cart-upsell .swiper-slide .product-item__wrapper {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid #E7EAF4;
+    border-radius: 16px;
+    background: #fff;
+  }
+
+  /* A foto vira miniatura fixa. Sem largura definida ela herdava a
+     coluna do tema e empurrava o texto para fora do cartão. */
+  .cart-upsell-item .product-item__inner,
+  .swiper-cart-upsell .product-item__inner {
+    flex: 0 0 76px;
+    width: 76px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #F5F6FB;
+  }
+  .cart-upsell-item .product-item__media--ratio,
+  .swiper-cart-upsell .product-item__media--ratio {
+    --aspect-ratio: 1 !important;
+    aspect-ratio: 1 / 1 !important;
+    height: auto !important;
+  }
+  .cart-upsell-item .product-item__inner img,
+  .swiper-cart-upsell .product-item__inner img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    padding: 4px;
+  }
+
+  /* Selo e favorito não cabem numa miniatura de 76px. */
+  .cart-upsell-item .card-benefit-badge,
+  .swiper-cart-upsell .card-benefit-badge,
+  .cart-upsell-item .product-item__button-wishlist,
+  .swiper-cart-upsell .product-item__button-wishlist,
+  .cart-upsell-item .product-item__button-action,
+  .swiper-cart-upsell .product-item__button-action { display: none !important; }
+
+  .cart-upsell-item .product-item__information,
+  .swiper-cart-upsell .product-item__information {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-top: 0 !important;
+    text-align: left;
+  }
+  .cart-upsell-item .product-item__name,
+  .swiper-cart-upsell .product-item__name {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    color: var(--bk-azul-esc) !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+  }
+  .cart-upsell-item .product-item__price,
+  .swiper-cart-upsell .product-item__price { margin-top: 6px; }
+  .cart-upsell-item .installment-price--item .installment-price__cash,
+  .swiper-cart-upsell .installment-price--item .installment-price__cash { font-size: 1.7rem; }
+  .cart-upsell-item .installment-price--item .installment-price__parc,
+  .swiper-cart-upsell .installment-price--item .installment-price__parc { font-size: 1.1rem; }
+
+  /* O botão vinha com a largura máxima de 23rem do tema e estourava
+     a coluna. Aqui ele acompanha o texto. */
+  .cart-upsell-item .product-list-action,
+  .swiper-cart-upsell .product-list-action { margin-top: 10px; }
+  .cart-upsell-item .product-item__product-form,
+  .swiper-cart-upsell .product-item__product-form { width: 100%; max-width: none !important; }
+  .cart-upsell-item .product-item__button-submit,
+  .cart-upsell-item .product-item__select-options,
+  .swiper-cart-upsell .product-item__button-submit,
+  .swiper-cart-upsell .product-item__select-options {
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 38px;
+    border: 0 !important;
+    border-radius: 999px !important;
+    background: var(--bk-azul) !important;
+    color: #fff !important;
+    font-size: 12.5px;
+    font-weight: 700;
+    text-decoration: none !important;
+    box-shadow: none !important;
+  }
+  .cart-upsell-item .product-item__button-submit:hover,
+  .cart-upsell-item .product-item__select-options:hover,
+  .swiper-cart-upsell .product-item__button-submit:hover,
+  .swiper-cart-upsell .product-item__select-options:hover {
+    background: var(--bk-azul-esc) !important;
+    color: #fff !important;
+  }
+
+  .cart-recommend .cart-recommend-heading,
+  .minicart .cart-recommend h3,
+  .minicart .cart-recommend h4 { color: var(--bk-azul-esc); }
+</style>
