@@ -2148,24 +2148,36 @@ function cuAcaoDe(nome){
 /* "Dia D Kids" e "DIA D KIDS" são a mesma ação. */
 const cuChave=n=>cuNorm(n).replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ');
 
-/* De que marca é a tarefa. A lista de origem decide; quando a resposta vem
-   sem ela, o fim do nome ("| BOTANIKA") resolve. Sem os dois, a tarefa fica
-   sem marca — e aparece nas duas, porque sumir calado seria pior. */
-function cuMarcaDe(t){
+/* De que marca é a tarefa. Quem manda é o nome, não a lista: hoje as duas
+   marcas convivem na mesma lista do ClickUp, e a equipe escreve a marca no
+   fim ("| VERMEFREE", "| BOTANIKA + VERMEFREE") ou no começo
+   ("[VermeFree / CRM]"). Uma tarefa pode ser das duas. Nome sem marca cai
+   pra lista de origem; sem nenhum dos dois, ela aparece nas duas, porque
+   sumir calado seria pior. */
+function cuMarcasDe(t){
+  const s=cuNorm(t?.name),r=[];
+  if(/verme\s*-?\s*free/.test(s))r.push('VermeFree');
+  if(/botanika/.test(s))r.push('Botanika');
+  if(r.length)return r;
   const daLista=CU_LISTAS.find(l=>l.id===String(t?.list?.id||''));
-  if(daLista)return daLista.marca;
-  const s=String(t?.name||''),b=s.lastIndexOf('|');
-  if(b>0){
-    const fim=s.slice(b+1).trim();
-    if(CU_MARCAS.test(fim))return /verme/i.test(fim)?'VermeFree':'Botanika';
-  }
-  return '';
+  return daLista?[daLista.marca]:[];
 }
 function cuVisiveis(){
   const ts=cuTarefas||[];
   if(!cuSoMarca)return ts;
   const alvo=cuNorm(marcaDo(mesAtual()));
-  return ts.filter(t=>{const m=cuMarcaDe(t);return !m||cuNorm(m)===alvo});
+  return ts.filter(t=>{const m=cuMarcasDe(t);return !m.length||m.some(x=>cuNorm(x)===alvo)});
+}
+
+/* O filtro escondeu tudo. Uma página em branco parece defeito; então ela
+   diz o que aconteceu e dá a saída num clique. */
+function cuNadaDaMarca(){
+  const marca=esc(marcaDo(mesAtual())),n=(cuTarefas||[]).length;
+  return `<div class="g-aviso"><b>Nenhuma tarefa da ${marca} no ClickUp.</b>
+    As ${n} tarefas de Gestão Operacional ou citam outra marca no nome, ou
+    estão na lista da outra marca. Enquanto a lista da ${marca} não for
+    usada, veja as duas juntas.
+    <button class="g-tap" onclick="cuTrocarMarca()">ver as duas marcas</button></div>`;
 }
 function cuTrocarMarca(){cuSoMarca=!cuSoMarca;cuPintar();pintarMes();pintarSemana()}
 
@@ -2457,6 +2469,7 @@ function cuPintar(){
 
   topo.textContent=(cuLendo?'atualizando… · ':'')+'lido '+
     new Date(cuQuando).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  if(cuTarefas.length&&!cuVisiveis().length){alvo.innerHTML=cuNadaDaMarca();return}
   if(resumo)resumo.innerHTML=cuResumo();
   alvo.innerHTML = cuAba==='semana'?cuPintarSemana()
     : cuAba==='pessoa'?cuPintarPessoa()

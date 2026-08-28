@@ -39,6 +39,9 @@ const PAGINAS = [
      url:'https://app.clickup.com/t/b2',assignees:[],due_date:dia(0)},
     {id:'c1',name:'Implementar pop-up no site | BOTANIKA',status:'backlog',list:BOT,
      url:'https://app.clickup.com/t/c1',assignees:[],due_date:dia(2)},
+    {id:'d1',name:'PROGRAMA DE UGC — Estruturar com a Bianca | BOTANIKA + VERMEFREE',
+     status:'backlog',list:VF,url:'https://app.clickup.com/t/d1',
+     assignees:[{username:'Vanessa Ferreira'}],due_date:dia(5)},
     {id:'v1',name:'FRASCO NOVO — Lançamento | VermeFree',status:'backlog',list:VF,
      url:'https://app.clickup.com/t/v1',assignees:[{username:'Sarah | Gestora'}],due_date:dia(3)},
   ],has_more:false},
@@ -154,6 +157,8 @@ for(const [codigo,esperado] of [
   const t=await corpo(p);
   ok('mês aberto é da Botanika: só as tarefas dela aparecem',
      /Dia D Kids/.test(t) && !/Frasco Novo|Lançamento/i.test(t));
+  ok('tarefa das duas marcas não some da Botanika, mesmo na lista da VermeFree',
+     /PROGRAMA DE UGC/i.test(t));
   ok('o botão diz qual marca está filtrando',
      /^Só Botanika$/.test(await T(p,()=>document.querySelector('#g-marca').textContent)));
 
@@ -181,6 +186,32 @@ for(const [codigo,esperado] of [
   ok('e esconde a da Botanika', !/Dia D Kids/.test(vf));
   ok('sem reler o ClickUp pra trocar de marca',
      (await T(p,()=>window.__chamadas)).length===antes);
+  ok('tarefa das duas marcas aparece na VermeFree', /Programa De Ugc|PROGRAMA DE UGC/i.test(vf));
+  ok('sem erro de JS', erros.length===0, erros.join(' | '));
+  await p.close();
+}
+
+// ---- 5b. marca sem tarefa nenhuma explica o vazio ----
+{
+  const {p,erros}=await abrir();
+  await p.evaluate(()=>{
+    const base=D.meses[0];
+    const nova={id:D.prox.mes++,ano:base.ano,mes:base.mes,marca:'Marca Sem Nada',
+      metas:[0,0,0],ref:''};
+    D.meses.push(nova);
+    D.mapas.push({id:D.prox.mapa++,mesId:nova.id,nome:'x',layout:'direita',
+      prox:2,proxItem:1,itens:[],nos:[{id:1,pai:null,t:'x',cor:0,raizMes:nova.id,x:0,y:0}]});
+    trocarMes(nova.id);
+  });
+  await p.waitForTimeout(300);
+  const t=await corpo(p);
+  ok('marca sem tarefa não fica em branco', /Nenhuma tarefa da Marca Sem Nada/i.test(t),
+     t.replace(/\n/g,' ').slice(0,90));
+  ok('e diz quantas tarefas existem do outro lado', /9 tarefas de Gestão Operacional/i.test(t));
+
+  await p.click('#g-corpo .g-tap');
+  await p.waitForTimeout(300);
+  ok('o botão do aviso abre as duas marcas', /Dia D Kids/.test(await corpo(p)));
   ok('sem erro de JS', erros.length===0, erros.join(' | '));
   await p.close();
 }
