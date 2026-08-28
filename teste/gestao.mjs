@@ -13,28 +13,34 @@ const b = await chromium.launch({
   executablePath: process.env.CHROMIUM_PATH || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
   args:['--no-sandbox']});
 
-const AGORA = Date.UTC(2026,7,27,12,0,0);       // 27/08/2026, quinta
+/* Meio-dia de hoje: o que vence em dia(-1) está atrasado e o que vence em
+   dia(1) não está, a qualquer hora que o teste rode. */
+const AGORA = new Date().setHours(12,0,0,0);
 const dia = n => String(AGORA + n*86400000);
+
+const BOT={id:'901328142624'}, VF={id:'901328142677'};
 
 /* páginas de resposta do clickup_filter_tasks, no formato real */
 const PAGINAS = [
   {tasks:[
-    {id:'a1',name:'DIA D KIDS — E-mail Marketing | Base geral',status:'backlog',
+    {id:'a1',name:'DIA D KIDS — E-mail Marketing | Base geral',status:'backlog',list:BOT,
      url:'https://app.clickup.com/t/a1',assignees:[{username:'Pedro Lage'}],due_date:dia(4)},
-    {id:'a2',name:'Criar copy do e-mail — QUA 26/08 até 18h | Dia D Kids',status:'feito',
+    {id:'a2',name:'Criar copy do e-mail — QUA 26/08 até 18h | Dia D Kids',status:'feito',list:BOT,
      url:'https://app.clickup.com/t/a2',assignees:[{username:'Pedro Lage'}],due_date:dia(-1)},
-    {id:'a3',name:'Programar o e-mail — SEX 28/08 até 18h | Dia D Kids',status:'sprint',
+    {id:'a3',name:'Programar o e-mail — SEX 28/08 até 18h | Dia D Kids',status:'sprint',list:BOT,
      url:'https://app.clickup.com/t/a3',assignees:[{username:'Sarah | Gestora'}],due_date:dia(1)},
-    {id:'a4',name:'Subir criativos — SEG 25/08 até 18h | Dia D Kids',status:'backlog',
+    {id:'a4',name:'Subir criativos — SEG 25/08 até 18h | Dia D Kids',status:'backlog',list:BOT,
      url:'https://app.clickup.com/t/a4',assignees:[],due_date:dia(-2)},
   ],has_more:true,next_page:1},
   {tasks:[
-    {id:'b1',name:'CREATINA NO CÉREBRO — Instagram Stories',status:'feito',
+    {id:'b1',name:'CREATINA NO CÉREBRO — Instagram Stories',status:'feito',list:BOT,
      url:'https://app.clickup.com/t/b1',assignees:[],due_date:dia(-3)},
-    {id:'b2',name:'Publicar 3 stories — QUI 27/08 | Creatina',status:'feito',
+    {id:'b2',name:'Publicar 3 stories — QUI 27/08 | Creatina',status:'feito',list:BOT,
      url:'https://app.clickup.com/t/b2',assignees:[],due_date:dia(0)},
-    {id:'c1',name:'Implementar pop-up no site | BOTANIKA',status:'backlog',
+    {id:'c1',name:'Implementar pop-up no site | BOTANIKA',status:'backlog',list:BOT,
      url:'https://app.clickup.com/t/c1',assignees:[],due_date:dia(2)},
+    {id:'v1',name:'FRASCO NOVO — Lançamento | VermeFree',status:'backlog',list:VF,
+     url:'https://app.clickup.com/t/v1',assignees:[{username:'Sarah | Gestora'}],due_date:dia(3)},
   ],has_more:false},
 ];
 
@@ -59,6 +65,14 @@ async function abrir({temMcp=true,erro=null}={}){
   return {p,erros};
 }
 const T=(p,f)=>p.evaluate(f);
+const criarCampNoTAP=(p,nome)=>p.evaluate(n=>{
+  D.campanhas.push({id:D.prox.camp++,mesId:D.mesAtivo,nome:n,tipo:'diaD',tema:'',
+    oferta:{produtos:[],modoDesc:'geral',descGeral:0,descPorSku:{},extras:[],
+      frete:'',brinde:'',bonusUniversal:'',bonusInfluencer:''},
+    canais:[],receita:{},meta:50000,investimento:10000,
+    inicio:'2026-09-10',fim:'2026-09-10',secoes:[]});
+  pintarMes();
+},nome);
 const corpo=p=>T(p,()=>document.querySelector('#g-corpo').innerText);
 
 // ---- 1. lê o ClickUp e agrupa por ação ----
@@ -93,7 +107,9 @@ const corpo=p=>T(p,()=>document.querySelector('#g-corpo').innerText);
   await p.click('#pg-gestao .g-abas button[data-ga="semana"]');
   await p.waitForTimeout(200);
   const s=await corpo(p);
-  ok('semana separa por dia', /quinta|sexta|quarta/i.test(s), s.split('\n')[0]);
+  ok('semana separa por dia',
+     /(segunda|terça|quarta|quinta|sexta|sábado|domingo) \d{2}\/\d{2} · \d+ de \d+ feitas/i.test(s),
+     s.split('\n')[0]);
   ok('semana diz a ação de cada tarefa', /Dia D Kids/.test(s));
 
   await p.click('#pg-gestao .g-abas button[data-ga="atrasado"]');
@@ -128,6 +144,110 @@ for(const [codigo,esperado] of [
   ok('não tentou chamar nada', (await T(p,()=>window.__chamadas)).length===0);
   ok('o resto do planejador continua de pé',
      await T(p,()=>!!document.querySelector('#tit-mes').textContent));
+  ok('sem erro de JS', erros.length===0, erros.join(' | '));
+  await p.close();
+}
+
+// ---- 5. a Gestão segue o seletor de mês e de marca ----
+{
+  const {p,erros}=await abrir();
+  const t=await corpo(p);
+  ok('mês aberto é da Botanika: só as tarefas dela aparecem',
+     /Dia D Kids/.test(t) && !/Frasco Novo|Lançamento/i.test(t));
+  ok('o botão diz qual marca está filtrando',
+     /^Só Botanika$/.test(await T(p,()=>document.querySelector('#g-marca').textContent)));
+
+  await p.click('#g-marca');
+  await p.waitForTimeout(200);
+  const dois=await corpo(p);
+  ok('abrindo as duas marcas, a VermeFree entra', /Lançamento/i.test(dois));
+  ok('o botão troca de rótulo',
+     /duas marcas/i.test(await T(p,()=>document.querySelector('#g-marca').textContent)));
+
+  await p.click('#g-marca');
+  await p.waitForTimeout(200);
+  ok('volta a filtrar', !/Lançamento/i.test(await corpo(p)));
+
+  /* trocar para o mês da VermeFree troca o recorte sem nova leitura */
+  const antes=(await T(p,()=>window.__chamadas)).length;
+  await p.evaluate(()=>{
+    const vf=D.meses.find(m=>(m.marca||'')==='VermeFree');
+    document.querySelector('#sel-mes').value=vf.id;
+    trocarMes(vf.id);
+  });
+  await p.waitForTimeout(300);
+  const vf=await corpo(p);
+  ok('mês da VermeFree mostra a ação da VermeFree', /Lançamento/i.test(vf));
+  ok('e esconde a da Botanika', !/Dia D Kids/.test(vf));
+  ok('sem reler o ClickUp pra trocar de marca',
+     (await T(p,()=>window.__chamadas)).length===antes);
+  ok('sem erro de JS', erros.length===0, erros.join(' | '));
+  await p.close();
+}
+
+// ---- 6. placar do topo ----
+{
+  const {p,erros}=await abrir();
+  const r=await T(p,()=>document.querySelector('#g-resumo').innerText);
+  ok('placar diz quanto já foi concluído', /Tarefas concluídas/i.test(r), r.replace(/\n/g,' ').slice(0,80));
+  ok('placar conta as ações prontas para conferir', /Ações prontas para conferir/i.test(r));
+  ok('placar mostra as atrasadas', /Atrasadas/i.test(r));
+  ok('placar mostra o que vence nesta semana', /Esta semana/i.test(r));
+  ok('sem erro de JS', erros.length===0, erros.join(' | '));
+  await p.close();
+}
+
+// ---- 7. por pessoa ----
+{
+  const {p,erros}=await abrir();
+  await p.click('#pg-gestao .g-abas button[data-ga="pessoa"]');
+  await p.waitForTimeout(200);
+  const t=await corpo(p);
+  ok('agrupa por responsável', /Pedro Lage/.test(t) && /Sarah/.test(t), t.split('\n')[0]);
+  ok('conta feitas por pessoa', /de \d+ feitas/.test(t));
+  ok('tarefa sem dono não some', /Sem responsável/i.test(t));
+  ok('lista só o que falta', /Programar o e-mail/.test(t) && !/Criar copy do e-mail/.test(t));
+  ok('sem erro de JS', erros.length===0, erros.join(' | '));
+  await p.close();
+}
+
+// ---- 8. ação do ClickUp ligada à campanha do TAP ----
+{
+  const {p,erros}=await abrir();
+  await criarCampNoTAP(p,'Dia D Kids');
+  await p.click('nav.paginas button[data-pg="gestao"]');
+  await p.waitForTimeout(300);
+  ok('a ação oferece abrir o TAP da campanha',
+     await T(p,()=>[...document.querySelectorAll('#g-corpo .g-acao')]
+       .some(a=>/Dia D Kids/.test(a.textContent)&&a.querySelector('.g-tap'))));
+  ok('ação sem campanha no TAP não inventa botão',
+     await T(p,()=>[...document.querySelectorAll('#g-corpo .g-acao')]
+       .every(a=>/Dia D Kids/.test(a.textContent)||!a.querySelector('.g-tap'))));
+
+  await p.click('#g-corpo .g-acao .g-tap');
+  await p.waitForTimeout(300);
+  ok('o botão leva mesmo para o TAP',
+     await T(p,()=>document.querySelector('#pg-camp').classList.contains('on')));
+
+  /* e o caminho de volta: a faixa do Mês mostra a execução */
+  await p.click('nav.paginas button[data-pg="mes"]');
+  await p.waitForTimeout(300);
+  const mes=await T(p,()=>document.querySelector('#lista-camp-mes').innerText);
+  ok('a campanha do Mês mostra quanto já foi executado', /1\/4 feitas/.test(mes),
+     mes.replace(/\n/g,' ').slice(0,90));
+  ok('e avisa das atrasadas', /· 1 atrasada/.test(mes));
+  ok('sem erro de JS', erros.length===0, erros.join(' | '));
+  await p.close();
+}
+
+// ---- 9. campanha sem nada no ClickUp aparece como tal ----
+{
+  const {p,erros}=await abrir();
+  await criarCampNoTAP(p,'Campanha que ninguém abriu no ClickUp');
+  await p.waitForTimeout(300);
+  const mes=await T(p,()=>document.querySelector('#lista-camp-mes').innerText);
+  ok('campanha sem tarefa no ClickUp fica marcada', /sem tarefas no ClickUp/i.test(mes),
+     mes.replace(/\n/g,' ').slice(0,90));
   ok('sem erro de JS', erros.length===0, erros.join(' | '));
   await p.close();
 }

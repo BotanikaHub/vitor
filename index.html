@@ -337,6 +337,19 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 #pg-gestao .g-vazio{padding:22px;text-align:center;border:1px dashed var(--linha2);
   border-radius:11px;color:var(--txt2);font-size:13px}
 #pg-gestao .g-ondeta{font-size:11px;color:var(--txt2);white-space:nowrap}
+#pg-gestao #g-resumo{margin-bottom:18px}
+#pg-gestao #g-resumo:empty{display:none}
+#pg-gestao .g-tap{font-size:11px;color:var(--txt2);border:1px solid var(--linha2);
+  border-radius:20px;padding:3px 10px;background:var(--painel2)}
+#pg-gestao .g-tap:hover{color:var(--verde);border-color:var(--verde-esc)}
+#pg-gestao .g-cab h3{cursor:default}
+#pg-gestao .g-pes{font-size:12.5px;color:var(--txt3);margin:-4px 0 9px}
+/* selo de execução que a página do Mês e da Semana herdam da Gestão */
+.faixa-camp .exec{font-size:11px;padding:2px 9px;border-radius:20px;white-space:nowrap;
+  background:var(--painel2);color:var(--txt2)}
+.faixa-camp .exec.ok{background:#12331f;color:var(--verde)}
+.faixa-camp .exec.atras{background:#3a1a1b;color:var(--verm)}
+.faixa-camp .exec.sem{border:1px dashed var(--linha2);background:transparent;color:var(--txt3)}
 </style>
 
 <div id="nuvem"></div>
@@ -457,11 +470,14 @@ tr.total .cel{font-weight:600;color:var(--verde)}
     <div class="g-abas">
       <button data-ga="acoes" class="on" onclick="cuAbrirAba('acoes')">Por ação</button>
       <button data-ga="semana" onclick="cuAbrirAba('semana')">Semana</button>
+      <button data-ga="pessoa" onclick="cuAbrirAba('pessoa')">Por pessoa</button>
       <button data-ga="atrasado" onclick="cuAbrirAba('atrasado')">Atrasado</button>
     </div>
+    <button class="mini" id="g-marca" onclick="cuTrocarMarca()"></button>
     <button class="mini" onclick="cuLer({forcar:true})">Atualizar</button>
     <span class="g-quando" id="g-quando"></span>
   </div>
+  <div class="cartoes" id="g-resumo"></div>
   <div id="g-corpo"></div>
 </div>
 
@@ -1719,6 +1735,7 @@ function pintarMes(){
       <span class="tp">${TIPOS[c.tipo]?.nome||c.tipo}</span>
       <span class="dt">${dBR(dISO(c.inicio))} – ${dBR(dISO(c.fim))}</span>
       <span class="mt">${c.meta?brl(c.meta):'contínuo'}</span>
+      ${cuSeloCamp(c)}
       <button class="mini" onclick="irCampanha(${D.campanhas.indexOf(c)})">abrir TAP</button>
     </div>`).join(''):'<div class="vazio">Nenhuma campanha ainda. Use “+ nova campanha”.</div>';
   calendario();
@@ -1748,6 +1765,7 @@ function pintarSemana(){
       <span class="tp">${TIPOS[c.tipo]?.nome||''}</span>
       <span class="dt">${dBR(dISO(c.inicio))} – ${dBR(dISO(c.fim))}</span>
       <span class="mt">${c.meta?brl(c.meta):'contínuo'}</span>
+      ${cuSeloCamp(c)}
       <button class="mini" onclick="irCampanha(${D.campanhas.indexOf(c)})">abrir</button></div>`).join('')
     :'<div class="vazio">Nenhuma campanha nesta semana.</div>';
   const blocos=at.map(c=>{
@@ -1926,6 +1944,8 @@ function tudo(){
   organizar();pintarMes();pintarSemana();
   const cps=campsMes();ativa=cps.length?D.campanhas.indexOf(cps[0]):0;
   pintarTAP();
+  /* trocou o mês, trocou a marca: a Gestão segue o seletor */
+  if(typeof cuPintar==='function'&&$('#g-corpo'))cuPintar();
 }
 /* ================= SALVAR ================= */
 /* Chave nova a cada ciclo: setembro começa do zero, e o que já foi
@@ -2095,6 +2115,9 @@ const CU_MARCAS=/^(botanika|vermefree|verme free)$/i;
 const CU_PAG_MAX=12;               // teto de segurança na paginação
 
 let MCP=null, cuTarefas=null, cuQuando=0, cuErro=null, cuLendo=false, cuAba='acoes';
+/* A Gestão segue o seletor de mês como todas as outras páginas: mostra a
+   marca do mês aberto. O botão do topo abre as duas quando for preciso. */
+let cuSoMarca=true;
 
 const cuNorm=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
 const cuFeita=t=>CU_FEITO.includes(cuNorm(t.status));
@@ -2124,6 +2147,72 @@ function cuAcaoDe(nome){
 
 /* "Dia D Kids" e "DIA D KIDS" são a mesma ação. */
 const cuChave=n=>cuNorm(n).replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ');
+
+/* De que marca é a tarefa. A lista de origem decide; quando a resposta vem
+   sem ela, o fim do nome ("| BOTANIKA") resolve. Sem os dois, a tarefa fica
+   sem marca — e aparece nas duas, porque sumir calado seria pior. */
+function cuMarcaDe(t){
+  const daLista=CU_LISTAS.find(l=>l.id===String(t?.list?.id||''));
+  if(daLista)return daLista.marca;
+  const s=String(t?.name||''),b=s.lastIndexOf('|');
+  if(b>0){
+    const fim=s.slice(b+1).trim();
+    if(CU_MARCAS.test(fim))return /verme/i.test(fim)?'VermeFree':'Botanika';
+  }
+  return '';
+}
+function cuVisiveis(){
+  const ts=cuTarefas||[];
+  if(!cuSoMarca)return ts;
+  const alvo=cuNorm(marcaDo(mesAtual()));
+  return ts.filter(t=>{const m=cuMarcaDe(t);return !m||cuNorm(m)===alvo});
+}
+function cuTrocarMarca(){cuSoMarca=!cuSoMarca;cuPintar();pintarMes();pintarSemana()}
+
+/* ---- ação do ClickUp ↔ campanha do TAP ----
+   Os dois lados já usam o mesmo nome; casar por nome normalizado é o que
+   liga a execução ao planejamento sem pedir nada novo pra equipe. */
+let cuLiga=new Map();
+function cuLigar(){
+  cuLiga=new Map();
+  campsMes().forEach(c=>{const k=cuChave(c.nome);if(k)cuLiga.set(k,c)});
+}
+function cuCampanhaDe(nome){
+  const k=cuChave(nome);
+  if(!k)return null;
+  if(cuLiga.has(k))return cuLiga.get(k);
+  /* "Dia D Kids" casa com "Dia D Kids — Volta às aulas", mas só a partir de
+     5 letras: chave curta demais casaria com qualquer coisa. */
+  if(k.length<5)return null;
+  for(const [ck,c] of cuLiga)if(ck.length>=5&&(ck.includes(k)||k.includes(ck)))return c;
+  return null;
+}
+
+/* Quanto da campanha do TAP já foi executado. Refeito só quando muda o mês,
+   a leitura ou o filtro — as faixas do Mês e da Semana chamam por linha. */
+let cuExecMemo=null,cuExecSel='';
+function cuExecIndice(){
+  const sel=D.mesAtivo+'|'+cuQuando+'|'+(cuSoMarca?1:0);
+  if(cuExecMemo&&cuExecSel===sel)return cuExecMemo;
+  cuExecMemo=new Map();cuExecSel=sel;cuLigar();
+  if(cuTarefas)for(const g of cuAgrupar(cuVisiveis())){
+    if(g.orfa)continue;
+    const c=cuCampanhaDe(g.nome);if(!c)continue;
+    const a=cuExecMemo.get(c)||{total:0,feitas:0,atrasadas:0};
+    cuExecMemo.set(c,{total:a.total+g.total,feitas:a.feitas+g.feitas,
+      atrasadas:a.atrasadas+g.atrasadas});
+  }
+  return cuExecMemo;
+}
+/* Selo de execução nas faixas de campanha do Mês e da Semana. */
+function cuSeloCamp(c){
+  if(!cuTarefas)return '';
+  const e=cuExecIndice().get(c);
+  if(!e)return '<span class="exec sem">sem tarefas no ClickUp</span>';
+  const cls=e.atrasadas?'atras':(e.feitas===e.total?'ok':'');
+  return `<span class="exec ${cls}">${e.feitas}/${e.total} feitas`+
+    (e.atrasadas?` · ${e.atrasadas} atrasada${e.atrasadas>1?'s':''}`:'')+'</span>';
+}
 
 function cuAgrupar(tarefas){
   const por=new Map();
@@ -2173,6 +2262,8 @@ async function cuLer({forcar=false}={}){
     }
   }
   cuLer._retentou=false;cuLendo=false;cuPintar();
+  /* as faixas de campanha do Mês e da Semana passam a mostrar a execução */
+  try{if($('#lista-camp-mes'))pintarMes();if($('#camp-semana'))pintarSemana()}catch(e){}
 }
 
 /* Cada código tem uma saída diferente. Um aviso genérico esconderia
@@ -2212,8 +2303,11 @@ function cuLinhaTarefa(t){
 }
 
 function cuPintarAcoes(){
-  const gs=cuAgrupar(cuTarefas||[]);
-  if(!gs.length)return '<div class="g-vazio">Nenhuma tarefa nas listas de Gestão Operacional.</div>';
+  cuLigar();
+  const gs=cuAgrupar(cuVisiveis());
+  if(!gs.length)return '<div class="g-vazio">Nenhuma tarefa '+
+    (cuSoMarca?'da '+esc(marcaDo(mesAtual()))+' ':'')+
+    'nas listas de Gestão Operacional.</div>';
   return gs.map(g=>{
     const pct=g.total?Math.round(100*g.feitas/g.total):0;
     const selo=g.pronta?'<span class="g-selo ok">pronta para conferir</span>'
@@ -2221,9 +2315,11 @@ function cuPintarAcoes(){
       :'<span class="g-selo anda">em andamento</span>';
     const faltam=g.tarefas.filter(t=>!cuFeita(t))
       .sort((a,b)=>(+a.due_date||9e15)-(+b.due_date||9e15));
+    const c=g.orfa?null:cuCampanhaDe(g.nome);
     return `<div class="g-acao">
       <div class="g-cab"><h3>${esc(g.nome)}</h3>
-        <span class="g-frac">${g.feitas} de ${g.total} feitas</span>${g.orfa?'':selo}</div>
+        <span class="g-frac">${g.feitas} de ${g.total} feitas</span>${g.orfa?'':selo}
+        ${c?`<button class="g-tap" onclick="irCampanha(${D.campanhas.indexOf(c)})">abrir TAP</button>`:''}</div>
       <div class="g-barra"><i style="width:${pct}%"></i></div>
       ${faltam.length?`<div class="g-lista">${faltam.map(cuLinhaTarefa).join('')}</div>`:''}
     </div>`;
@@ -2236,7 +2332,7 @@ function cuPintarSemana(){
   const dias=[...Array(7)].map((_,i)=>{const d=new Date(seg);d.setDate(seg.getDate()+i);return d});
   const hojeISO=cuISO(hoje.getTime());
   const porDia=new Map();
-  for(const t of (cuTarefas||[])){
+  for(const t of cuVisiveis()){
     if(!t.due_date)continue;
     const k=cuISO(t.due_date);
     if(!porDia.has(k))porDia.set(k,[]);
@@ -2259,7 +2355,7 @@ function cuPintarSemana(){
 
 function cuPintarAtrasado(){
   const agora=Date.now();
-  const ts=(cuTarefas||[]).filter(t=>!cuFeita(t)&&t.due_date&&+t.due_date<agora)
+  const ts=cuVisiveis().filter(t=>!cuFeita(t)&&t.due_date&&+t.due_date<agora)
     .sort((a,b)=>+a.due_date-+b.due_date);
   if(!ts.length)return '<div class="g-vazio">Nada atrasado. 🎉</div>';
   return `<div class="g-acao"><div class="g-cab"><h3>Prazo vencido e ainda não feito</h3>
@@ -2269,10 +2365,81 @@ function cuPintarAtrasado(){
         (a?`<span class="g-ondeta">${esc(a)}</span>`:'')+'</div>')}).join('')}</div></div>`;
 }
 
+/* Quem está segurando o quê. Um gestor de operações precisa da carga por
+   pessoa, não só por ação — é essa a pergunta na reunião de segunda. */
+function cuPintarPessoa(){
+  const por=new Map(),agora=Date.now();
+  for(const t of cuVisiveis()){
+    const quem=(t.assignees||[]).map(a=>a.username).filter(Boolean);
+    for(const q of (quem.length?quem:['Sem responsável'])){
+      if(!por.has(q))por.set(q,[]);
+      por.get(q).push(t);
+    }
+  }
+  if(!por.size)return '<div class="g-vazio">Nenhuma tarefa para distribuir.</div>';
+  return [...por.entries()].map(([quem,ts])=>{
+    const feitas=ts.filter(cuFeita).length;
+    const atrasadas=ts.filter(t=>!cuFeita(t)&&t.due_date&&+t.due_date<agora).length;
+    const faltam=ts.filter(t=>!cuFeita(t))
+      .sort((a,b)=>(+a.due_date||9e15)-(+b.due_date||9e15));
+    return {quem,ts,feitas,atrasadas,faltam};
+  }).sort((a,b)=>(b.atrasadas-a.atrasadas)||(b.faltam.length-a.faltam.length))
+  .map(g=>{
+    const pct=Math.round(100*g.feitas/g.ts.length);
+    return `<div class="g-acao">
+      <div class="g-cab"><h3>${esc(g.quem)}</h3>
+        <span class="g-frac">${g.feitas} de ${g.ts.length} feitas</span>
+        ${g.atrasadas?`<span class="g-selo atras">${g.atrasadas} atrasada${g.atrasadas>1?'s':''}</span>`
+          :g.faltam.length?'<span class="g-selo anda">em andamento</span>'
+          :'<span class="g-selo ok">tudo feito</span>'}</div>
+      <div class="g-barra"><i style="width:${pct}%"></i></div>
+      ${g.faltam.length?`<div class="g-lista">${g.faltam.map(t=>{const a=cuAcaoDe(t.name);
+        return cuLinhaTarefa(t).replace('</div>',
+          (a?`<span class="g-ondeta">${esc(a)}</span>`:'')+'</div>')}).join('')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* O placar que ele abre a página pra ver: quanto já foi feito, quanto falta
+   e o que vence nesta semana. */
+function cuResumo(){
+  const ts=cuVisiveis();
+  if(!ts.length)return '';
+  const agora=Date.now();
+  const feitas=ts.filter(cuFeita).length;
+  const atrasadas=ts.filter(t=>!cuFeita(t)&&t.due_date&&+t.due_date<agora).length;
+  const gs=cuAgrupar(ts).filter(g=>!g.orfa);
+  const prontas=gs.filter(g=>g.pronta).length;
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const seg=new Date(hoje);seg.setDate(hoje.getDate()-((hoje.getDay()+6)%7));
+  const dom=new Date(seg);dom.setDate(seg.getDate()+7);
+  const naSemana=ts.filter(t=>t.due_date&&+t.due_date>=seg.getTime()&&+t.due_date<dom.getTime());
+  const semFeitas=naSemana.filter(cuFeita).length;
+  const pct=Math.round(100*feitas/ts.length);
+  return `<div class="cartao"><div class="rot">Tarefas concluídas</div>
+      <div class="num ${pct>=100?'v':''}">${feitas} de ${ts.length}</div>
+      <div class="pe">${pct}% da execução ${cuSoMarca?'da '+esc(marcaDo(mesAtual())):'das duas marcas'}</div></div>
+    <div class="cartao"><div class="rot">Ações prontas para conferir</div>
+      <div class="num ${prontas?'v':''}">${prontas} de ${gs.length}</div>
+      <div class="pe">${gs.length-prontas} ainda em execução</div></div>
+    <div class="cartao"><div class="rot">Atrasadas</div>
+      <div class="num ${atrasadas?'a':'v'}">${atrasadas}</div>
+      <div class="pe">${atrasadas?'prazo vencido e não feito':'nenhum prazo vencido'}</div></div>
+    <div class="cartao"><div class="rot">Esta semana</div>
+      <div class="num">${semFeitas} de ${naSemana.length}</div>
+      <div class="pe">${naSemana.length-semFeitas} a entregar até domingo</div></div>`;
+}
+
 function cuPintar(){
-  const alvo=$('#g-corpo'),topo=$('#g-quando');if(!alvo)return;
+  const alvo=$('#g-corpo'),topo=$('#g-quando'),resumo=$('#g-resumo');if(!alvo)return;
   document.querySelectorAll('#pg-gestao .g-abas button')
     .forEach(b=>b.classList.toggle('on',b.dataset.ga===cuAba));
+  const bm=$('#g-marca');
+  /* o botão só existe pra quem tem o ClickUp; e volta se a capacidade
+     aparecer depois — o primeiro desenho acontece antes dela resolver */
+  if(bm){bm.style.display=MCP?'':'none';
+    bm.textContent=cuSoMarca?'Só '+marcaDo(mesAtual()):'As duas marcas'}
+  if(resumo)resumo.innerHTML='';
 
   if(!MCP){
     alvo.innerHTML=`<div class="g-aviso"><b>O ClickUp só responde com a página aberta no claude.ai.</b>
@@ -2290,7 +2457,9 @@ function cuPintar(){
 
   topo.textContent=(cuLendo?'atualizando… · ':'')+'lido '+
     new Date(cuQuando).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  if(resumo)resumo.innerHTML=cuResumo();
   alvo.innerHTML = cuAba==='semana'?cuPintarSemana()
+    : cuAba==='pessoa'?cuPintarPessoa()
     : cuAba==='atrasado'?cuPintarAtrasado() : cuPintarAcoes();
 }
 
@@ -2299,7 +2468,9 @@ function cuAbrirAba(a){cuAba=a;cuPintar()}
 /* liga a capacidade sem travar o resto da página */
 (async function(){
   try{MCP=await window.claude?.use?.('mcp')||null}catch(e){MCP=null}
-  if($('#g-corpo'))cuPintar();
+  if(!$('#g-corpo'))return;
+  cuPintar();
+  if(MCP)cuLer();   /* sem esperar a aba: o Mês já abre com a execução do lado */
 })();
 
 </script>
