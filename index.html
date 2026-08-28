@@ -141,7 +141,11 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 .el.apagado{opacity:.2}.el.achado{box-shadow:0 0 0 3px #F5C51E}
 .no{transform:translate(-50%,-50%);background:#fff;border:2px solid #7B61FF;border-radius:22px;
   padding:9px 17px;font-size:14px;line-height:1.35;max-width:290px;display:flex;align-items:center;gap:8px}
-.no.raiz{font-size:17px;font-weight:600;padding:14px 26px;border-width:2.5px}
+.no.raiz{font-size:17px;font-weight:600;padding:14px 26px;border-width:2.5px;
+  max-width:340px;flex-wrap:wrap;row-gap:9px}
+/* os selos de meta e de resto descem pra linha de baixo: em linha com o
+   título eles espremiam o nome do mês até sobrar uma letra por linha */
+.no.raiz .conteudo{flex:1 0 100%}
 .no.feito .conteudo{text-decoration:line-through;opacity:.45}
 .no .ok{color:#0AB58F;font-size:13px;flex-shrink:0}
 .no .selo{font-size:10px;padding:2px 7px;border-radius:20px;background:#eceaff;
@@ -337,6 +341,51 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 #pg-gestao .g-vazio{padding:22px;text-align:center;border:1px dashed var(--linha2);
   border-radius:11px;color:var(--txt2);font-size:13px}
 #pg-gestao .g-ondeta{font-size:11px;color:var(--txt2);white-space:nowrap}
+/* Tráfego e API lado a lado no passo 2: o que cada um fatura e o que
+   cada um consome, com o resto da meta calculado embaixo. */
+.fontes{border:1px solid var(--linha2);border-radius:11px;padding:4px 13px 10px;margin:14px 0 4px}
+/* grade, não flex: com larguras fixas os campos estouravam o modal */
+.fontes .cabf,.fontes .linf{display:grid;gap:9px;align-items:center;padding:7px 0;
+  grid-template-columns:minmax(80px,1fr) minmax(72px,104px) minmax(72px,104px) 46px}
+.fontes .cabf{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);
+  border-bottom:1px solid var(--linha)}
+.fontes .nm{font-size:13.5px;min-width:0}
+.fontes .cabf .col,.fontes .cabf .rs{text-align:right}
+.fontes input{width:100%;min-width:0;background:var(--painel2);border:1px solid var(--linha2);
+  border-radius:8px;padding:6px 9px;text-align:right;font-variant-numeric:tabular-nums}
+.fontes .rs{text-align:right;font-size:12.5px;color:var(--txt2);font-variant-numeric:tabular-nums}
+.fontes .linf.resto{border-top:1px dashed var(--linha2);color:var(--txt2);font-size:13px}
+.fontes .linf.resto .nm{font-size:13px}
+.fontes .linf.resto .vl{text-align:right;font-variant-numeric:tabular-nums;color:var(--txt)}
+
+/* A escada: cada degrau é um passo da engenharia reversa, e o número
+   vai ficando menor conforme desce da meta até a ação. */
+#escada{border:1px solid var(--linha);border-radius:13px;background:var(--painel);
+  overflow:hidden;margin-bottom:26px}
+.degrau{padding:15px 18px;border-top:1px solid var(--linha)}
+.degrau:first-child{border-top:none}
+.degrau .cab{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
+.degrau .np{width:22px;height:22px;border-radius:50%;background:var(--painel2);
+  border:1px solid var(--linha2);color:var(--txt2);font-size:11.5px;font-weight:600;
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.degrau h4{margin:0;font-size:13.5px;font-weight:600;flex:1;min-width:130px}
+.degrau .vlr{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+.degrau .vlr.a{color:var(--amar)}.degrau .vlr.v{color:var(--verde)}
+.degrau .pe{font-size:12.5px;color:var(--txt3);margin-top:4px}
+.fatia{display:flex;align-items:center;gap:11px;padding:8px 0 8px 33px;font-size:13px;
+  border-top:1px dashed var(--linha);flex-wrap:wrap}
+.fatia:first-of-type{border-top:none}
+.fatia .nm{flex:1;min-width:130px}
+.fatia .pc{font-size:12px;color:var(--txt3);font-variant-numeric:tabular-nums;min-width:38px;
+  text-align:right}
+.fatia .vl{font-variant-numeric:tabular-nums;min-width:96px;text-align:right}
+.fatia .ped{font-size:12px;color:var(--txt3);min-width:96px;text-align:right}
+.fatia.resto{color:var(--amar);border-top:1px solid var(--linha2);margin-top:4px;padding-top:11px}
+.fatia.resto .nm{font-weight:600}
+.fatia.sobra{color:var(--verde);border-top:1px solid var(--linha2);margin-top:4px;padding-top:11px}
+.trilho{height:7px;border-radius:99px;background:var(--linha);overflow:hidden;display:flex;
+  margin-top:11px}
+.trilho i{display:block;height:100%}
 #pg-gestao #g-resumo{margin-bottom:18px}
 #pg-gestao #g-resumo:empty{display:none}
 #pg-gestao .g-tap{font-size:11px;color:var(--txt2);border:1px solid var(--linha2);
@@ -359,6 +408,7 @@ tr.total .cel{font-weight:600;color:var(--verde)}
   <div class="linha-mes">
     <h1 class="mes-tit" id="tit-mes">Agosto <b>2026</b></h1>
     <select id="sel-mes" onchange="trocarMes(+this.value)"></select>
+    <button class="mini forte" onclick="editarMetasMes()">Metas do mês</button>
     <button class="mini" onclick="novoMes()">+ novo mês</button>
   </div>
   <div class="metas-topo" id="metas-topo"></div>
@@ -430,6 +480,11 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 </div>
 
 <div class="pagina on" id="pg-mes">
+  <h2 class="sec" style="margin-top:0">Engenharia reversa — da meta até a ação</h2>
+  <p class="dica">Preencha a meta do mês primeiro. Daí para baixo, o planejador
+    mostra quanto ainda falta atribuir e o que cada ação precisa entregar.</p>
+  <div id="escada"></div>
+  <h2 class="sec">Resumo do mês</h2>
   <div class="cartoes" id="cartoes-mes"></div>
   <h2 class="sec" id="tit-cal">Calendário</h2>
   <p class="dica">Cada barra é uma campanha. Clique num dia para ver o que sai nele.</p>
@@ -759,17 +814,57 @@ function papeisPorColuna(tipo,ini,fim){
 
 /* As proporções do Dia D somam 1,002 — arredondar canal a canal faz o TAP
    fechar acima da meta. O resto vai pro canal de maior fatia. */
-function dividirReceita(meta,inv){
-  const l=CANAIS_RECEITA.map(c=>({n:c.n,r:c.r,on:true,
-    inv:Math.round(inv*c.invPr),meta:Math.round(meta*c.pr)}));
-  const ajusta=(campo,alvo,peso)=>{
-    const soma=l.reduce((t,x)=>t+x[campo],0);
-    if(soma===alvo)return;
-    const i=l.indexOf(l.reduce((a,b)=>peso(b)>peso(a)?b:a));
-    l[i][campo]+=alvo-soma;
-  };
-  ajusta('meta',meta,x=>x.meta);
-  ajusta('inv',inv,x=>x.inv);
+/* As duas fontes que consomem verba. O resto do faturamento vem de canal
+   que não se compra — influencer, base, atendimento, orgânico. */
+const FONTES=[{k:'traf',n:'Tráfego'},{k:'api',n:'API'}];
+const canalRec=n=>CANAIS_RECEITA.find(c=>c.n===n);
+
+/* Defaults nas mesmas proporções de sempre: quem não mexer em nada
+   continua com os números que o planejador já dava. */
+function fontesPadrao(meta,inv){
+  const f={};
+  FONTES.forEach(({k,n})=>{const c=canalRec(n);
+    f[k]={meta:Math.round(meta*c.pr),inv:Math.round(inv*c.invPr)}});
+  return f;
+}
+/* Rede de segurança para dado que não passou pelo passo 2 — campanha
+   antiga, JSON importado, meta encolhida depois. As fontes encolhem na
+   mesma proporção em vez de estourarem a meta. */
+function fontesValidas(meta,f){
+  if(!f)return fontesPadrao(meta,0);
+  const soma=FONTES.reduce((t,{k})=>t+(f[k]?.meta||0),0);
+  if(soma<=meta)return f;
+  const r={};
+  FONTES.forEach(({k})=>r[k]={meta:Math.round((f[k]?.meta||0)*meta/soma),inv:f[k]?.inv||0});
+  return r;
+}
+
+/* Quanto sobra da meta para os canais que não se compra. */
+const restoOrganico=(meta,f)=>Math.max(0,meta-FONTES.reduce((t,{k})=>t+(f?.[k]?.meta||0),0));
+const invTotal=f=>FONTES.reduce((t,{k})=>t+(f?.[k]?.inv||0),0);
+const roas=(m,i)=>i>0?(m/i).toFixed(1).replace('.',','):'—';
+
+function dividirReceita(meta,inv,fontes){
+  const f=fontes||fontesPadrao(meta,inv);
+  /* o que sobra depois de tráfego e API se reparte entre os outros canais,
+     na proporção que eles já tinham entre si */
+  const outros=CANAIS_RECEITA.filter(c=>!FONTES.some(x=>x.n===c.n));
+  const somaPr=outros.reduce((t,c)=>t+c.pr,0)||1;
+  const sobra=restoOrganico(meta,f);
+  const l=CANAIS_RECEITA.map(c=>{
+    const fon=FONTES.find(x=>x.n===c.n);
+    return fon
+      ? {n:c.n,r:c.r,on:true,inv:f[fon.k]?.inv||0,meta:f[fon.k]?.meta||0}
+      : {n:c.n,r:c.r,on:true,inv:0,meta:Math.round(sobra*c.pr/somaPr)};
+  });
+  /* o arredondamento vai pro maior canal que NÃO foi digitado à mão:
+     o número que ele escreveu no passo 2 é o que fica */
+  const livres=l.filter(x=>!FONTES.some(f=>f.n===x.n));
+  const somaM=l.reduce((t,x)=>t+x.meta,0);
+  if(somaM!==meta&&livres.length){
+    const a=livres.reduce((x,y)=>y.meta>x.meta?y:x);
+    a.meta+=meta-somaM;
+  }
   return l;
 }
 
@@ -799,7 +894,8 @@ function gerarSecoes(c){
   const periodo=c.inicio===c.fim?dBR(dIni):`${dBR(dIni)} a ${dBR(dFim)}`;
   const tema=c.tema?` — tema ${c.tema}`:'';
 
-  const rec=(c.receita||dividirReceita(c.meta,c.investimento)).filter(x=>x.on!==false);
+  const rec=(c.receita||dividirReceita(c.meta,c.investimento,
+    fontesValidas(c.meta,c.fontes||fontesPadrao(c.meta,c.investimento||0)))).filter(x=>x.on!==false);
   const metas=[];
   rec.filter(x=>x.inv>0).forEach(x=>metas.push([`Investimento — ${x.n}`,brl(x.inv),x.r]));
   metas.push(['ROAS alvo',roas,'Gestor']);
@@ -844,13 +940,16 @@ function gerarSecoes(c){
 
 /* ================= ASSISTENTE DE CAMPANHA ================= */
 let AS={};
-function assistente(noId){
+function assistente(noId,sugerida){
   const m=mesAtual();
   const prim=new Date(m.ano,m.mes-1,1);
   AS={noId,tipo:null,tema:null,
     inicio:iso(new Date(m.ano,m.mes-1,Math.min(7,28))),
     fim:iso(new Date(m.ano,m.mes-1,Math.min(7,28))),
-    meta:45000,inv:4500,nome:'',
+    meta:sugerida>0?Math.round(sugerida):45000,sugerida:sugerida>0?Math.round(sugerida):0,
+    /* a verba nasce em 10% da meta — a mesma proporção do par 45.000/4.500
+       que o planejador já usava, mas agora acompanhando a ação */
+    inv:Math.round((sugerida>0?sugerida:45000)*.1),fontes:null,nome:'',
     produtos:CATALOGO.map(p=>p.sku),   // todos participam até você tirar algum
     modoDesc:'todos',descGeral:8,descPorSku:{},
     extras:[],                          // produto escrito na mão
@@ -890,7 +989,10 @@ function escolherTipo(k){
   if(k==='recompra'||k==='perpetuo'){
     AS.inicio=iso(new Date(m.ano,m.mes-1,1));
     AS.fim=iso(new Date(m.ano,m.mes,0));
-    AS.meta=k==='perpetuo'?0:30000;AS.inv=k==='perpetuo'?0:2000;
+    /* veio do "criar ação para o resto"? então o resto é a meta dela */
+    AS.meta=k==='perpetuo'?0:(AS.sugerida||30000);
+    AS.inv=k==='perpetuo'?0:Math.round(AS.meta*.1);
+    AS.fontes=null;
   }else{
     const d=dISO(AS.inicio),f=new Date(d);f.setDate(d.getDate()+Math.max(0,T.dias-1));
     AS.fim=iso(f);
@@ -916,30 +1018,63 @@ function novoTema(){
 function passo2(){
   const T=TIPOS[AS.tipo];
   if(!AS.nome)AS.nome=T.nome+' — '+MESES[mesAtual().mes-1];
+  if(!AS.fontes)AS.fontes=fontesPadrao(AS.meta,AS.inv);
   $('#modal-cx').innerHTML=`
     <h3>${T.nome}${AS.tema?' · '+esc(AS.tema):''}</h3>
-    <p class="sub">Datas, meta e verba. O resto o TAP preenche.</p>
+    <p class="sub">Datas, meta e verba. O faturamento das fontes pagas sai de dentro
+      da meta que você escreveu — o resto vem do que não se compra.</p>
     <label><b>Nome da campanha</b><input id="w-nome" value="${esc(AS.nome)}"></label>
     <div class="dupla">
       <label><b>Início</b><input type="date" id="w-ini" value="${AS.inicio}"></label>
       <label><b>Fim</b><input type="date" id="w-fim" value="${AS.fim}"></label>
     </div>
-    <div class="dupla">
-      <label><b>Meta de faturamento</b><input type="number" id="w-meta" value="${AS.meta}" step="1000"></label>
-      <label><b>Investimento (API + tráfego)</b><input type="number" id="w-inv" value="${AS.inv}" step="500"></label>
+    <label><b>Meta de faturamento da ação</b>
+      <input type="number" id="w-meta" value="${AS.meta}" step="1000"></label>
+    <div class="fontes" id="w-fontes">
+      <div class="cabf"><span class="nm">De onde vem esse faturamento</span>
+        <span class="col">fatura</span><span class="col">investe</span><span class="rs">ROAS</span></div>
+      ${FONTES.map(({k,n})=>`<div class="linf">
+        <span class="nm">${n}</span>
+        <input type="number" id="w-m-${k}" step="500" value="${AS.fontes[k].meta}">
+        <input type="number" id="w-i-${k}" step="100" value="${AS.fontes[k].inv}">
+        <span class="rs" id="w-r-${k}">—</span></div>`).join('')}
+      <div class="linf resto"><span class="nm">Resto — influencer, base, atendimento, orgânico</span>
+        <span class="vl" id="w-resto">—</span><span class="col"></span><span class="rs"></span></div>
     </div>
     <div class="resumo" id="w-resumo"></div>
     <div class="bts"><button onclick="passo1()">Voltar</button>
       <button class="ok" onclick="irPasso3()">Produtos e oferta →</button></div>`;
-  ['w-ini','w-fim','w-meta','w-inv'].forEach(id=>$('#'+id).oninput=resumoW);
+  ['w-ini','w-fim','w-meta',...FONTES.flatMap(({k})=>['w-m-'+k,'w-i-'+k])]
+    .forEach(id=>{const e=$('#'+id);if(e)e.oninput=resumoW});
   resumoW();
+}
+function lerFontesW(){
+  const f={};
+  FONTES.forEach(({k})=>f[k]={meta:+$('#w-m-'+k)?.value||0,inv:+$('#w-i-'+k)?.value||0});
+  return f;
 }
 function guardaPasso2(){
   AS.nome=$('#w-nome').value.trim()||AS.nome;
   AS.inicio=$('#w-ini').value;AS.fim=$('#w-fim').value;
-  AS.meta=+$('#w-meta').value||0;AS.inv=+$('#w-inv').value||0;
+  const metaAnt=AS.meta,fAnt=JSON.stringify(AS.fontes);
+  AS.meta=+$('#w-meta').value||0;
+  AS.fontes=lerFontesW();
+  AS.inv=invTotal(AS.fontes);
+  /* mexeu nos números? a divisão por canal do passo 4 tem que nascer de novo */
+  if(metaAnt!==AS.meta||fAnt!==JSON.stringify(AS.fontes))AS.receita=null;
 }
-function irPasso3(){guardaPasso2();passo3()}
+function irPasso3(){
+  guardaPasso2();
+  /* a regra é dele: o faturamento esperado tem que caber na meta da ação */
+  if(restoOrganico(AS.meta,AS.fontes)===0&&
+     FONTES.reduce((t,{k})=>t+AS.fontes[k].meta,0)>AS.meta){
+    resumoW();
+    return alert('Tráfego e API somados passam da meta da ação.\n\n'+
+      'O faturamento esperado de cada fonte sai de dentro da meta — '+
+      'baixe as fontes ou suba a meta antes de seguir.');
+  }
+  passo3();
+}
 
 /* ---------- passo 3: quais produtos entram e com qual desconto ---------- */
 function passo3(){
@@ -1007,7 +1142,7 @@ function irPasso4(){guardaPasso3();passo4()}
 
 /* ---------- passo 4: canais, investimento e meta de cada um ---------- */
 function passo4(){
-  if(!AS.receita)AS.receita=dividirReceita(AS.meta,AS.inv);
+  if(!AS.receita)AS.receita=dividirReceita(AS.meta,AS.inv,AS.fontes);
   $('#modal-cx').className='cx larga';
   $('#modal-cx').innerHTML=`
     <div class="passos">Passo <b>4</b> de 4 · canais</div>
@@ -1053,11 +1188,16 @@ function somaW(){
 }
 function resumoW(){
   const ini=dISO($('#w-ini').value),fim=dISO($('#w-fim').value);
-  const meta=+$('#w-meta').value||0,inv=+$('#w-inv').value||0;
+  const meta=+$('#w-meta').value||0;
+  const f=lerFontesW(),inv=invTotal(f);
+  /* o ROAS de cada fonte e o resto aparecem enquanto ele digita */
+  FONTES.forEach(({k})=>{const e=$('#w-r-'+k);if(e)e.textContent=roas(f[k].meta,f[k].inv)});
+  const sobra=restoOrganico(meta,f),excedeu=meta-FONTES.reduce((t,{k})=>t+f[k].meta,0)<0;
+  const er=$('#w-resto');
+  if(er){er.textContent=excedeu?'passou da meta':brl(sobra);
+    er.style.color=excedeu?'var(--verm)':'';}
   if(isNaN(ini)||isNaN(fim)||fim<ini){$('#w-resumo').innerHTML='Datas inválidas.';return}
   const nd=janelaDe(AS.tipo,ini,fim).length, nv=diasEntre(ini,fim).length;
-  const invTraf=Math.round(inv*.67),metaTraf=Math.round(meta*.267);
-  const roas=invTraf?(metaTraf/invTraf).toFixed(1).replace('.',','):'—';
   const m=mesAtual();
   const fora=ini<new Date(m.ano,m.mes-1,1)||fim>new Date(m.ano,m.mes,0,23,59);
   const outras=campsMes().reduce((s,c)=>s+(c.meta||0),0);
@@ -1065,8 +1205,15 @@ function resumoW(){
     `Vai gerar <b>${nd} ${nd>1?'dias':'dia'}</b> de cronograma${nd>nv?
        ` (${nv} de venda + ${nd-nv} de preparação)`:''}, com ${CANAIS.length} canais,
      ${fasesDe(AS.tipo,ini,fim).length} fases e ${SKUS.length} SKUs já na oferta.<br>
-     ROAS implícito no tráfego: <b>${roas}</b> (R$ ${invTraf.toLocaleString('pt-BR')} para ${brl(metaTraf)}).<br>
-     Com esta, o mês soma <b>${brl(outras+meta)}</b> de ${brl(m.metas[0])} da Meta 1.
+     ${FONTES.map(({k,n})=>`${n}: ${brl(f[k].inv)} para faturar ${brl(f[k].meta)}
+       (ROAS <b>${roas(f[k].meta,f[k].inv)}</b>)`).join(' · ')}.
+     Verba total <b>${brl(inv)}</b>, ROAS da ação <b>${roas(meta,inv)}</b>.<br>
+     ${excedeu?'<span style="color:var(--verm)">Tráfego e API somados passam da meta da ação —\
+        o faturamento esperado precisa caber dentro dela.</span><br>':''}
+     Com esta, o mês soma <b>${brl(outras+meta)}</b> de ${m.metas[0]?brl(m.metas[0]):
+       '<span style="color:var(--amar)">uma meta que ainda não foi definida</span>'} da Meta 1${
+       m.metas[0]?` — ${Math.round(100*meta/m.metas[0])}% da meta nesta ação, e sobram ${
+         brl(Math.max(0,m.metas[0]-outras-meta))}`:''}.
      ${fora?'<br><span style="color:var(--amar)">As datas saem do mês selecionado.</span>':''}`;
 }
 function criarCampanha(){
@@ -1078,7 +1225,9 @@ function criarCampanha(){
     bonusUniversal:AS.bonusUniversal,bonusInfluencer:AS.bonusInfluencer};
   const c={id:D.prox.camp++,mesId:D.mesAtivo,nome,tipo:AS.tipo,tema:AS.tema,
     oferta,canais:AS.canais,receita:AS.receita,
-    meta:AS.meta||0,investimento:AS.inv||0,inicio,fim,secoes:[]};
+    meta:AS.meta||0,fontes:fontesValidas(AS.meta||0,AS.fontes),
+    investimento:invTotal(fontesValidas(AS.meta||0,AS.fontes)),
+    inicio,fim,secoes:[]};
   c.secoes=gerarSecoes(c);
   D.campanhas.push(c);
 
@@ -1283,9 +1432,33 @@ function render(){
     if(n.fundo)d.style.background=n.fundo;
     if(n.feito){const o=document.createElement('span');o.className='ok';o.textContent='✓';d.appendChild(o)}
     const ct=document.createElement('span');ct.className='conteudo';ct.textContent=n.t;d.appendChild(ct);
+    /* a raiz carrega a meta do mês e o buraco que falta dividir: é o
+       topo da engenharia reversa, e o mapa é a árvore dessa divisão */
+    if(n.raizMes){
+      const {meta,resto}=contas();
+      const b=document.createElement('span');b.className='selo';
+      b.style.cursor='pointer';b.onpointerdown=e=>e.stopPropagation();
+      if(!meta){b.textContent='definir meta';b.title='Passo 1: a meta do mês';
+        b.onclick=e=>{e.stopPropagation();editarMetasMes()}}
+      else{b.textContent=brl(meta);b.title='Meta 1 do mês';
+        b.onclick=e=>{e.stopPropagation();editarMetasMes()}}
+      d.appendChild(b);
+      if(meta&&resto>0){
+        const r=document.createElement('span');r.className='selo';
+        r.style.background='#f5c451';r.style.color='#08120d';r.style.cursor='pointer';
+        r.textContent='falta '+brl(resto);
+        r.title='Criar uma ação que cubra o que falta';
+        r.onpointerdown=e=>e.stopPropagation();
+        r.onclick=e=>{e.stopPropagation();sel={t:'no',id:n.id};assistente(null,resto)};
+        d.appendChild(r);
+      }
+    }
     if(c){const b=document.createElement('span');b.className='selo';
       b.style.background=corCamp(c);b.style.color='#08120d';
-      b.textContent=c.meta?brl(c.meta):'TAP';b.title='Abrir o TAP de '+c.nome;
+      const metaMes=mesAtual().metas[0]||0;
+      const fatia=metaMes&&c.meta?Math.round(100*c.meta/metaMes):0;
+      b.textContent=c.meta?brl(c.meta)+(fatia?' · '+fatia+'%':''):'TAP';
+      b.title=(c.meta&&fatia?fatia+'% da meta do mês · ':'')+'Abrir o TAP de '+c.nome;
       b.style.cursor='pointer';
       b.onpointerdown=e=>e.stopPropagation();
       b.onclick=e=>{e.stopPropagation();irCampanha(D.campanhas.indexOf(c))};
@@ -1704,6 +1877,131 @@ function verDia(d0){
         <td><div class="cel">${esc(l.quem)}</div></td></tr>`).join('')}</tbody></table></div>`
     :'<div class="vazio">Nada programado. Preencha o cronograma no TAP da campanha.</div>'}`;
 }
+/* ================= ENGENHARIA REVERSA =================
+   O jeito do Gabriel: começa pela meta do mês, e desce dividindo até
+   chegar na ação. Antes disso o planejador não tinha nem onde preencher
+   a meta — os meses nasciam com zero e não havia editor. */
+function editarMetasMes(){
+  const m=mesAtual();
+  $('#modal-cx').className='cx';
+  $('#modal-cx').innerHTML=`<h3>Metas de ${MESES[m.mes-1]} ${m.ano} · ${esc(marcaDo(m))}</h3>
+    <p class="sub">Passo 1 da engenharia reversa. Meta 1 é a que o mês precisa
+      entregar; as outras duas são os cenários bom e ótimo.</p>
+    <label><b>Meta 1 — a que vale</b>
+      <input type="number" id="m-1" value="${m.metas[0]||''}" step="1000" placeholder="300000"></label>
+    <div class="dupla">
+      <label><b>Meta 2</b><input type="number" id="m-2" value="${m.metas[1]||''}" step="1000"></label>
+      <label><b>Meta 3</b><input type="number" id="m-3" value="${m.metas[2]||''}" step="1000"></label></div>
+    <p class="sub">Deixe 2 e 3 em branco e eu calculo em cima da Meta 1 (+17% e +33%).</p>
+    <label><b>Ticket médio</b>
+      <input type="number" id="m-tk" value="${m.ticket||''}" step="10" placeholder="200"></label>
+    <p class="sub">Com o ticket, a escada mostra quantos pedidos cada ação
+      precisa trazer. Em branco, ela só trabalha em reais.</p>
+    <label><b>Referência</b>
+      <input id="m-ref" value="${esc(m.ref||'')}" placeholder="ex: mesmo mês do ano passado +20%"></label>
+    <div class="bts"><button onclick="fecharModal()">Cancelar</button>
+      <button class="ok" onclick="salvarMetasMes()">Salvar</button></div>`;
+  $('#modal').classList.add('on');
+}
+function salvarMetasMes(){
+  const m=mesAtual(),m1=+$('#m-1').value||0;
+  m.metas=[m1,+$('#m-2').value||Math.round(m1*1.17),+$('#m-3').value||Math.round(m1*1.33)];
+  m.ticket=+$('#m-tk').value||0;
+  m.ref=$('#m-ref').value.trim();
+  fecharModal();guardar();pintarMes();pintarSemana();render();
+  aviso(m1?`Meta de ${brl(m1)} definida. Agora divida por ação.`:'Metas atualizadas.');
+}
+
+/* O quanto da meta já está atribuído a alguma ação, e o que sobrou.
+   O resto é o que a engenharia reversa existe para zerar. */
+function contas(){
+  const m=mesAtual(),cps=campsMes();
+  const meta=m.metas[0]||0;
+  const soma=cps.reduce((s,c)=>s+(c.meta||0),0);
+  const inv=cps.reduce((s,c)=>s+(c.investimento||0),0);
+  return {m,cps,meta,soma,inv,resto:meta-soma,
+    pct:meta?Math.round(soma/meta*100):0,
+    ticket:m.ticket||0,
+    pedidos:m.ticket?Math.round(meta/m.ticket):0};
+}
+const pedidosDe=(v,ticket)=>ticket?Math.round(v/ticket):0;
+
+function pintarEscada(){
+  const {m,cps,meta,soma,inv,resto,pct,ticket,pedidos}=contas();
+  const passo=(n,titulo,valor,classe,pe,extra='')=>
+    `<div class="degrau"><div class="cab"><span class="np">${n}</span>
+       <h4>${titulo}</h4><span class="vlr ${classe||''}">${valor}</span></div>
+       ${pe?`<div class="pe">${pe}</div>`:''}${extra}</div>`;
+
+  if(!meta)return `<div class="degrau"><div class="cab"><span class="np">1</span>
+      <h4>Meta do mês</h4><span class="vlr a">a definir</span></div>
+      <div class="pe">O método começa aqui: sem a meta do mês não há o que dividir.
+        <button class="mini forte" onclick="editarMetasMes()">definir a meta</button></div></div>`;
+
+  let h=passo(1,'Meta do mês',brl(meta),'',
+    `Meta 2 ${brl(m.metas[1])} · Meta 3 ${brl(m.metas[2])}` +
+    (m.ref?` · ${esc(m.ref)}`:'') +
+    ` <button class="mini" onclick="editarMetasMes()">ajustar</button>`);
+
+  if(ticket)h+=passo(2,'Pedidos necessários',pedidos.toLocaleString('pt-BR'),'',
+    `Meta 1 dividida pelo ticket médio de ${brl(ticket)}`);
+
+  /* a barra: cada ação com sua fatia, e o buraco no fim */
+  const trilho=`<div class="trilho">${cps.map(c=>
+      `<i style="width:${meta?Math.max(0,100*(c.meta||0)/meta):0}%;background:${corCamp(c)}"
+        title="${esc(c.nome)}"></i>`).join('')}</div>`;
+
+  const linhas=cps.map(c=>{
+    const p=meta?Math.round(100*(c.meta||0)/meta):0;
+    return `<div class="fatia"><span class="bolinha" style="background:${corCamp(c)}"></span>
+      <span class="nm">${esc(c.nome)}</span>
+      <span class="pc">${c.meta?p+'%':'—'}</span>
+      <span class="vl">${c.meta?brl(c.meta):'contínuo'}</span>
+      ${ticket?`<span class="ped">${c.meta?pedidosDe(c.meta,ticket).toLocaleString('pt-BR')+' pedidos':''}</span>`:''}
+      <button class="mini" onclick="irCampanha(${D.campanhas.indexOf(c)})">abrir TAP</button></div>`;
+  }).join('');
+
+  const fecho = resto>0
+    ? `<div class="fatia resto"><span class="nm">Falta atribuir a alguma ação</span>
+        <span class="pc">${Math.round(100*resto/meta)}%</span>
+        <span class="vl">${brl(resto)}</span>
+        ${ticket?`<span class="ped">${pedidosDe(resto,ticket).toLocaleString('pt-BR')} pedidos</span>`:''}
+        <button class="mini forte" onclick="assistente(null,${resto})">criar ação para o resto</button></div>`
+    : resto<0
+    ? `<div class="fatia sobra"><span class="nm">As ações já passam da Meta 1</span>
+        <span class="pc">+${Math.round(100*(-resto)/meta)}%</span>
+        <span class="vl">${brl(-resto)}</span></div>`
+    : `<div class="fatia sobra"><span class="nm">Meta inteira dividida em ações</span>
+        <span class="pc">100%</span><span class="vl">${brl(soma)}</span></div>`;
+
+  h+=passo(ticket?3:2,'Dividido por ação',brl(soma),resto>0?'a':'v',
+    `${pct}% da Meta 1 já está numa ação` + (cps.length?'':' — nenhuma campanha ainda'),
+    trilho+linhas+fecho);
+
+  /* último degrau: quanto do faturamento é comprado e quanto não é */
+  const fz=cps.map(c=>fontesValidas(c.meta||0,c.fontes||fontesPadrao(c.meta||0,c.investimento||0)));
+  const porFonte=FONTES.map(({k,n})=>({n,
+    meta:fz.reduce((t,f)=>t+(f[k]?.meta||0),0),
+    inv:fz.reduce((t,f)=>t+(f[k]?.inv||0),0)}));
+  const compradoM=porFonte.reduce((t,x)=>t+x.meta,0);
+  const linhasF=porFonte.map(x=>
+    `<div class="fatia"><span class="nm">${x.n}</span>
+      <span class="pc">${soma?Math.round(100*x.meta/soma)+'%':'—'}</span>
+      <span class="vl">${brl(x.meta)}</span>
+      <span class="ped">${brl(x.inv)} de verba</span>
+      <span class="pc">ROAS ${roas(x.meta,x.inv)}</span></div>`).join('') +
+    `<div class="fatia"><span class="nm">Não se compra — influencer, base, atendimento, orgânico</span>
+      <span class="pc">${soma?Math.round(100*(soma-compradoM)/soma)+'%':'—'}</span>
+      <span class="vl">${brl(Math.max(0,soma-compradoM))}</span>
+      <span class="ped">—</span><span class="pc"></span></div>`;
+
+  h+=passo(ticket?4:3,'De onde vem o faturamento das ações',brl(inv)+' de verba','',
+    inv?`ROAS alvo do que já está atribuído: <b>${roas(soma,inv)}</b>`
+       :'Nenhum investimento previsto nas ações ainda',
+    cps.length?linhasF:'');
+  return h;
+}
+
 function pintarMes(){
   const m=mesAtual(),cps=campsMes();
   $('#tit-mes').innerHTML=MESES[m.mes-1].replace(/^./,x=>x.toUpperCase())+' <b>'+m.ano+'</b>'+
@@ -1729,6 +2027,7 @@ function pintarMes(){
       <div class="pe">vem do perpétuo e da base</div></div>
     <div class="cartao"><div class="rot">Investimento previsto</div><div class="num">${brl(inv)}</div>
       <div class="pe">ROAS alvo do mês ${inv?(soma/inv).toFixed(1).replace('.',','):'—'}</div></div>`;
+  $('#escada').innerHTML=pintarEscada();
   $('#lista-camp-mes').innerHTML=cps.length?cps.map(c=>
     `<div class="faixa-camp"><span class="bolinha" style="background:${corCamp(c)}"></span>
       <span class="nm">${esc(c.nome)}</span>
@@ -1753,7 +2052,8 @@ function pintarSemana(){
   const rateio=Math.round(m.metas[0]/S.length);
   $('#cartoes-semana').innerHTML=`
     <div class="cartao"><div class="rot">Meta rateada do mês</div><div class="num">${brl(rateio)}</div>
-      <div class="pe">Meta 1 dividida por ${S.length} semanas</div></div>
+      <div class="pe">${m.ticket?pedidosDe(rateio,m.ticket).toLocaleString('pt-BR')+
+        ' pedidos na semana · ':''}Meta 1 dividida por ${S.length} semanas</div></div>
     <div class="cartao"><div class="rot">Metas de campanha na semana</div>
       <div class="num ${metaSem>=rateio?'v':'a'}">${brl(metaSem)}</div>
       <div class="pe">${metaSem>=rateio?'cobre o rateio':'abaixo do rateio'}</div></div>
@@ -1792,10 +2092,12 @@ function pintarSemana(){
 /* ================= TAP ================= */
 function pintarAbas(){
   const cps=campsMes();
+  const metaMes=mesAtual().metas[0]||0;
   $('#abas').innerHTML=cps.map(c=>{
     const i=D.campanhas.indexOf(c);
     return `<button class="aba ${i===ativa?'on':''}" onclick="ativa=${i};pintarTAP()">
-      ${esc(c.nome)} <span class="vlr">${c.meta?brl(c.meta):'contínuo'}</span></button>`}).join('')
+      ${esc(c.nome)} <span class="vlr">${c.meta?brl(c.meta):'contínuo'}${
+        c.meta&&metaMes?' · '+Math.round(100*c.meta/metaMes)+'%':''}</span></button>`}).join('')
     +`<button class="aba nova" onclick="assistente(null)">+ nova campanha</button>`;
 }
 function pintarTAP(){
@@ -1845,15 +2147,24 @@ function duplicarTAP(){const c=JSON.parse(JSON.stringify(D.campanhas[ativa]));
   pintarTAP();pintarMes();pintarSemana()}
 function editarPeriodo(){
   const c=D.campanhas[ativa];if(!c)return;
+  const f=c.fontes||fontesPadrao(c.meta,c.investimento||0);
   $('#modal-cx').innerHTML=`<h3>${esc(c.nome)}</h3>
     <p class="sub">Mudar as datas regera o cronograma e as fases.</p>
     <label><b>Nome</b><input id="e-nome" value="${esc(c.nome)}"></label>
     <div class="dupla">
       <label><b>Início</b><input type="date" id="e-ini" value="${c.inicio}"></label>
       <label><b>Fim</b><input type="date" id="e-fim" value="${c.fim}"></label></div>
-    <div class="dupla">
-      <label><b>Meta</b><input type="number" id="e-meta" value="${c.meta}" step="1000"></label>
-      <label><b>Investimento</b><input type="number" id="e-inv" value="${c.investimento||0}" step="500"></label></div>
+    <label><b>Meta de faturamento da ação</b>
+      <input type="number" id="e-meta" value="${c.meta}" step="1000"></label>
+    <div class="fontes">
+      <div class="cabf"><span class="nm">De onde vem esse faturamento</span>
+        <span class="col">fatura</span><span class="col">investe</span><span class="rs"></span></div>
+      ${FONTES.map(({k,n})=>`<div class="linf"><span class="nm">${n}</span>
+        <input type="number" id="e-m-${k}" step="500" value="${f[k].meta}">
+        <input type="number" id="e-i-${k}" step="100" value="${f[k].inv}">
+        <span class="rs"></span></div>`).join('')}
+    </div>
+    <p class="sub">O que sobrar da meta fica com influencer, base, atendimento e orgânico.</p>
     <label><b>Regerar seções automáticas</b>
       <select id="e-reger"><option value="nao">Não — manter o que já preenchi</option>
         <option value="sim">Sim — refazer fases, metas e cronograma</option></select></label>
@@ -1865,7 +2176,14 @@ function salvarPeriodo(){
   const c=D.campanhas[ativa];
   c.nome=$('#e-nome').value.trim()||c.nome;
   c.inicio=$('#e-ini').value;c.fim=$('#e-fim').value;
-  c.meta=+$('#e-meta').value||0;c.investimento=+$('#e-inv').value||0;
+  c.meta=+$('#e-meta').value||0;
+  const f={};FONTES.forEach(({k})=>f[k]={meta:+$('#e-m-'+k).value||0,inv:+$('#e-i-'+k).value||0});
+  if(FONTES.reduce((t,{k})=>t+f[k].meta,0)>c.meta)
+    return aviso('Tráfego e API somados passam da meta da ação — não salvei.');
+  const mudou=JSON.stringify(f)!==JSON.stringify(c.fontes);
+  c.fontes=f;c.investimento=invTotal(f);
+  /* mexeu nas fontes: a divisão por canal do TAP precisa nascer de novo */
+  if(mudou)c.receita=null;
   if($('#e-reger').value==='sim')c.secoes=gerarSecoes(c);
   const n=M().nos.find(x=>x.campId===c.id);if(n)n.t=c.nome;
   fecharModal();render();pintarMes();pintarSemana();pintarTAP();aviso('Campanha atualizada.');

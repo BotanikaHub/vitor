@@ -20,11 +20,13 @@ p.on('dialog',async d=>{
   else if(d.type()==='confirm'){await d.accept();}
   else {errs.push('ALERT: '+d.message()); await d.accept();}
 });
-// limpa só na primeira carga — senão o reload da suíte apagaria o que quer testar
-await p.addInitScript(()=>{try{
-  if(!sessionStorage.getItem('__limpo')){localStorage.clear();sessionStorage.setItem('__limpo','1')}
-}catch(e){}});
+/* Limpa uma vez, de fora da página. Com addInitScript a limpeza voltava a
+   rodar a cada navegação, e o guarda em sessionStorage não sobrevive em
+   file:// — então o reload lá embaixo apagava justamente o estado que o
+   teste ia conferir, e a suíte falhava de vez em quando sem motivo. */
 await p.goto('file://'+resolve(raiz,'index.html'),{waitUntil:'networkidle'});
+await p.evaluate(()=>{try{localStorage.clear()}catch(e){}});
+await p.reload({waitUntil:'networkidle'});
 await p.waitForTimeout(400);
 const G=(f,a)=>p.evaluate(f,a);
 
@@ -52,9 +54,26 @@ ok('passo2 Dia D inclui os dias de preparação',
    await G(()=>!!document.querySelector('#w-resumo')?.textContent.includes('3 dias de cronograma (1 de venda + 2 de preparação)')),
    await G(()=>document.querySelector('#w-resumo')?.textContent.replace(/\s+/g,' ').slice(0,90)));
 await p.fill('#w-nome','TESTE Dia D');
-await p.fill('#w-meta','60000'); await p.fill('#w-inv','6000'); await p.waitForTimeout(150);
-ok('ROAS recalcula', await G(()=>/ROAS implícito no tráfego: <b>4,0/.test(document.querySelector('#w-resumo').innerHTML)),
-   await G(()=>document.querySelector('#w-resumo').textContent.match(/ROAS[^(]*/)?.[0]));
+await p.fill('#w-meta','60000'); await p.waitForTimeout(150);
+/* tráfego e API são campos separados, e o que sobra da meta é calculado */
+await p.fill('#w-m-traf','16020'); await p.fill('#w-i-traf','4020');
+await p.fill('#w-m-api','16020');  await p.fill('#w-i-api','1980');
+await p.waitForTimeout(200);
+ok('ROAS por fonte, não um só', await G(()=>document.querySelector('#w-r-traf').textContent)==='4,0'
+   && await G(()=>document.querySelector('#w-r-api').textContent)==='8,1',
+   'traf='+await G(()=>document.querySelector('#w-r-traf').textContent)
+   +' api='+await G(()=>document.querySelector('#w-r-api').textContent));
+ok('o resto da meta é o que não se compra',
+   /R\$ 27\.960/.test(await G(()=>document.querySelector('#w-resto').textContent)),
+   await G(()=>document.querySelector('#w-resto').textContent));
+ok('verba total é a soma das duas fontes',
+   /Verba total R\$ 6\.000/.test(await G(()=>document.querySelector('#w-resumo').textContent)),
+   await G(()=>document.querySelector('#w-resumo').textContent.match(/Verba total[^,]*/)?.[0]));
+/* passar da meta com as fontes pagas é dito na hora */
+await p.fill('#w-m-traf','50000'); await p.waitForTimeout(200);
+ok('faturamento das fontes não pode passar da meta',
+   /precisa caber dentro dela/.test(await G(()=>document.querySelector('#w-resumo').textContent)));
+await p.fill('#w-m-traf','16020'); await p.waitForTimeout(200);
 await p.click('button.ok'); await p.waitForTimeout(350);
 ok('passo 3 é a oferta', await G(()=>document.querySelector('#modal-cx h3')?.textContent)==='Produtos e desconto');
 ok('catálogo real da Shopify no passo 3',
@@ -173,7 +192,12 @@ const antes=await G(()=>({camps:D.campanhas.length,nos:M().nos.length,
   nomes:D.campanhas.map(c=>c.nome).join('|')}));
 ok('rodapé diz que salvou', /salvo/.test(await G(()=>document.querySelector('#msg').textContent)),
    await G(()=>document.querySelector('#msg').textContent));
-await p.waitForTimeout(1700);   // deixa o autosave rodar
+/* Espera o autosave de verdade, não um relógio: com espera cega o reload
+   às vezes chegava antes da gravação e o teste acusava perda de dados. */
+await p.waitForFunction(n=>{
+  try{const g=JSON.parse(localStorage.getItem(CHAVE)||'null');
+      return g&&g.campanhas&&g.campanhas.length===n}catch(e){return false}
+}, await G(()=>D.campanhas.length), {timeout:8000});
 ok('escreveu no localStorage', await G(()=>!!localStorage.getItem(CHAVE)), 'chave='+await G(()=>CHAVE));
 // recarrega SEM limpar o storage
 await p.evaluate(()=>location.reload());
