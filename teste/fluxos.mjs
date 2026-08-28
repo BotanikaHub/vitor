@@ -174,7 +174,7 @@ const antes=await G(()=>({camps:D.campanhas.length,nos:M().nos.length,
 ok('rodapé diz que salvou', /salvo/.test(await G(()=>document.querySelector('#msg').textContent)),
    await G(()=>document.querySelector('#msg').textContent));
 await p.waitForTimeout(1700);   // deixa o autosave rodar
-ok('escreveu no localStorage', await G(()=>!!localStorage.getItem('botanika-planejamento-v1')));
+ok('escreveu no localStorage', await G(()=>!!localStorage.getItem(CHAVE)), 'chave='+await G(()=>CHAVE));
 // recarrega SEM limpar o storage
 await p.evaluate(()=>location.reload());
 await p.waitForLoadState('networkidle'); await p.waitForTimeout(700);
@@ -188,21 +188,28 @@ ok('não duplicou o exemplo ao recarregar', !/Dia D Botanika\|.*Dia D Botanika/.
 ok('reload mostra estado salvo', /salvo/.test(await G(()=>document.querySelector('#msg').textContent)));
 
 // 4. novo mes
-prompts=['09/2026','400000'];
+/* garantirCiclo() ja abre um mes por marca do ciclo, entao o que importa
+   e o mes NOVO ter entrado, nao o total bater num numero fixo. */
+const mesesAntes=await G(()=>D.meses.length), mapasAntes=await G(()=>D.mapas.length);
+const mesInicial=await G(()=>D.mesAtivo);
+prompts=['10/2026','400000','Botanika'];
 await p.click('button:has-text("+ novo mês")'); await p.waitForTimeout(500);
-ok('mes criado', await G(()=>D.meses.length)===2, 'meses='+await G(()=>D.meses.map(m=>m.mes+'/'+m.ano).join(' ')));
-ok('mapa proprio do mes', await G(()=>D.mapas.length)===2);
-ok('titulo trocou', /[Ss]etembro/.test(await G(()=>document.querySelector('#tit-mes').textContent)),
+ok('mes criado', await G(()=>D.meses.length)===mesesAntes+1,
+   'meses='+await G(()=>D.meses.map(m=>m.mes+'/'+m.ano+' '+(m.marca||'')).join(' | ')));
+ok('mapa proprio do mes', await G(()=>D.mapas.length)===mapasAntes+1);
+ok('titulo trocou', /[Oo]utubro/.test(await G(()=>document.querySelector('#tit-mes').textContent)),
    await G(()=>document.querySelector('#tit-mes').textContent));
 ok('campanhas filtradas p/ o mes', await G(()=>document.querySelectorAll('#abas .aba').length)===0
    || await G(()=>campsMes().length)===0, 'campsMes='+await G(()=>campsMes().length));
-await p.selectOption('#sel-mes','1'); await p.waitForTimeout(400);
-ok('voltou p/ agosto', await G(()=>campsMes().length)===3, 'campsMes='+await G(()=>campsMes().length));
+await p.selectOption('#sel-mes',String(mesInicial)); await p.waitForTimeout(400);
+const campsVolta=await G(()=>campsMes().length);
+ok('voltou pro mes de origem com as campanhas', campsVolta===antes.camps,
+   `campsMes=${campsVolta} de ${antes.camps}`);
 
 // 5. TAP: editar, duplicar, regerar, excluir
 await p.click('nav.paginas button[data-pg="camp"]'); await p.waitForTimeout(250);
 const nAbas=await G(()=>document.querySelectorAll('#abas .aba:not(.nova)').length);
-ok('abas do TAP', nAbas===3, 'abas='+nAbas);
+ok('abas do TAP', nAbas===campsVolta, `abas=${nAbas} campanhas=${campsVolta}`);
 const cel=await p.$('#secoes td .cel');
 await cel.click(); await p.keyboard.type('EDITADO'); await G(()=>document.activeElement.blur()); await p.waitForTimeout(250);
 ok('celula edita e persiste no modelo',
@@ -332,8 +339,11 @@ ok('paleta segue o nó no zoom', await G(()=>{
 await p.click('#zoomcx button[title="Enquadrar tudo"]'); await p.waitForTimeout(300);
 
 // 8. busca
-await p.fill('#busca-q','RMKT'); await p.waitForTimeout(300);
-ok('busca destaca e apaga o resto', await G(()=>document.querySelectorAll('.el.achado').length)===1
+/* usa um pedaco de um no que existe agora, em vez de um termo fixo que
+   sumiu quando o planejamento passou a comecar vazio */
+const alvoBusca=await G(()=>{const n=M().nos.find(x=>x.pai&&x.t&&x.t.length>3);return n?n.t.slice(0,4):''});
+await p.fill('#busca-q',alvoBusca); await p.waitForTimeout(300);
+ok('busca destaca e apaga o resto', await G(()=>document.querySelectorAll('.el.achado').length)>=1
    && await G(()=>document.querySelectorAll('.el.apagado').length)>3,
    'achado='+await G(()=>document.querySelectorAll('.el.achado').length)
    +' apagado='+await G(()=>document.querySelectorAll('.el.apagado').length));

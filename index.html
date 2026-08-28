@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Botanika — Planejamento</title>
+</head>
+<body>
 <style>
 :root{
   --bg:#0b1310;--painel:#101c16;--painel2:#152420;--linha:#1e332a;--linha2:#2a463a;
@@ -27,6 +29,9 @@ input,textarea,select{font:inherit;color:inherit}
 .linha-mes{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:10px}
 .mes-tit{font-size:30px;font-weight:300;letter-spacing:-.02em;margin:0}
 .mes-tit b{font-weight:600;color:var(--verde)}
+.marca-mes{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--verde);background:var(--painel2);border:1px solid var(--linha2);
+  border-radius:999px;padding:3px 10px;vertical-align:middle}
 #sel-mes{background:var(--painel2);border:1px solid var(--linha2);border-radius:8px;
   padding:5px 10px;font-size:13px}
 .metas-topo{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--txt2);margin-bottom:14px}
@@ -293,14 +298,51 @@ tr.total .cel{font-weight:600;color:var(--verde)}
   #quadro{height:62vh}#titulo-q input{width:120px}#busca-q{display:none}
   .cal-dia .pecas{display:none}#modal .dupla{grid-template-columns:1fr}
 }
+/* ===== Gestão (execução no ClickUp) ===== */
+#pg-gestao .g-topo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+#pg-gestao .g-abas{display:flex;gap:2px}
+#pg-gestao .g-abas button{padding:7px 13px;font-size:12.5px;color:var(--txt2);background:transparent;
+  border:1px solid var(--linha2);border-radius:8px;cursor:pointer}
+#pg-gestao .g-abas button.on{color:var(--verde);border-color:var(--verde-esc);background:var(--painel2)}
+#pg-gestao .g-quando{margin-left:auto;font-size:11.5px;color:var(--txt2)}
+#pg-gestao .g-aviso{padding:13px 15px;border:1px solid var(--linha2);border-radius:11px;
+  background:var(--painel2);font-size:13px;line-height:1.55;color:var(--txt2);margin-bottom:14px}
+#pg-gestao .g-aviso b{color:var(--txt)}
+#pg-gestao .g-aviso.alerta{border-color:#5a3a1e;background:#241a10;color:var(--amar)}
+#pg-gestao .g-acao{border:1px solid var(--linha);border-radius:13px;background:var(--painel);
+  padding:15px 17px;margin-bottom:11px}
+#pg-gestao .g-cab{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
+#pg-gestao .g-cab h3{margin:0;font-size:15px;font-weight:600;flex:1 1 220px;min-width:0}
+#pg-gestao .g-frac{font-size:12.5px;color:var(--txt2);font-variant-numeric:tabular-nums}
+#pg-gestao .g-selo{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  padding:3px 8px;border-radius:999px;font-weight:600}
+#pg-gestao .g-selo.ok{background:#12331f;color:var(--verde)}
+#pg-gestao .g-selo.atras{background:#3a1a1b;color:var(--verm)}
+#pg-gestao .g-selo.anda{background:#2a2412;color:var(--amar)}
+#pg-gestao .g-barra{height:6px;border-radius:99px;background:var(--linha);margin:11px 0 0;overflow:hidden}
+#pg-gestao .g-barra i{display:block;height:100%;background:var(--verde);border-radius:99px}
+#pg-gestao .g-lista{margin:12px 0 0;display:grid;gap:5px}
+#pg-gestao .g-tar{display:flex;align-items:baseline;gap:9px;font-size:12.5px;padding:5px 0;
+  border-top:1px solid var(--linha)}
+#pg-gestao .g-tar a{color:var(--txt);text-decoration:none;flex:1 1 auto;min-width:0}
+#pg-gestao .g-tar a:hover{color:var(--verde)}
+#pg-gestao .g-tar.feita a{color:var(--txt2);text-decoration:line-through}
+#pg-gestao .g-quem{font-size:11px;color:var(--txt2);white-space:nowrap}
+#pg-gestao .g-prazo{font-size:11px;color:var(--txt2);white-space:nowrap;font-variant-numeric:tabular-nums}
+#pg-gestao .g-prazo.vencido{color:var(--verm)}
+#pg-gestao .g-dia{margin-bottom:13px}
+#pg-gestao .g-dia h4{margin:0 0 7px;font-size:12.5px;font-weight:600;color:var(--txt2);
+  text-transform:capitalize;border-bottom:1px solid var(--linha);padding-bottom:5px}
+#pg-gestao .g-dia.hoje h4{color:var(--verde);border-color:var(--verde-esc)}
+#pg-gestao .g-vazio{padding:22px;text-align:center;border:1px dashed var(--linha2);
+  border-radius:11px;color:var(--txt2);font-size:13px}
+#pg-gestao .g-ondeta{font-size:11px;color:var(--txt2);white-space:nowrap}
 </style>
-</head>
-<body>
 
 <div id="nuvem"></div>
 
 <div class="topo"><div class="topo-in">
-  <div class="marca">Botanika · Planejamento</div>
+  <div class="marca">Planejamento do mês · Botanika e VermeFree</div>
   <div class="linha-mes">
     <h1 class="mes-tit" id="tit-mes">Agosto <b>2026</b></h1>
     <select id="sel-mes" onchange="trocarMes(+this.value)"></select>
@@ -312,6 +354,7 @@ tr.total .cel{font-weight:600;color:var(--verde)}
     <button data-pg="mes" class="on">Mês</button>
     <button data-pg="semana">Semana</button>
     <button data-pg="camp">Campanhas</button>
+    <button data-pg="gestao">Gestão</button>
   </nav>
 </div></div>
 
@@ -407,6 +450,19 @@ tr.total .cel{font-weight:600;color:var(--verde)}
   </div>
   <div id="secoes"></div>
   <div style="margin-top:16px"><button class="mini" onclick="novaSecao()">+ Seção em branco</button></div>
+</div>
+
+<div class="pagina" id="pg-gestao">
+  <div class="g-topo">
+    <div class="g-abas">
+      <button data-ga="acoes" class="on" onclick="cuAbrirAba('acoes')">Por ação</button>
+      <button data-ga="semana" onclick="cuAbrirAba('semana')">Semana</button>
+      <button data-ga="atrasado" onclick="cuAbrirAba('atrasado')">Atrasado</button>
+    </div>
+    <button class="mini" onclick="cuLer({forcar:true})">Atualizar</button>
+    <span class="g-quando" id="g-quando"></span>
+  </div>
+  <div id="g-corpo"></div>
 </div>
 
 <div class="rodape">
@@ -538,29 +594,14 @@ const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho',
   'agosto','setembro','outubro','novembro','dezembro'];
 
 /* ================= DADOS ================= */
+/* Começa vazio de propósito: quem abre o link cai direto no mês do
+   ciclo, em branco, pronto pra preencher. Os quadros do ciclo são
+   criados pelo garantirCiclo() logo abaixo. */
 let D={
-  prox:{mes:2,camp:2,mapa:2},
-  mesAtivo:1,
-  temas:['Imunidade','Fitness','Sono de Verdade'],
-  meses:[{id:1,ano:2026,mes:8,metas:[300000,350000,400000],ref:'Julho fechou em ~R$ 250k'}],
-  mapas:[{id:1,mesId:1,nome:'Planejamento [AGOSTO-BOTANIKA]',layout:'direita',prox:10,proxItem:101,
-    nos:[
-      {id:1,pai:null,t:'🔥 AGOSTO',cor:0,raizMes:1},
-      {id:2,pai:1,t:'Funil de tráfego direto',cor:1},
-      {id:3,pai:2,t:'Investimento R$20.000/mês · R$645/dia'},
-      {id:4,pai:1,t:'Funil de RMKT',cor:2},
-      {id:5,pai:4,t:'Anunciar para quem visitou a home / abandonou checkout'},
-      {id:6,pai:4,t:'Investimento R$5.000/mês · R$161/dia'},
-      {id:7,pai:1,t:'Influencers e UGC (orgânico)',cor:3,fundo:'#D5F692'},
-      {id:8,pai:7,t:'Pelo menos 40 influencers em agosto'},
-      {id:9,pai:7,t:'Pelo menos 30 UGCs'}
-    ],
-    itens:[{id:100,tipo:'sticky',x:4300,y:3500,
-      t:'Ticket R$298 · meta R$350\n6% travam entre 300 e 349',cor:'#FFF9B1'}]}],
-  campanhas:[
-    {id:1,mesId:1,nome:'Dia D Botanika',tipo:'diaD',meta:45000,investimento:4500,
-     inicio:'2026-08-07',fim:'2026-08-07',secoes:[]}
-  ]
+  prox:{mes:1,camp:1,mapa:1},
+  mesAtivo:0,
+  temas:[],
+  meses:[], mapas:[], campanhas:[]
 };
 
 let sel={t:'no',id:1},fer='sel',ativa=0,semanaSel=0,diaSel=null;
@@ -581,6 +622,45 @@ const campsMes=()=>D.campanhas.filter(c=>c.mesId===D.mesAtivo);
 const corCamp=c=>CORES[(D.campanhas.indexOf(c))%CORES.length];
 const mapaAtual=()=>D.mapas.find(m=>m.mesId===D.mesAtivo)||D.mapas[0];
 const M=()=>mapaAtual();
+
+/* ================= CICLO DO MÊS =================
+   O mês que a equipe está planejando agora e as marcas que entram
+   nele. Ao abrir o link, cada marca já tem seu mês, seu mapa e seu
+   calendário em branco — ninguém precisa criar nada pra começar.
+   Virou o mês? Troque ano/mes aqui e pronto; o que já foi planejado
+   antes continua guardado, é só escolher no seletor lá em cima. */
+const CICLO={ano:2026,mes:9,marcas:['Botanika','VermeFree'],meta:0};
+
+const marcaDo=m=>(m&&m.marca)||'Botanika';
+
+function garantirCiclo(){
+  D.prox=D.prox||{mes:1,camp:1,mapa:1};
+  D.meses=D.meses||[];D.mapas=D.mapas||[];D.campanhas=D.campanhas||[];
+  const proxId=arr=>arr.reduce((a,x)=>Math.max(a,x.id||0),0)+1;
+  let criou=false,primeiro=null;
+  CICLO.marcas.forEach(marca=>{
+    let m=D.meses.find(x=>x.ano===CICLO.ano&&x.mes===CICLO.mes&&marcaDo(x)===marca);
+    if(!m){
+      criou=true;
+      m={id:proxId(D.meses),ano:CICLO.ano,mes:CICLO.mes,marca,
+        metas:[CICLO.meta,Math.round(CICLO.meta*1.17),Math.round(CICLO.meta*1.33)],ref:''};
+      D.meses.push(m);
+      D.prox.mes=Math.max(D.prox.mes||1,m.id+1);
+      const mp={id:proxId(D.mapas),mesId:m.id,
+        nome:`Planejamento [${MESES[CICLO.mes-1].toUpperCase()}-${marca.toUpperCase()}]`,
+        layout:'direita',prox:2,proxItem:1,itens:[],
+        nos:[{id:1,pai:null,t:'🔥 '+MESES[CICLO.mes-1].toUpperCase()+' · '+marca.toUpperCase(),
+              cor:0,raizMes:m.id,x:4500,y:3000}]};
+      D.mapas.push(mp);
+      D.prox.mapa=Math.max(D.prox.mapa||1,mp.id+1);
+    }
+    if(!primeiro)primeiro=m;
+  });
+  /* Só reposiciona quando acabou de criar ou quando o mês salvo sumiu:
+     senão, quem recarregasse a página perderia a marca que estava vendo. */
+  if(primeiro&&(criou||!D.meses.some(x=>x.id===D.mesAtivo)))D.mesAtivo=primeiro.id;
+  return criou;
+}
 
 /* ================= GERADOR DE TAP ================= */
 function diasEntre(a,b){const out=[];const d=new Date(a);
@@ -858,6 +938,10 @@ function passo3(){
     <div class="passos">Passo <b>3</b> de 4 · oferta</div>
     <h3>Produtos e desconto</h3>
     <p class="sub">O catálogo vem da Shopify. Desmarque o que não entra e escreva o que não está na loja.</p>
+    ${marcaDo(mesAtual())==='Botanika'?'':
+      `<p class="sub" style="color:var(--amar)">Este mês é da <b>${esc(marcaDo(mesAtual()))}</b> e a lista
+       abaixo é o catálogo da Botanika. Use <b>Mesmo % para todos</b> e escreva os produtos
+       à mão, ou me peça pra cadastrar o catálogo da ${esc(marcaDo(mesAtual()))}.</p>`}
     <div class="radio">
       <button id="r-todos" class="${AS.modoDesc==='todos'?'on':''}" onclick="modoDesc('todos')">Mesmo % para todos</button>
       <button id="r-cada" class="${AS.modoDesc==='cada'?'on':''}" onclick="modoDesc('cada')">Um % por produto</button>
@@ -1002,18 +1086,22 @@ function novoMes(){
   if(!m)return;
   const [mm,aa]=m.split('/').map(Number);
   if(!mm||!aa||mm<1||mm>12)return aviso('Formato inválido.');
-  if(D.meses.some(x=>x.mes===mm&&x.ano===aa))return aviso('Esse mês já existe.');
+  const marca=(prompt('De qual marca? (Botanika ou VermeFree)','Botanika')||'').trim()||'Botanika';
+  /* o mesmo mês pode existir uma vez por marca — o que não pode é repetir a dupla */
+  if(D.meses.some(x=>x.mes===mm&&x.ano===aa&&marcaDo(x).toLowerCase()===marca.toLowerCase()))
+    return aviso('Esse mês já existe para '+marca+'.');
   const m1=+prompt('Meta 1 (só números):','300000')||300000;
-  const novo={id:D.prox.mes++,ano:aa,mes:mm,
+  const novo={id:D.prox.mes++,ano:aa,mes:mm,marca,
     metas:[m1,Math.round(m1*1.17),Math.round(m1*1.33)],ref:''};
   D.meses.push(novo);
   D.mapas.push({id:D.prox.mapa++,mesId:novo.id,
-    nome:`Planejamento [${MESES[mm-1].toUpperCase()}-BOTANIKA]`,layout:'direita',
+    nome:`Planejamento [${MESES[mm-1].toUpperCase()}-${marca.toUpperCase()}]`,layout:'direita',
     prox:2,proxItem:1,itens:[],
-    nos:[{id:1,pai:null,t:'🔥 '+MESES[mm-1].toUpperCase(),cor:0,raizMes:novo.id,x:4500,y:3000}]});
+    nos:[{id:1,pai:null,t:'🔥 '+MESES[mm-1].toUpperCase()+' · '+marca.toUpperCase(),
+          cor:0,raizMes:novo.id,x:4500,y:3000}]});
   D.mesAtivo=novo.id;pilha=[];pilhaR=[];
   sel={t:'no',id:1};tudo();
-  aviso(`${MESES[mm-1]} de ${aa} criado, com mapa e calendário próprios.`);
+  aviso(`${MESES[mm-1]} de ${aa} · ${marca} criado, com mapa e calendário próprios.`);
 }
 function trocarMes(id){
   D.mesAtivo=id;ativa=Math.max(0,D.campanhas.indexOf(campsMes()[0]));
@@ -1602,18 +1690,22 @@ function verDia(d0){
 }
 function pintarMes(){
   const m=mesAtual(),cps=campsMes();
-  $('#tit-mes').innerHTML=MESES[m.mes-1].replace(/^./,x=>x.toUpperCase())+' <b>'+m.ano+'</b>';
+  $('#tit-mes').innerHTML=MESES[m.mes-1].replace(/^./,x=>x.toUpperCase())+' <b>'+m.ano+'</b>'+
+    ' <span class="marca-mes">'+esc(marcaDo(m))+'</span>';
   $('#sel-mes').innerHTML=D.meses.map(x=>
     `<option value="${x.id}" ${x.id===D.mesAtivo?'selected':''}>
-      ${MESES[x.mes-1]} ${x.ano}</option>`).join('');
+      ${MESES[x.mes-1]} ${x.ano} · ${esc(marcaDo(x))}</option>`).join('');
   $('#metas-topo').innerHTML=m.metas.map((v,i)=>
-    `<span>Meta ${i+1} <b>${brl(v)}</b></span>`).join('')+(m.ref?`<span>${esc(m.ref)}</span>`:'');
+    `<span>Meta ${i+1} <b>${v?brl(v):'a definir'}</b></span>`).join('')+
+    (m.ref?`<span>${esc(m.ref)}</span>`:'');
   const soma=cps.reduce((s,c)=>s+(c.meta||0),0);
   const inv=cps.reduce((s,c)=>s+(c.investimento||0),0);
-  const falta=m.metas[0]-soma,pct=Math.round(soma/m.metas[0]*100);
+  /* mês recém-criado vem com meta zero: sem a guarda a divisão dá NaN */
+  const falta=m.metas[0]-soma,pct=m.metas[0]?Math.round(soma/m.metas[0]*100):0;
   $('#cartoes-mes').innerHTML=`
-    <div class="cartao"><div class="rot">Meta 1</div><div class="num">${brl(m.metas[0])}</div>
-      <div class="pe">${esc(m.ref||'—')}</div></div>
+    <div class="cartao"><div class="rot">Meta 1</div>
+      <div class="num">${m.metas[0]?brl(m.metas[0]):'a definir'}</div>
+      <div class="pe">${esc(m.ref||'defina em Datas e meta')}</div></div>
     <div class="cartao"><div class="rot">Somado nas campanhas</div>
       <div class="num ${pct>=100?'v':'a'}">${brl(soma)}</div><div class="pe">${pct}% da Meta 1</div></div>
     <div class="cartao"><div class="rot">Sem campanha atrelada</div>
@@ -1808,11 +1900,9 @@ function exportarJSON(){abrirTroca(JSON.stringify(D,null,2),'JSON selecionado �
 function importarJSON(){abrirTroca('','Cole o JSON e clique fora da caixa.',true)}
 function zerar(){
   if(!confirm('Isso apaga tudo. Você exportou antes?'))return;
-  D={prox:{mes:2,camp:1,mapa:2},mesAtivo:1,temas:[],
-    meses:[{id:1,ano:2026,mes:8,metas:[300000,350000,400000],ref:''}],
-    mapas:[{id:1,mesId:1,nome:'Novo quadro',layout:'direita',prox:2,proxItem:1,itens:[],
-      nos:[{id:1,pai:null,t:'🔥 AGOSTO',cor:0,raizMes:1,x:4500,y:3000}]}],
-    campanhas:[]};
+  D={prox:{mes:1,camp:1,mapa:1},mesAtivo:0,temas:[],
+    meses:[],mapas:[],campanhas:[]};
+  garantirCiclo();
   ativa=0;sel={t:'no',id:1};diaSel=null;pilha=[];pilhaR=[];
   try{localStorage.removeItem(CHAVE)}catch(e){}
   ultimoSalvo='';tudo();salvar();aviso('Zerado.')
@@ -1826,6 +1916,7 @@ document.querySelectorAll('nav.paginas button').forEach(b=>{
     document.querySelectorAll('.pagina').forEach(x=>x.classList.remove('on'));
     b.classList.add('on');$('#pg-'+b.dataset.pg).classList.add('on');
     if(b.dataset.pg==='mapa')setTimeout(()=>{alturaLarga();ajustar();posPaleta()},40);
+    if(b.dataset.pg==='gestao')cuLer();
   };
 });
 
@@ -1837,7 +1928,9 @@ function tudo(){
   pintarTAP();
 }
 /* ================= SALVAR ================= */
-const CHAVE='botanika-planejamento-v1';
+/* Chave nova a cada ciclo: setembro começa do zero, e o que já foi
+   planejado antes continua guardado na chave antiga caso precise. */
+const CHAVE='planejamento-setembro-2026';
 let ultimoSalvo='';
 
 function salvar(){
@@ -1885,7 +1978,7 @@ addEventListener('visibilitychange',()=>{if(document.hidden)salvar()});
    O estado vive num arquivo de dados ao lado da página. Publicar só esse
    arquivo mantém esta aba rodando (a página não recarrega) e faz as outras
    pegarem a versão nova. localStorage continua embaixo como cópia local. */
-const ARQ='dados/estado.json';
+const ARQ='dados/estado-setembro-2026.json';
 let API=null;                 // namespace do artifact, ou null fora dele
 let modo='local';             // 'nuvem' | 'local' | 'leitura'
 let enviando=false, sujo=false, ultimoEnvio=0, remoto='';
@@ -1977,22 +2070,238 @@ setInterval(()=>{
   modo=API?'nuvem':'local';
 
   const daEquipe=API?await baixarEstado():null;
-  if(daEquipe){
-    D=daEquipe;remoto=JSON.stringify(D);ultimoSalvo='';
-    sel={t:'no',id:M()?.nos.find(n=>!n.pai)?.id||1};
-    tudo();salvar();
-  }else if(carregar()){
-    sel={t:'no',id:M()?.nos.find(n=>!n.pai)?.id||1};
-    tudo();marcaSalvo();
-  }else{
-    /* primeira visita: liga o nó de campanha do exemplo */
-    const mp=D.mapas[0],r=mp.nos.find(n=>!n.pai);
-    mp.nos.push({id:mp.prox++,pai:r.id,t:'Dia D Botanika',campId:1,cor:0});
-    tudo();salvar();
-  }
+  if(daEquipe){D=daEquipe;remoto=JSON.stringify(D);ultimoSalvo=''}
+  else carregar();
+  /* Vale para os três caminhos (nuvem, cópia local, primeira visita):
+     o mês do ciclo existe sempre, vazio, e nada do que já foi
+     planejado antes é apagado. */
+  garantirCiclo();
+  sel={t:'no',id:M()?.nos.find(n=>!n.pai)?.id||1};
+  tudo();salvar();
   ultimoTxt=JSON.stringify(D);
   marcaSalvo();
 })();
+
+/* ================= GESTÃO — execução no ClickUp =================
+   Lê as tarefas do ClickUp com a credencial de quem abre a página: nenhum
+   token mora aqui. Fora do claude.ai a capacidade não existe e a página
+   explica isso em vez de ficar vazia.
+
+   Constantes que valem revisar quando o time mudar: */
+const CU_SERVIDOR='ClickUp';
+const CU_LISTAS=[{id:'901328142624',marca:'Botanika'},{id:'901328142677',marca:'VermeFree'}];
+const CU_FEITO=['feito','concluido','concluído','complete','completed','closed','done'];
+const CU_MARCAS=/^(botanika|vermefree|verme free)$/i;
+const CU_PAG_MAX=12;               // teto de segurança na paginação
+
+let MCP=null, cuTarefas=null, cuQuando=0, cuErro=null, cuLendo=false, cuAba='acoes';
+
+const cuNorm=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+const cuFeita=t=>CU_FEITO.includes(cuNorm(t.status));
+
+/* A ação sai do próprio nome da tarefa, que a equipe já escreve num padrão:
+
+     DIA D KIDS — E-mail Marketing | Base geral        ← mãe: ação em caixa alta
+     Criar copy do e-mail — QUA 26/08 | Dia D Kids     ← filha: ação depois do |
+
+   Caixa alta antes do travessão identifica a mãe. Nas filhas a ação vem no
+   fim. Quando o fim é só a marca, a tarefa não diz a que ação pertence — vai
+   para "sem ação identificada" em vez de virar uma ação chamada BOTANIKA. */
+function cuAcaoDe(nome){
+  const s=String(nome||'').replace(/\s+/g,' ').trim();
+  if(!s)return '';
+  const trav=s.indexOf('—');
+  const cabeca=(trav>0?s.slice(0,trav):s.split('|')[0]).trim();
+  const letras=cabeca.replace(/[^A-Za-zÀ-ÿ]/g,'');
+  if(letras.length>=4&&letras===letras.toUpperCase())return cabeca;
+  const barra=s.lastIndexOf('|');
+  if(barra>0){
+    const fim=s.slice(barra+1).trim();
+    if(fim&&!CU_MARCAS.test(fim))return fim;
+  }
+  return '';
+}
+
+/* "Dia D Kids" e "DIA D KIDS" são a mesma ação. */
+const cuChave=n=>cuNorm(n).replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ');
+
+function cuAgrupar(tarefas){
+  const por=new Map();
+  for(const t of tarefas){
+    const nome=cuAcaoDe(t.name);
+    const k=nome?cuChave(nome):'__sem__';
+    if(!por.has(k))por.set(k,{nome:nome||'Sem ação identificada',orfa:!nome,tarefas:[]});
+    /* o rótulo mais legível ganha: "Dia D Kids" em vez de "DIA D KIDS" */
+    const g=por.get(k);
+    if(nome&&nome!==nome.toUpperCase()&&g.nome===g.nome.toUpperCase())g.nome=nome;
+    g.tarefas.push(t);
+  }
+  const agora=Date.now();
+  return [...por.values()].map(g=>{
+    const feitas=g.tarefas.filter(cuFeita).length;
+    const atrasadas=g.tarefas.filter(t=>!cuFeita(t)&&t.due_date&&+t.due_date<agora).length;
+    return {...g,total:g.tarefas.length,feitas,atrasadas,
+      pronta:g.tarefas.length>0&&feitas===g.tarefas.length};
+  }).sort((a,b)=>(a.orfa-b.orfa)||(b.atrasadas-a.atrasadas)||(a.feitas/a.total-b.feitas/b.total));
+}
+
+/* ---- leitura ---- */
+async function cuLer({forcar=false}={}){
+  if(cuLendo)return;
+  if(!MCP){cuPintar();return}
+  if(!forcar&&cuTarefas&&Date.now()-cuQuando<60000){cuPintar();return}
+  cuLendo=true;cuErro=null;cuPintar();
+  try{
+    const todas=[];let pagina=0,maisTem=true,carimbo=0;
+    while(maisTem&&pagina<CU_PAG_MAX){
+      const r=await MCP.callTool(CU_SERVIDOR,'clickup_filter_tasks',{
+        list_ids:CU_LISTAS.map(l=>l.id),include_closed:true,subtasks:true,page:pagina});
+      const d=r?.payload||{};
+      (d.tasks||[]).forEach(t=>todas.push(t));
+      if(r?.cache?.storedAt)carimbo=Math.max(carimbo,r.cache.storedAt);
+      maisTem=d.has_more===true;pagina=(d.next_page??pagina+1);
+    }
+    cuTarefas=todas;cuQuando=carimbo||Date.now();
+  }catch(e){
+    cuErro=e||{code:'upstream_error'};
+    /* só server_unavailable e rate_limited pedem nova tentativa, e uma só */
+    if(cuErro.retryable===true&&!cuLer._retentou){
+      cuLer._retentou=true;
+      const espera=Math.min(cuErro.retryAfterMs||1500,60000)+Math.random()*400;
+      setTimeout(()=>{cuLendo=false;cuLer({forcar:true})},espera);
+      cuPintar();return;
+    }
+  }
+  cuLer._retentou=false;cuLendo=false;cuPintar();
+}
+
+/* Cada código tem uma saída diferente. Um aviso genérico esconderia
+   justamente a ação que destrava a página. */
+function cuMsgErro(e){
+  const c=e?.code||'upstream_error';
+  if(c==='needs_reauth')return ['Sua conexão com o ClickUp expirou.',
+    'Reconecte em claude.ai → Configurações → Conectores.'];
+  if(c==='server_not_connected')return ['O ClickUp não está conectado nesta conta.',
+    'Adicione em claude.ai → Configurações → Conectores.'];
+  if(c==='selection_required')return ['Você tem mais de um ClickUp conectado.',
+    'Escolha qual usar quando o aviso aparecer, e atualize.'];
+  if(c==='blocked_by_policy'||c==='approval_required')
+    return ['A política da organização bloqueia esta leitura do ClickUp.',
+      'Fale com quem administra o espaço.'];
+  if(c==='not_in_manifest')return ['Esta página não tem permissão para essa leitura.',
+    'Foi publicada sem o ClickUp no manifesto.'];
+  if(c==='server_unavailable')return ['O ClickUp não respondeu agora.','Tente atualizar em instantes.'];
+  if(c==='tool_error')return ['O ClickUp recusou a consulta.',e?.message||''];
+  return ['Não consegui ler o ClickUp.',e?.message||''];
+}
+
+/* ---- desenho ---- */
+const CU_DIAS=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+const cuDia=ms=>{const d=new Date(+ms);return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})};
+const cuISO=ms=>{const d=new Date(+ms);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+
+function cuLinhaTarefa(t){
+  const feita=cuFeita(t);
+  const atras=!feita&&t.due_date&&+t.due_date<Date.now();
+  const quem=(t.assignees||[]).map(a=>a.username).join(', ');
+  return `<div class="g-tar${feita?' feita':''}">
+    <a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.name)}</a>
+    ${quem?`<span class="g-quem">${esc(quem.split(' ')[0])}</span>`:''}
+    ${t.due_date?`<span class="g-prazo${atras?' vencido':''}">${cuDia(t.due_date)}</span>`:''}
+  </div>`;
+}
+
+function cuPintarAcoes(){
+  const gs=cuAgrupar(cuTarefas||[]);
+  if(!gs.length)return '<div class="g-vazio">Nenhuma tarefa nas listas de Gestão Operacional.</div>';
+  return gs.map(g=>{
+    const pct=g.total?Math.round(100*g.feitas/g.total):0;
+    const selo=g.pronta?'<span class="g-selo ok">pronta para conferir</span>'
+      :g.atrasadas?`<span class="g-selo atras">${g.atrasadas} atrasada${g.atrasadas>1?'s':''}</span>`
+      :'<span class="g-selo anda">em andamento</span>';
+    const faltam=g.tarefas.filter(t=>!cuFeita(t))
+      .sort((a,b)=>(+a.due_date||9e15)-(+b.due_date||9e15));
+    return `<div class="g-acao">
+      <div class="g-cab"><h3>${esc(g.nome)}</h3>
+        <span class="g-frac">${g.feitas} de ${g.total} feitas</span>${g.orfa?'':selo}</div>
+      <div class="g-barra"><i style="width:${pct}%"></i></div>
+      ${faltam.length?`<div class="g-lista">${faltam.map(cuLinhaTarefa).join('')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function cuPintarSemana(){
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const seg=new Date(hoje);seg.setDate(hoje.getDate()-((hoje.getDay()+6)%7));
+  const dias=[...Array(7)].map((_,i)=>{const d=new Date(seg);d.setDate(seg.getDate()+i);return d});
+  const hojeISO=cuISO(hoje.getTime());
+  const porDia=new Map();
+  for(const t of (cuTarefas||[])){
+    if(!t.due_date)continue;
+    const k=cuISO(t.due_date);
+    if(!porDia.has(k))porDia.set(k,[]);
+    porDia.get(k).push(t);
+  }
+  const blocos=dias.map(d=>{
+    const k=cuISO(d.getTime());const ts=(porDia.get(k)||[])
+      .sort((a,b)=>cuFeita(a)-cuFeita(b));
+    if(!ts.length)return '';
+    return `<div class="g-dia${k===hojeISO?' hoje':''}">
+      <h4>${CU_DIAS[d.getDay()]} ${d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}
+        · ${ts.filter(cuFeita).length} de ${ts.length} feitas</h4>
+      ${ts.map(t=>{const a=cuAcaoDe(t.name);
+        return cuLinhaTarefa(t).replace('</div>',
+          (a?`<span class="g-ondeta">${esc(a)}</span>`:'')+'</div>')}).join('')}
+    </div>`;
+  }).filter(Boolean).join('');
+  return blocos||'<div class="g-vazio">Nada com prazo nesta semana.</div>';
+}
+
+function cuPintarAtrasado(){
+  const agora=Date.now();
+  const ts=(cuTarefas||[]).filter(t=>!cuFeita(t)&&t.due_date&&+t.due_date<agora)
+    .sort((a,b)=>+a.due_date-+b.due_date);
+  if(!ts.length)return '<div class="g-vazio">Nada atrasado. 🎉</div>';
+  return `<div class="g-acao"><div class="g-cab"><h3>Prazo vencido e ainda não feito</h3>
+    <span class="g-frac">${ts.length} tarefa${ts.length>1?'s':''}</span></div>
+    <div class="g-lista">${ts.map(t=>{const a=cuAcaoDe(t.name);
+      return cuLinhaTarefa(t).replace('</div>',
+        (a?`<span class="g-ondeta">${esc(a)}</span>`:'')+'</div>')}).join('')}</div></div>`;
+}
+
+function cuPintar(){
+  const alvo=$('#g-corpo'),topo=$('#g-quando');if(!alvo)return;
+  document.querySelectorAll('#pg-gestao .g-abas button')
+    .forEach(b=>b.classList.toggle('on',b.dataset.ga===cuAba));
+
+  if(!MCP){
+    alvo.innerHTML=`<div class="g-aviso"><b>O ClickUp só responde com a página aberta no claude.ai.</b>
+      Aberta como arquivo local, o resto do planejador funciona normalmente —
+      só esta aba fica sem dados.</div>`;
+    topo.textContent='';return;
+  }
+  if(cuErro){
+    const [t1,t2]=cuMsgErro(cuErro);
+    alvo.innerHTML=`<div class="g-aviso alerta"><b>${esc(t1)}</b> ${esc(t2)}</div>`;
+    topo.textContent='';return;
+  }
+  if(cuLendo&&!cuTarefas){alvo.innerHTML='<div class="g-vazio">Lendo o ClickUp…</div>';return}
+  if(!cuTarefas){alvo.innerHTML='<div class="g-vazio">Clique em atualizar para ler o ClickUp.</div>';return}
+
+  topo.textContent=(cuLendo?'atualizando… · ':'')+'lido '+
+    new Date(cuQuando).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  alvo.innerHTML = cuAba==='semana'?cuPintarSemana()
+    : cuAba==='atrasado'?cuPintarAtrasado() : cuPintarAcoes();
+}
+
+function cuAbrirAba(a){cuAba=a;cuPintar()}
+
+/* liga a capacidade sem travar o resto da página */
+(async function(){
+  try{MCP=await window.claude?.use?.('mcp')||null}catch(e){MCP=null}
+  if($('#g-corpo'))cuPintar();
+})();
+
 </script>
 </body>
 </html>

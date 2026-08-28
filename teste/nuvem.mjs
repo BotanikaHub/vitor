@@ -17,7 +17,7 @@ async function abrir({estadoDaEquipe=null, publishFalha=null}={}){
   const p = await b.newPage({viewport:{width:1400,height:900}});
   const erros=[];
   p.on('pageerror',e=>erros.push(e.message));
-  await p.route('**/dados/estado.json*', r=> estadoDaEquipe
+  await p.route('**/dados/estado-setembro-2026.json*', r=> estadoDaEquipe
     ? r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(estadoDaEquipe)})
     : r.fulfill({status:404,body:''}));
   await p.addInitScript(({falha})=>{
@@ -63,12 +63,12 @@ const G=(p,f)=>p.evaluate(f);
   const pub=await G(p,()=>window.__publicados);
   ok('publicou depois de parar de mexer', pub.length>=1, 'publicações='+pub.length);
   ok('publicou só o arquivo de dados',
-     pub.length>0 && Object.keys(pub[0]).length===1 && Object.keys(pub[0])[0]==='dados/estado.json',
+     pub.length>0 && Object.keys(pub[0]).length===1 && Object.keys(pub[0])[0]==='dados/estado-setembro-2026.json',
      pub.length?Object.keys(pub[0]).join(','):'nenhuma');
   ok('mandou JSON com a mudança',
-     pub.length>0 && JSON.parse(pub[0]['dados/estado.json'].content).campanhas[0].meta===77000);
+     pub.length>0 && JSON.parse(pub[0]['dados/estado-setembro-2026.json'].content).campanhas[0].meta===77000);
   ok('declarou o tipo do conteúdo',
-     pub.length>0 && pub[0]['dados/estado.json'].contentType==='application/json');
+     pub.length>0 && pub[0]['dados/estado-setembro-2026.json'].contentType==='application/json');
   ok('sem erro de JS', erros.length===0, erros.join(' / '));
   await p.close();
 }
@@ -76,21 +76,21 @@ const G=(p,f)=>p.evaluate(f);
 // ---- 2. conflito deixa a decisão com quem está editando ----
 {
   const {p}=await abrir({publishFalha:'conflict'});
-  await p.evaluate(()=>{D.campanhas[0].meta=1234});
+  await p.evaluate(()=>{D.meses[0].ref='mexido durante o conflito'});
   await p.waitForTimeout(7000);
   const faixa=await G(p,()=>document.querySelector('#nuvem').textContent.replace(/\s+/g,' ').trim());
   ok('faixa de conflito aparece', /Outra pessoa salvou/.test(faixa), faixa.slice(0,60));
   ok('conflito oferece as duas saídas',
      /Ver a versão dela/.test(faixa) && /Mandar a minha por cima/.test(faixa));
   ok('não recarrega sozinho — o trabalho local continua',
-     await G(p,()=>D.campanhas[0].meta)===1234);
+     await G(p,()=>D.meses[0].ref)==='mexido durante o conflito');
   await p.close();
 }
 
 // ---- 3. quem não pode escrever vê modo leitura, sem quebrar ----
 {
   const {p,erros}=await abrir({publishFalha:'not_writer'});
-  await p.evaluate(()=>{D.campanhas[0].meta=999});
+  await p.evaluate(()=>{D.meses[0].ref='mexido em somente leitura'});
   await p.waitForTimeout(7000);
   ok('cai pra somente leitura', await G(p,()=>modo)==='leitura', 'modo='+await G(p,()=>modo));
   ok('explica no lugar de dar erro',
@@ -98,7 +98,7 @@ const G=(p,f)=>p.evaluate(f);
   ok('rodapé acompanha',
      /somente leitura/.test(await G(p,()=>document.querySelector('#msg').textContent)),
      await G(p,()=>document.querySelector('#msg').textContent));
-  ok('a página segue usável', await G(p,()=>D.campanhas[0].meta)===999);
+  ok('a página segue usável', await G(p,()=>D.meses[0].ref)==='mexido em somente leitura');
   ok('sem erro de JS', erros.length===0, erros.join(' / '));
   await p.close();
 }
