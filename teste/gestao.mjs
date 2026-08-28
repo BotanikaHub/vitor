@@ -47,7 +47,7 @@ const PAGINAS = [
   ],has_more:false},
 ];
 
-async function abrir({temMcp=true,erro=null}={}){
+async function abrir({temMcp=true,erro=null,arquivo='index.html'}={}){
   const p = await b.newPage({viewport:{width:1400,height:1000}});
   const erros=[]; p.on('pageerror',e=>erros.push(e.message));
   await p.route('**/dados/estado.json*', r=>r.fulfill({status:404,body:''}));
@@ -61,7 +61,7 @@ async function abrir({temMcp=true,erro=null}={}){
     }};
     window.claude={ use: async n => n==='mcp' ? (temMcp?mcp:null) : null };
   },{temMcp,erro,PAGINAS});
-  await p.goto('file://'+resolve(raiz,'index.html'),{waitUntil:'networkidle'});
+  await p.goto('file://'+resolve(raiz,arquivo),{waitUntil:'networkidle'});
   await p.waitForTimeout(400);
   await p.click('nav.paginas button[data-pg="gestao"]');
   await p.waitForTimeout(600);
@@ -138,15 +138,50 @@ for(const [codigo,esperado] of [
   await p.close();
 }
 
-// ---- 4. fora do claude.ai ----
+// ---- 4. sem conector e sem retrato: explica em vez de ficar vazia ----
 {
   const {p,erros}=await abrir({temMcp:false});
   const t=await corpo(p);
-  ok('sem a capacidade, explica em vez de ficar vazia', /só responde com a página aberta no claude\.ai/i.test(t),
+  ok('sem conector e sem retrato, explica', /não trouxe as tarefas do ClickUp/i.test(t),
      t.replace(/\n/g,' ').slice(0,70));
   ok('não tentou chamar nada', (await T(p,()=>window.__chamadas)).length===0);
   ok('o resto do planejador continua de pé',
      await T(p,()=>!!document.querySelector('#tit-mes').textContent));
+  ok('sem erro de JS', erros.length===0, erros.join(' | '));
+  await p.close();
+}
+
+/* ---- 4b. a página publicada: retrato embutido, sem conector nenhum ----
+   É assim que a equipe vê, num link aberto. Roda contra dist/artifact.html,
+   que é o arquivo que vai pro ar — o build injeta dados/clickup.json ali. */
+{
+  const {p,erros}=await abrir({temMcp:false,arquivo:'dist/artifact.html'});
+  ok('a página publicada não chama conector nenhum',
+     (await T(p,()=>window.__chamadas)).length===0);
+  const t=await corpo(p);
+  ok('o retrato traz as tarefas reais da marca do mês',
+     /ESTRUTURAR PROGRAMA DE UGC|CONFIGURAR ENVIO DE CAMPANHA/i.test(t),
+     t.replace(/\n/g,' ').slice(0,80));
+  ok('carimba que é retrato e de quando',
+     /retrato do ClickUp de \d{2}\/\d{2} às \d{2}:\d{2}/i
+       .test(await T(p,()=>document.querySelector('#g-quando').textContent)));
+  ok('esconde o Atualizar, que no retrato não atualiza nada',
+     await T(p,()=>getComputedStyle(document.querySelector('#g-atualizar')).display==='none'));
+  ok('o filtro de marca continua de pé',
+     await T(p,()=>getComputedStyle(document.querySelector('#g-marca')).display!=='none'));
+  const r=await T(p,()=>document.querySelector('#g-resumo').innerText);
+  ok('o placar conta em cima do retrato', /de \d+/.test(r), r.replace(/\n/g,' ').slice(0,60));
+
+  await p.click('#pg-gestao .g-abas button[data-ga="pessoa"]');
+  await p.waitForTimeout(200);
+  ok('por pessoa funciona no retrato', /Pedro Lage|Ítalo Neves|Sarah/.test(await corpo(p)));
+
+  await p.click('#g-marca');   /* as duas marcas: entra a operação inteira */
+  await p.click('#pg-gestao .g-abas button[data-ga="acoes"]');
+  await p.waitForTimeout(200);
+  const dois=await corpo(p);
+  ok('abrindo as duas, o retrato mostra a operação inteira',
+     /AÇÕES DE RECOMPRA/i.test(dois) && /DIA D KIDS/i.test(dois));
   ok('sem erro de JS', erros.length===0, erros.join(' | '));
   await p.close();
 }

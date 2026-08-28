@@ -474,7 +474,7 @@ tr.total .cel{font-weight:600;color:var(--verde)}
       <button data-ga="atrasado" onclick="cuAbrirAba('atrasado')">Atrasado</button>
     </div>
     <button class="mini" id="g-marca" onclick="cuTrocarMarca()"></button>
-    <button class="mini" onclick="cuLer({forcar:true})">Atualizar</button>
+    <button class="mini" id="g-atualizar" onclick="cuLer({forcar:true})">Atualizar</button>
     <span class="g-quando" id="g-quando"></span>
   </div>
   <div class="cartoes" id="g-resumo"></div>
@@ -2114,7 +2114,24 @@ const CU_FEITO=['feito','concluido','concluído','complete','completed','closed'
 const CU_MARCAS=/^(botanika|vermefree|verme free)$/i;
 const CU_PAG_MAX=12;               // teto de segurança na paginação
 
+/* Retrato do ClickUp, injetado no build a partir de dados/clickup.json.
+   É o que faz a Gestão funcionar num link aberto: uma página que declara
+   conector não pode ser compartilhada com ninguém, então esta leva os
+   dados dentro. Quem tem o ClickUp conectado lê ao vivo e ignora o
+   retrato; todo o resto vê a foto, com a data dela carimbada. */
+const CU_RETRATO=null; /*[[RETRATO]]*/
+
+/* linhas enxutas → o formato que o resto da página já entende */
+function cuDoRetrato(){
+  if(!CU_RETRATO||!CU_RETRATO.tarefas)return null;
+  return CU_RETRATO.tarefas.map(([id,name,status,quem,due,lista])=>({
+    id,name,status,url:'https://app.clickup.com/t/'+id,
+    assignees:(quem||[]).map(username=>({username})),
+    due_date:due,list:{id:lista}}));
+}
+
 let MCP=null, cuTarefas=null, cuQuando=0, cuErro=null, cuLendo=false, cuAba='acoes';
+let cuRetrato=false;   /* está mostrando a foto, não a leitura ao vivo */
 /* A Gestão segue o seletor de mês como todas as outras páginas: mostra a
    marca do mês aberto. O botão do topo abre as duas quando for preciso. */
 let cuSoMarca=true;
@@ -2249,7 +2266,11 @@ function cuAgrupar(tarefas){
 /* ---- leitura ---- */
 async function cuLer({forcar=false}={}){
   if(cuLendo)return;
-  if(!MCP){cuPintar();return}
+  if(!MCP){
+    const r=cuDoRetrato();
+    if(r){cuTarefas=r;cuQuando=CU_RETRATO.em||0;cuRetrato=true}
+    cuPintar();return;
+  }
   if(!forcar&&cuTarefas&&Date.now()-cuQuando<60000){cuPintar();return}
   cuLendo=true;cuErro=null;cuPintar();
   try{
@@ -2262,7 +2283,7 @@ async function cuLer({forcar=false}={}){
       if(r?.cache?.storedAt)carimbo=Math.max(carimbo,r.cache.storedAt);
       maisTem=d.has_more===true;pagina=(d.next_page??pagina+1);
     }
-    cuTarefas=todas;cuQuando=carimbo||Date.now();
+    cuTarefas=todas;cuQuando=carimbo||Date.now();cuRetrato=false;
   }catch(e){
     cuErro=e||{code:'upstream_error'};
     /* só server_unavailable e rate_limited pedem nova tentativa, e uma só */
@@ -2446,17 +2467,18 @@ function cuPintar(){
   const alvo=$('#g-corpo'),topo=$('#g-quando'),resumo=$('#g-resumo');if(!alvo)return;
   document.querySelectorAll('#pg-gestao .g-abas button')
     .forEach(b=>b.classList.toggle('on',b.dataset.ga===cuAba));
-  const bm=$('#g-marca');
-  /* o botão só existe pra quem tem o ClickUp; e volta se a capacidade
-     aparecer depois — o primeiro desenho acontece antes dela resolver */
-  if(bm){bm.style.display=MCP?'':'none';
+  const bm=$('#g-marca'),ba=$('#g-atualizar');
+  /* o botão só aparece quando há o que filtrar; e volta se a capacidade
+     surgir depois — o primeiro desenho acontece antes dela resolver */
+  if(bm){bm.style.display=(MCP||CU_RETRATO)?'':'none';
     bm.textContent=cuSoMarca?'Só '+marcaDo(mesAtual()):'As duas marcas'}
+  /* no retrato não há o que atualizar: a foto é a que veio na página */
+  if(ba)ba.style.display=MCP?'':'none';
   if(resumo)resumo.innerHTML='';
 
-  if(!MCP){
-    alvo.innerHTML=`<div class="g-aviso"><b>O ClickUp só responde com a página aberta no claude.ai.</b>
-      Aberta como arquivo local, o resto do planejador funciona normalmente —
-      só esta aba fica sem dados.</div>`;
+  if(!MCP&&!cuTarefas){
+    alvo.innerHTML=`<div class="g-aviso"><b>Esta cópia não trouxe as tarefas do ClickUp.</b>
+      O resto do planejador funciona normalmente — só esta aba fica sem dados.</div>`;
     topo.textContent='';return;
   }
   if(cuErro){
@@ -2467,8 +2489,12 @@ function cuPintar(){
   if(cuLendo&&!cuTarefas){alvo.innerHTML='<div class="g-vazio">Lendo o ClickUp…</div>';return}
   if(!cuTarefas){alvo.innerHTML='<div class="g-vazio">Clique em atualizar para ler o ClickUp.</div>';return}
 
-  topo.textContent=(cuLendo?'atualizando… · ':'')+'lido '+
-    new Date(cuQuando).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const quando=new Date(cuQuando);
+  topo.textContent=cuRetrato
+    ? 'retrato do ClickUp de '+quando.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+
+      ' às '+quando.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})
+    : (cuLendo?'atualizando… · ':'')+'lido '+
+      quando.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
   if(cuTarefas.length&&!cuVisiveis().length){alvo.innerHTML=cuNadaDaMarca();return}
   if(resumo)resumo.innerHTML=cuResumo();
   alvo.innerHTML = cuAba==='semana'?cuPintarSemana()
@@ -2483,7 +2509,7 @@ function cuAbrirAba(a){cuAba=a;cuPintar()}
   try{MCP=await window.claude?.use?.('mcp')||null}catch(e){MCP=null}
   if(!$('#g-corpo'))return;
   cuPintar();
-  if(MCP)cuLer();   /* sem esperar a aba: o Mês já abre com a execução do lado */
+  cuLer();   /* sem esperar a aba: o Mês já abre com a execução do lado */
 })();
 
 </script>
