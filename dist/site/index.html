@@ -1,0 +1,3191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Botanika — Planejamento</title>
+</head>
+<body>
+<style>
+:root{
+  --bg:#0b1310;--painel:#101c16;--painel2:#152420;--linha:#1e332a;--linha2:#2a463a;
+  --txt:#e6efe9;--txt2:#8fa89b;--txt3:#5f7a6d;
+  --verde:#35d07f;--verde-esc:#1a6b45;--roxo:#a78bfa;--amar:#f5c451;--verm:#f2777a;
+  --c-bg:#f2f2f2;--c-grade:#e0e0e0;--c-txt:#1a1a1a;--c-borda:#d5d5d8;--c-azul:#4262ff;
+}
+*{box-sizing:border-box}
+/* clip, não hidden: não cria contexto de rolagem, então #quadro.cheio
+   (position:fixed) continua escapando pra tela toda */
+body{margin:0;overflow-x:clip;background:var(--bg);color:var(--txt);
+  font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1500px;margin:0 auto;padding:0 22px 90px}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--verde);outline-offset:1px}
+
+.topo{background:var(--painel);border-bottom:1px solid var(--linha)}
+.topo-in{max-width:1500px;margin:0 auto;padding:20px 22px 0}
+.marca{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--txt3);margin-bottom:6px}
+.linha-mes{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:10px}
+.mes-tit{font-size:30px;font-weight:300;letter-spacing:-.02em;margin:0}
+.mes-tit b{font-weight:600;color:var(--verde)}
+.marca-mes{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--verde);background:var(--painel2);border:1px solid var(--linha2);
+  border-radius:999px;padding:3px 10px;vertical-align:middle}
+#sel-mes{background:var(--painel2);border:1px solid var(--linha2);border-radius:8px;
+  padding:5px 10px;font-size:13px}
+.metas-topo{display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--txt2);margin-bottom:14px}
+.metas-topo b{color:var(--txt);font-weight:600}
+nav.paginas{display:flex;gap:2px;flex-wrap:wrap}
+nav.paginas button{padding:10px 17px;font-size:13.5px;color:var(--txt2);
+  border-bottom:2px solid transparent;border-radius:9px 9px 0 0}
+nav.paginas button:hover{color:var(--txt);background:var(--painel2)}
+nav.paginas button.on{color:var(--verde);border-bottom-color:var(--verde);background:var(--painel2)}
+
+.pagina{display:none;padding-top:24px}
+.pagina.on{display:block}
+h2.sec{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--txt3);
+  margin:0 0 12px;font-weight:600}
+.dica{font-size:13px;color:var(--txt3);margin:-6px 0 16px}
+.cartoes{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:26px}
+.cartao{background:var(--painel);border:1px solid var(--linha);border-radius:12px;padding:15px 17px}
+.cartao .rot{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);margin-bottom:5px}
+.cartao .num{font-size:25px;font-weight:600;letter-spacing:-.02em}
+.cartao .pe{font-size:12px;color:var(--txt2);margin-top:3px}
+.v{color:var(--verde)}.a{color:var(--amar)}.r{color:var(--verm)}
+.tab-caixa{background:var(--painel);border:1px solid var(--linha);border-radius:12px;
+  overflow-x:auto;margin-bottom:20px}
+table{border-collapse:collapse;width:100%;min-width:600px}
+th{background:var(--painel2);text-align:left;padding:9px 13px;font-size:10.5px;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);font-weight:600;
+  border-bottom:1px solid var(--linha);white-space:nowrap}
+td{padding:0;border-bottom:1px solid var(--linha);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td .cel{padding:9px 13px;min-height:38px;font-size:14px;outline:none;white-space:pre-wrap;word-break:break-word}
+td .cel:hover{background:var(--painel2)}
+td .cel:focus{background:#0e1a15;box-shadow:inset 0 0 0 1.5px var(--verde)}
+td:first-child .cel{font-weight:500}
+tr.total{background:var(--painel2)}
+tr.total .cel{font-weight:600;color:var(--verde)}
+.sec-cab{display:flex;align-items:center;gap:10px;margin:26px 0 10px}
+.sec-cab h3{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--verde);margin:0;font-weight:600;flex:1}
+.mini{font-size:11.5px;color:var(--txt3);padding:4px 9px;border-radius:5px;border:1px solid var(--linha2)}
+.mini:hover{color:var(--txt);border-color:var(--txt3)}
+.mini.perigo:hover{color:var(--verm);border-color:var(--verm)}
+.mini.forte{background:var(--verde-esc);border-color:var(--verde);color:#fff}
+.add-linha{display:flex;gap:8px;padding:8px 13px;border-top:1px solid var(--linha)}
+.abas{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.aba{padding:8px 14px;border:1px solid var(--linha2);border-radius:20px;font-size:13px;
+  color:var(--txt2);display:flex;align-items:center;gap:8px}
+.aba:hover{border-color:var(--txt3);color:var(--txt)}
+.aba.on{background:var(--verde-esc);border-color:var(--verde);color:#fff}
+.aba .vlr{font-size:11.5px;opacity:.8}
+.aba.nova{border-style:dashed;color:var(--roxo);border-color:var(--roxo)}
+.seletor{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px}
+.seletor button{padding:7px 13px;border:1px solid var(--linha2);border-radius:18px;
+  font-size:12.5px;color:var(--txt2)}
+.seletor button.on{background:var(--verde-esc);border-color:var(--verde);color:#fff}
+.faixa-camp{display:flex;align-items:center;gap:12px;padding:11px 15px;background:var(--painel);
+  border:1px solid var(--linha);border-radius:10px;margin-bottom:8px;flex-wrap:wrap}
+.bolinha{width:8px;height:8px;border-radius:50%;background:var(--verde);flex-shrink:0}
+.faixa-camp .nm{flex:1;font-weight:500;min-width:150px}
+.faixa-camp .tp{font-size:11px;color:var(--txt3);background:var(--painel2);
+  padding:2px 8px;border-radius:20px}
+.faixa-camp .dt{font-size:12.5px;color:var(--txt3);font-family:ui-monospace,monospace}
+.faixa-camp .mt{font-size:13px;color:var(--verde);font-weight:600}
+.vazio{padding:26px 15px;text-align:center;color:var(--txt3);font-size:13.5px;
+  background:var(--painel);border:1px dashed var(--linha2);border-radius:10px}
+.cal-cab{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px}
+.cal-cab div{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt3);
+  text-align:center;padding:4px 0}
+.cal-sem{position:relative;margin-bottom:5px}
+.cal-dias{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal-dia{background:var(--painel);border:1px solid var(--linha);border-radius:8px;
+  padding:6px 8px;cursor:pointer}
+.cal-dia:hover{border-color:var(--txt3)}
+.cal-dia.fora{opacity:.3}
+.cal-dia.sel{border-color:var(--verde);background:var(--painel2)}
+.cal-dia .n{font-family:ui-monospace,monospace;font-size:13px;color:var(--txt2);font-weight:600}
+.cal-dia.hoje .n{color:var(--verde)}
+.cal-dia .pecas{font-size:10.5px;color:var(--txt3);margin-top:2px}
+.cal-barras{position:absolute;left:0;right:0;top:0;pointer-events:none}
+.barra{position:absolute;height:19px;border-radius:5px;font-size:10.5px;line-height:19px;
+  padding:0 7px;overflow:hidden;white-space:nowrap;color:#08120d;font-weight:600;
+  pointer-events:auto;cursor:pointer}
+.barra:hover{filter:brightness(1.15)}
+.legenda{display:flex;gap:14px;flex-wrap:wrap;margin:14px 0 0;font-size:12px;color:var(--txt2)}
+.legenda span{display:flex;align-items:center;gap:6px}
+.legenda i{width:11px;height:11px;border-radius:3px;display:inline-block}
+#dia-detalhe{margin-top:20px}
+
+/* canvas */
+#quadro{position:relative;height:min(74vh,760px);background:var(--c-bg);
+  border:1px solid var(--linha);border-radius:12px;overflow:hidden;touch-action:none;user-select:none}
+#quadro.cheio{position:fixed;inset:0;z-index:9000;border-radius:0;height:auto}
+/* largura total: escapa do .wrap de 1500px e encosta nas duas bordas da janela.
+   A altura quem calcula é altura Larga(), que mede a sobra real até o rodapé. */
+#quadro.larga{width:100vw;margin-left:calc(50% - 50vw);border-radius:0;
+  border-left:none;border-right:none}
+#quadro.pan{cursor:grabbing}
+#quadro.criando{cursor:crosshair}
+#grade{position:absolute;inset:0;
+  background-image:linear-gradient(var(--c-grade) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--c-grade) 1px,transparent 1px)}
+#mundo{position:absolute;top:0;left:0;width:9000px;height:6000px;transform-origin:0 0}
+#fios{position:absolute;top:0;left:0;width:9000px;height:6000px;pointer-events:none;overflow:visible}
+.el{position:absolute;color:var(--c-txt)}
+.el .conteudo{outline:none;word-break:break-word;white-space:pre-wrap}
+.el.sel{box-shadow:0 0 0 2px var(--c-azul)}
+.el.alvo{box-shadow:0 0 0 3px #F5C51E}
+.el.apagado{opacity:.2}.el.achado{box-shadow:0 0 0 3px #F5C51E}
+.no{transform:translate(-50%,-50%);background:#fff;border:2px solid #7B61FF;border-radius:22px;
+  padding:9px 17px;font-size:14px;line-height:1.35;max-width:290px;display:flex;align-items:center;gap:8px}
+.no.raiz{font-size:17px;font-weight:600;padding:14px 26px;border-width:2.5px;
+  max-width:340px;flex-wrap:wrap;row-gap:9px}
+/* os selos de meta e de resto descem pra linha de baixo: em linha com o
+   título eles espremiam o nome do mês até sobrar uma letra por linha */
+.no.raiz .conteudo{flex:1 0 100%}
+.no.feito .conteudo{text-decoration:line-through;opacity:.45}
+.no .ok{color:#0AB58F;font-size:13px;flex-shrink:0}
+.no .selo{font-size:10px;padding:2px 7px;border-radius:20px;background:#eceaff;
+  color:#4a3fb8;font-weight:600;white-space:nowrap;flex-shrink:0}
+.no .fecho{position:absolute;top:50%;transform:translateY(-50%);width:19px;height:19px;
+  border-radius:50%;background:#fff;border:1.5px solid var(--c-borda);font-size:10px;
+  line-height:1;color:#666;display:flex;align-items:center;justify-content:center;
+  padding:0;font-family:ui-monospace,monospace;font-weight:600}
+.no .fecho:hover{border-color:var(--c-azul);color:var(--c-azul)}
+.no .fecho.dir{right:-10px}.no .fecho.esq{left:-10px}
+.no .mais{position:absolute;top:50%;transform:translateY(-50%);width:20px;height:20px;
+  border-radius:50%;background:var(--c-azul);color:#fff;font-size:14px;line-height:1;
+  display:none;align-items:center;justify-content:center;padding:0}
+.no .mais.dir{right:-27px}.no .mais.esq{left:-27px}
+.no.sel .mais{display:flex}
+.sticky{transform:translate(-50%,-50%);background:#FFF9B1;border-radius:3px;padding:14px;
+  font-size:14px;line-height:1.4;width:170px;min-height:170px;box-shadow:0 2px 5px rgba(0,0,0,.13);
+  display:flex;align-items:center;justify-content:center;text-align:center;font-weight:500}
+.texto{transform:translate(-50%,-50%);font-size:19px;font-weight:500;padding:4px 6px;min-width:60px}
+.forma{transform:translate(-50%,-50%);background:#fff;border:2px solid #4262ff;width:150px;height:100px;
+  display:flex;align-items:center;justify-content:center;text-align:center;font-size:14px;padding:10px}
+.forma.oval{border-radius:50%}.forma.ret{border-radius:6px}
+.forma.losango{transform:translate(-50%,-50%) rotate(45deg);border-radius:6px}
+.forma.losango .conteudo{transform:rotate(-45deg)}
+.forma.tri{background:transparent;border:none;width:0;height:0}
+#ferramentas{position:absolute;left:14px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:9px;z-index:40}
+.grupo{background:#fff;border-radius:12px;padding:5px;box-shadow:0 2px 10px rgba(0,0,0,.14);
+  display:flex;flex-direction:column;gap:2px}
+.grupo button{width:42px;height:42px;border-radius:9px;display:flex;align-items:center;
+  justify-content:center;color:#3a3a40}
+.grupo button:hover{background:#f0f0f2}
+.grupo button.on{background:#e8e9ff;color:var(--c-azul)}
+.grupo button:disabled{opacity:.3;cursor:default}
+.grupo button:disabled:hover{background:none}
+.grupo button svg{width:21px;height:21px;fill:none;stroke:currentColor;
+  stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#subformas{position:absolute;left:70px;z-index:50;background:#fff;border-radius:11px;padding:6px;
+  box-shadow:0 6px 22px rgba(0,0,0,.2);display:none;min-width:190px;color:#1a1a1a}
+#subformas.on{display:block}
+#subformas button{display:flex;width:100%;padding:8px 11px;border-radius:7px;font-size:13.5px;
+  gap:11px;align-items:center;color:#2a2a2e}
+#subformas button:hover{background:#f2f2f4}
+#subformas .k{margin-left:auto;font-size:11px;color:#9a9aa2}
+#zoomcx{position:absolute;right:14px;bottom:14px;z-index:40;background:#fff;border-radius:11px;
+  padding:4px;box-shadow:0 2px 10px rgba(0,0,0,.14);display:flex;align-items:center;gap:1px}
+#zoomcx button{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;color:#3a3a40;font-size:17px}
+#zoomcx button:hover{background:#f0f0f2}
+#zoomcx button.on{background:var(--c-azul);color:#fff}
+#zoomcx button svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+#zpc{min-width:52px;text-align:center;font-size:13px;color:#3a3a40;font-weight:500;cursor:pointer}
+#zoomcx .div{width:1px;height:20px;background:var(--c-borda);margin:0 3px}
+#titulo-q{position:absolute;left:14px;top:14px;z-index:40;background:#fff;border-radius:11px;
+  padding:9px 15px;box-shadow:0 2px 10px rgba(0,0,0,.14);display:flex;align-items:center;
+  gap:11px;font-size:14px;color:#1a1a1a;font-weight:500;flex-wrap:wrap;max-width:calc(100% - 28px)}
+#titulo-q input{border:none;background:transparent;width:200px;font-weight:500;outline:none}
+#busca-q{border:1px solid var(--c-borda);border-radius:7px;padding:4px 9px;font-size:12.5px;
+  width:120px;background:#fafafa}
+#titulo-q .bt{border:1px solid var(--c-borda);border-radius:7px;padding:4px 10px;font-size:12.5px;color:#2a2a2e}
+#titulo-q .bt:hover{background:#f2f2f4}
+#paleta{position:absolute;z-index:60;background:#fff;border-radius:11px;padding:5px;
+  box-shadow:0 3px 14px rgba(0,0,0,.18);display:none;gap:3px;align-items:center}
+#paleta.on{display:flex}
+#paleta button{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;
+  justify-content:center;color:#3a3a40;font-size:13px}
+#paleta button:hover{background:#f0f0f2}
+#paleta .cor{width:20px;height:20px;border-radius:50%;border:1.5px solid rgba(0,0,0,.14)}
+#paleta .div{width:1px;height:20px;background:var(--c-borda);margin:0 3px}
+#menu{position:fixed;z-index:9500;background:#fff;border:1px solid var(--c-borda);border-radius:10px;
+  padding:5px;min-width:230px;display:none;box-shadow:0 10px 30px rgba(0,0,0,.2);color:#1a1a1a}
+#menu.on{display:block}
+#menu button{display:flex;width:100%;text-align:left;padding:8px 11px;border-radius:6px;
+  font-size:13.5px;color:#2a2a2e;gap:10px;align-items:center}
+#menu button:hover{background:#f2f2f4}
+#menu button.destaque{color:var(--c-azul);font-weight:500}
+#menu button.perigo{color:#d13a3a}
+#menu button.perigo:hover{background:#fdeeee}
+#menu .atalho{margin-left:auto;font-size:10.5px;color:#9a9aa2;font-family:ui-monospace,monospace}
+#menu hr{border:none;border-top:1px solid #ebebee;margin:4px 0}
+
+/* modal */
+#nuvem{display:none;padding:11px 22px;font-size:13.5px;background:var(--painel2);
+  border-bottom:1px solid var(--linha2);align-items:center;gap:12px;flex-wrap:wrap}
+#nuvem.on{display:flex}
+#nuvem.alerta{background:#2a2412;border-bottom-color:var(--amar)}
+#nuvem b{font-weight:600}
+#nuvem button{padding:5px 12px;border:1px solid var(--linha2);border-radius:8px;font-size:12.5px}
+#nuvem button:hover{border-color:var(--txt3)}
+#nuvem button.forte{background:var(--verde-esc);border-color:var(--verde);color:#fff}
+#modal{position:fixed;inset:0;z-index:9700;background:rgba(0,0,0,.6);display:none;
+  align-items:center;justify-content:center;padding:20px}
+#modal.on{display:flex}
+#modal .cx{background:var(--painel);border:1px solid var(--linha2);border-radius:14px;
+  padding:24px;width:min(560px,100%);max-height:88vh;overflow:auto}
+#modal h3{margin:0 0 4px;font-size:19px;font-weight:600}
+#modal .sub{margin:0 0 18px;font-size:13px;color:var(--txt3)}
+#modal label{display:block;margin-bottom:13px}
+#modal label b{display:block;font-size:11px;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--txt3);font-weight:600;margin-bottom:5px}
+#modal input,#modal select,#modal textarea{width:100%;background:var(--painel2);
+  border:1px solid var(--linha2);border-radius:8px;padding:9px 11px;font-size:14px}
+#modal .dupla{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#modal .opcoes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+#modal .op{padding:9px 14px;border:1.5px solid var(--linha2);border-radius:10px;font-size:13.5px;
+  color:var(--txt2);text-align:left}
+#modal .op:hover{border-color:var(--txt3);color:var(--txt)}
+#modal .op.on{border-color:var(--verde);background:var(--verde-esc);color:#fff}
+#modal .op.livre{border-style:dashed}
+#modal .op small{display:block;font-size:11px;opacity:.75;margin-top:2px}
+#modal .bts{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+#modal .larga{width:min(760px,100%)}
+#modal .lista{border:1px solid var(--linha);border-radius:10px;overflow:hidden;margin-bottom:14px}
+#modal .lin{display:flex;align-items:center;gap:10px;padding:8px 12px;
+  border-bottom:1px solid var(--linha);font-size:13.5px}
+#modal .lin:last-child{border-bottom:none}
+#modal .lin:hover{background:var(--painel2)}
+#modal .lin input[type=checkbox]{width:16px;height:16px;flex:none;accent-color:var(--verde)}
+#modal .lin .nm{flex:1;min-width:0}
+#modal .lin .nm small{display:block;font-size:11px;color:var(--txt3)}
+#modal .lin input[type=number],#modal .lin input[type=text]{width:110px;flex:none;padding:5px 8px;font-size:13px}
+#modal .lin.off{opacity:.42}
+#modal .cab{display:flex;gap:10px;padding:7px 12px;background:var(--painel2);
+  font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);font-weight:600}
+#modal .cab .nm{flex:1}#modal .cab span.col{width:110px;flex:none;text-align:center}
+#modal .radio{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+#modal .radio button{padding:7px 13px;border:1.5px solid var(--linha2);border-radius:9px;
+  font-size:13px;color:var(--txt2)}
+#modal .radio button.on{border-color:var(--verde);color:var(--verde);background:var(--painel2)}
+#modal .passos{font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--txt3);margin-bottom:14px}
+#modal .passos b{color:var(--verde)}
+#modal .bts button{padding:9px 17px;border-radius:8px;border:1px solid var(--linha2);font-size:13.5px}
+#modal .bts button.ok{background:var(--verde-esc);border-color:var(--verde);color:#fff;font-weight:500}
+#modal .resumo{background:var(--painel2);border-radius:9px;padding:12px 14px;font-size:12.5px;
+  color:var(--txt2);line-height:1.7;margin-bottom:4px}
+#modal .resumo b{color:var(--verde)}
+
+.rodape{position:sticky;bottom:0;background:var(--painel);border-top:1px solid var(--linha);
+  padding:11px 22px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 -22px -90px}
+.rodape button{padding:7px 13px;border:1px solid var(--linha2);border-radius:7px;font-size:13px;color:var(--txt2)}
+.rodape button:hover{color:var(--txt);border-color:var(--txt3)}
+.rodape button.perigo:hover{color:var(--verm);border-color:var(--verm)}
+.rodape .msg{margin-left:auto;font-size:12.5px;color:var(--txt3)}
+#troca{display:none;margin-bottom:20px}
+#troca.on{display:block}
+#troca textarea{width:100%;height:230px;background:var(--painel);border:1px solid var(--verde);
+  border-radius:12px;padding:14px;font-family:ui-monospace,monospace;font-size:12px;resize:vertical}
+#troca .barra2{display:flex;gap:8px;align-items:center;margin-bottom:8px;font-size:13px;color:var(--txt2)}
+@media(max-width:820px){
+  .wrap,.topo-in{padding-left:13px;padding-right:13px}
+  .rodape{margin-left:-13px;margin-right:-13px;padding-left:13px;padding-right:13px}
+  #quadro{height:62vh}#titulo-q input{width:120px}#busca-q{display:none}
+  .cal-dia .pecas{display:none}#modal .dupla{grid-template-columns:1fr}
+}
+/* ===== Gestão (execução no ClickUp) ===== */
+#pg-gestao .g-topo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+#pg-gestao .g-abas{display:flex;gap:2px}
+#pg-gestao .g-abas button{padding:7px 13px;font-size:12.5px;color:var(--txt2);background:transparent;
+  border:1px solid var(--linha2);border-radius:8px;cursor:pointer}
+#pg-gestao .g-abas button.on{color:var(--verde);border-color:var(--verde-esc);background:var(--painel2)}
+#pg-gestao .g-quando{margin-left:auto;font-size:11.5px;color:var(--txt2)}
+#pg-gestao .g-aviso{padding:13px 15px;border:1px solid var(--linha2);border-radius:11px;
+  background:var(--painel2);font-size:13px;line-height:1.55;color:var(--txt2);margin-bottom:14px}
+#pg-gestao .g-aviso b{color:var(--txt)}
+#pg-gestao .g-aviso.alerta{border-color:#5a3a1e;background:#241a10;color:var(--amar)}
+#pg-gestao .g-acao{border:1px solid var(--linha);border-radius:13px;background:var(--painel);
+  padding:15px 17px;margin-bottom:11px}
+#pg-gestao .g-cab{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
+#pg-gestao .g-cab h3{margin:0;font-size:15px;font-weight:600;flex:1 1 220px;min-width:0}
+#pg-gestao .g-frac{font-size:12.5px;color:var(--txt2);font-variant-numeric:tabular-nums}
+#pg-gestao .g-selo{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  padding:3px 8px;border-radius:999px;font-weight:600}
+#pg-gestao .g-selo.ok{background:#12331f;color:var(--verde)}
+#pg-gestao .g-selo.atras{background:#3a1a1b;color:var(--verm)}
+#pg-gestao .g-selo.anda{background:#2a2412;color:var(--amar)}
+#pg-gestao .g-barra{height:6px;border-radius:99px;background:var(--linha);margin:11px 0 0;overflow:hidden}
+#pg-gestao .g-barra i{display:block;height:100%;background:var(--verde);border-radius:99px}
+#pg-gestao .g-lista{margin:12px 0 0;display:grid;gap:5px}
+#pg-gestao .g-tar{display:flex;align-items:baseline;gap:9px;font-size:12.5px;padding:5px 0;
+  border-top:1px solid var(--linha)}
+#pg-gestao .g-tar a{color:var(--txt);text-decoration:none;flex:1 1 auto;min-width:0}
+#pg-gestao .g-tar a:hover{color:var(--verde)}
+#pg-gestao .g-tar.feita a{color:var(--txt2);text-decoration:line-through}
+#pg-gestao .g-quem{font-size:11px;color:var(--txt2);white-space:nowrap}
+#pg-gestao .g-prazo{font-size:11px;color:var(--txt2);white-space:nowrap;font-variant-numeric:tabular-nums}
+#pg-gestao .g-prazo.vencido{color:var(--verm)}
+#pg-gestao .g-dia{margin-bottom:13px}
+#pg-gestao .g-dia h4{margin:0 0 7px;font-size:12.5px;font-weight:600;color:var(--txt2);
+  text-transform:capitalize;border-bottom:1px solid var(--linha);padding-bottom:5px}
+#pg-gestao .g-dia.hoje h4{color:var(--verde);border-color:var(--verde-esc)}
+#pg-gestao .g-vazio{padding:22px;text-align:center;border:1px dashed var(--linha2);
+  border-radius:11px;color:var(--txt2);font-size:13px}
+#pg-gestao .g-ondeta{font-size:11px;color:var(--txt2);white-space:nowrap}
+/* Tráfego e API lado a lado no passo 2: o que cada um fatura e o que
+   cada um consome, com o resto da meta calculado embaixo. */
+.fontes{border:1px solid var(--linha2);border-radius:11px;padding:4px 13px 10px;margin:14px 0 4px}
+/* grade, não flex: com larguras fixas os campos estouravam o modal */
+.fontes .cabf,.fontes .linf{display:grid;gap:9px;align-items:center;padding:7px 0;
+  grid-template-columns:minmax(80px,1fr) minmax(72px,104px) minmax(72px,104px) 46px}
+.fontes .cabf{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--txt3);
+  border-bottom:1px solid var(--linha)}
+.fontes .nm{font-size:13.5px;min-width:0}
+.fontes .cabf .col,.fontes .cabf .rs{text-align:right}
+.fontes input{width:100%;min-width:0;background:var(--painel2);border:1px solid var(--linha2);
+  border-radius:8px;padding:6px 9px;text-align:right;font-variant-numeric:tabular-nums}
+.fontes .rs{text-align:right;font-size:12.5px;color:var(--txt2);font-variant-numeric:tabular-nums}
+.fontes .linf.resto{border-top:1px dashed var(--linha2);color:var(--txt2);font-size:13px}
+.fontes .linf.resto .nm{font-size:13px}
+.fontes .linf.resto .vl{text-align:right;font-variant-numeric:tabular-nums;color:var(--txt)}
+
+/* A escada: cada degrau é um passo da engenharia reversa, e o número
+   vai ficando menor conforme desce da meta até a ação. */
+#escada{border:1px solid var(--linha);border-radius:13px;background:var(--painel);
+  overflow:hidden;margin-bottom:26px}
+.degrau{padding:15px 18px;border-top:1px solid var(--linha)}
+.degrau:first-child{border-top:none}
+.degrau .cab{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
+.degrau .np{width:22px;height:22px;border-radius:50%;background:var(--painel2);
+  border:1px solid var(--linha2);color:var(--txt2);font-size:11.5px;font-weight:600;
+  display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.degrau h4{margin:0;font-size:13.5px;font-weight:600;flex:1;min-width:130px}
+.degrau .vlr{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
+.degrau .vlr.a{color:var(--amar)}.degrau .vlr.v{color:var(--verde)}
+.degrau .pe{font-size:12.5px;color:var(--txt3);margin-top:4px}
+.fatia{display:flex;align-items:center;gap:11px;padding:8px 0 8px 33px;font-size:13px;
+  border-top:1px dashed var(--linha);flex-wrap:wrap}
+.fatia:first-of-type{border-top:none}
+.fatia .nm{flex:1;min-width:130px}
+.fatia .pc{font-size:12px;color:var(--txt3);font-variant-numeric:tabular-nums;min-width:38px;
+  text-align:right}
+.fatia .vl{font-variant-numeric:tabular-nums;min-width:96px;text-align:right}
+.fatia .ped{font-size:12px;color:var(--txt3);min-width:96px;text-align:right}
+.fatia.resto{color:var(--amar);border-top:1px solid var(--linha2);margin-top:4px;padding-top:11px}
+.fatia.resto .nm{font-weight:600}
+.fatia.sobra{color:var(--verde);border-top:1px solid var(--linha2);margin-top:4px;padding-top:11px}
+.trilho{height:7px;border-radius:99px;background:var(--linha);overflow:hidden;display:flex;
+  margin-top:11px}
+.trilho i{display:block;height:100%}
+#pg-gestao #g-resumo{margin-bottom:18px}
+#pg-gestao #g-resumo:empty{display:none}
+#pg-gestao .g-tap{font-size:11px;color:var(--txt2);border:1px solid var(--linha2);
+  border-radius:20px;padding:3px 10px;background:var(--painel2)}
+#pg-gestao .g-tap:hover{color:var(--verde);border-color:var(--verde-esc)}
+#pg-gestao .g-cab h3{cursor:default}
+#pg-gestao .g-pes{font-size:12.5px;color:var(--txt3);margin:-4px 0 9px}
+/* selo de execução que a página do Mês e da Semana herdam da Gestão */
+.faixa-camp .exec{font-size:11px;padding:2px 9px;border-radius:20px;white-space:nowrap;
+  background:var(--painel2);color:var(--txt2)}
+.faixa-camp .exec.ok{background:#12331f;color:var(--verde)}
+.faixa-camp .exec.atras{background:#3a1a1b;color:var(--verm)}
+.faixa-camp .exec.sem{border:1px dashed var(--linha2);background:transparent;color:var(--txt3)}
+</style>
+
+<div id="nuvem"></div>
+
+<div class="topo"><div class="topo-in">
+  <div class="marca">Planejamento do mês · Botanika e VermeFree</div>
+  <div class="linha-mes">
+    <h1 class="mes-tit" id="tit-mes">Agosto <b>2026</b></h1>
+    <select id="sel-mes" onchange="trocarMes(+this.value)"></select>
+    <button class="mini forte" onclick="editarMetasMes()">Metas do mês</button>
+    <button class="mini" onclick="novoMes()">+ novo mês</button>
+  </div>
+  <div class="metas-topo" id="metas-topo"></div>
+  <nav class="paginas">
+    <button data-pg="mapa">Mapa mental</button>
+    <button data-pg="mes" class="on">Mês</button>
+    <button data-pg="semana">Semana</button>
+    <button data-pg="camp">Campanhas</button>
+    <button data-pg="gestao">Gestão</button>
+  </nav>
+</div></div>
+
+<div class="wrap">
+
+<div id="troca">
+  <div class="barra2"><span id="troca-msg"></span>
+    <button class="mini" onclick="fecharTroca()" style="margin-left:auto">fechar</button></div>
+  <textarea id="troca-txt" spellcheck="false"></textarea>
+</div>
+
+<div class="pagina" id="pg-mapa">
+  <div id="quadro">
+    <div id="grade"></div>
+    <div id="mundo"><svg id="fios"></svg></div>
+    <div id="titulo-q">
+      <input id="q-nome" value="">
+      <button class="bt" onclick="novoMapa()">novo mapa</button>
+      <input id="busca-q" placeholder="buscar…" oninput="buscar(this.value)">
+    </div>
+    <div id="ferramentas">
+      <div class="grupo">
+        <button data-fer="sel" class="on" title="Selecionar (V)" onclick="ferramenta('sel')">
+          <svg viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.6L9.6 19z"/></svg></button>
+        <button data-fer="sticky" title="Nota adesiva (N)" onclick="ferramenta('sticky')">
+          <svg viewBox="0 0 24 24"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v9l-6 6H5a1 1 0 01-1-1z"/><path d="M20 14h-5a1 1 0 00-1 1v5"/></svg></button>
+        <button data-fer="forma" title="Formas (S)" onclick="menuFormas()">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="8" height="7" rx="1.5"/><circle cx="18" cy="7.5" r="3.5"/><path d="M7 14l4 6H3z"/></svg></button>
+        <button data-fer="texto" title="Texto (T)" onclick="ferramenta('texto')">
+          <svg viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6"/></svg></button>
+        <button data-fer="no" title="Novo nó" onclick="ferramenta('no')">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      </div>
+      <div class="grupo">
+        <button id="b-undo" title="Desfazer (Ctrl+Z)" onclick="desfazer()">
+          <svg viewBox="0 0 24 24"><path d="M4 11h11a4.5 4.5 0 010 9h-5"/><path d="M8 7l-4 4 4 4"/></svg></button>
+        <button id="b-redo" title="Refazer (Ctrl+Shift+Z)" onclick="refazer()">
+          <svg viewBox="0 0 24 24"><path d="M20 11H9a4.5 4.5 0 000 9h5"/><path d="M16 7l4 4-4 4"/></svg></button>
+      </div>
+    </div>
+    <div id="subformas"></div>
+    <div id="zoomcx">
+      <button title="Enquadrar tudo" onclick="ajustar()">
+        <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M8.5 4.5v15M15.5 4.5v15"/></svg></button>
+      <span class="div"></span>
+      <button onclick="zoom(1/1.2)">−</button>
+      <span id="zpc" onclick="Z=1;centrar()">100%</span>
+      <button onclick="zoom(1.2)">+</button>
+      <span class="div"></span>
+      <button id="b-larga" onclick="larguraTotal()" title="Largura total (W)">
+        <svg viewBox="0 0 24 24"><path d="M2 12h20M6 8l-4 4 4 4M18 8l4 4-4 4"/></svg></button>
+      <button id="b-cheio" onclick="telaCheia()" title="Tela cheia (F)">
+        <svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    </div>
+    <div id="paleta"></div>
+  </div>
+  <p class="dica" style="margin-top:12px">Selecione o nó do mês e clique em <b>+</b> para criar uma campanha —
+    o TAP e o calendário se preenchem sozinhos. Botão direito abre o menu.<br>
+    Precisa de espaço? <b>W</b> alarga o canvas até as bordas da janela e <b>F</b> abre em tela cheia — <b>Esc</b> volta.</p>
+</div>
+
+<div class="pagina on" id="pg-mes">
+  <h2 class="sec" style="margin-top:0">Engenharia reversa — da meta até a ação</h2>
+  <p class="dica">Preencha a meta do mês primeiro. Daí para baixo, o planejador
+    mostra quanto ainda falta atribuir e o que cada ação precisa entregar.</p>
+  <div id="escada"></div>
+  <h2 class="sec">Resumo do mês</h2>
+  <div class="cartoes" id="cartoes-mes"></div>
+  <h2 class="sec" id="tit-cal">Calendário</h2>
+  <p class="dica">Cada barra é uma campanha. Clique num dia para ver o que sai nele.</p>
+  <div class="cal-cab" id="cal-cab"></div>
+  <div id="calendario"></div>
+  <div class="legenda" id="legenda"></div>
+  <div id="dia-detalhe"></div>
+  <h2 class="sec" style="margin-top:30px">Campanhas do mês</h2>
+  <div style="margin-bottom:10px"><button class="mini forte" onclick="assistente(null)">+ nova campanha</button></div>
+  <div id="lista-camp-mes"></div>
+</div>
+
+<div class="pagina" id="pg-semana">
+  <h2 class="sec">Qual semana</h2>
+  <div class="seletor" id="sel-semana"></div>
+  <div class="cartoes" id="cartoes-semana"></div>
+  <h2 class="sec">Campanhas nesta semana</h2>
+  <div id="camp-semana"></div>
+  <h2 class="sec" style="margin-top:26px">O que sai por dia</h2>
+  <div id="canais-semana"></div>
+</div>
+
+<div class="pagina" id="pg-camp">
+  <div class="abas" id="abas"></div>
+  <p class="dica">Clica em qualquer campo pra editar. Salva sozinho neste navegador — o Exportar JSON serve pra levar pra outra máquina.</p>
+  <div style="display:flex;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+    <button class="mini" onclick="duplicarTAP()">Duplicar TAP</button>
+    <button class="mini" onclick="editarPeriodo()">Datas e meta</button>
+    <button class="mini" onclick="regerarCronograma()">Regerar cronograma</button>
+    <button class="mini perigo" onclick="excluirTAP()">Excluir TAP</button>
+  </div>
+  <div id="secoes"></div>
+  <div style="margin-top:16px"><button class="mini" onclick="novaSecao()">+ Seção em branco</button></div>
+</div>
+
+<div class="pagina" id="pg-gestao">
+  <div class="g-topo">
+    <div class="g-abas">
+      <button data-ga="acoes" class="on" onclick="cuAbrirAba('acoes')">Por ação</button>
+      <button data-ga="semana" onclick="cuAbrirAba('semana')">Semana</button>
+      <button data-ga="pessoa" onclick="cuAbrirAba('pessoa')">Por pessoa</button>
+      <button data-ga="atrasado" onclick="cuAbrirAba('atrasado')">Atrasado</button>
+    </div>
+    <button class="mini" id="g-marca" onclick="cuTrocarMarca()"></button>
+    <button class="mini" id="g-atualizar" onclick="cuLer({forcar:true})">Atualizar</button>
+    <span class="g-quando" id="g-quando"></span>
+  </div>
+  <div class="cartoes" id="g-resumo"></div>
+  <div id="g-corpo"></div>
+</div>
+
+<div class="rodape">
+  <button class="forte" onclick="exportarPDF()">Exportar PDF</button>
+  <button onclick="copiarTexto()">Copiar como texto</button>
+  <button onclick="exportarJSON()">Exportar JSON</button>
+  <button onclick="importarJSON()">Importar JSON</button>
+  <button class="perigo" onclick="zerar()">Zerar</button>
+  <span class="msg" id="msg">salvo</span>
+</div>
+</div>
+
+<div id="relatorio" aria-hidden="true"></div>
+
+<div id="menu"></div>
+<div id="modal"><div class="cx" id="modal-cx"></div></div>
+
+<style>
+/* ================= RELATÓRIO PARA IMPRESSÃO =================
+   Não é a tela fotografada: é um documento próprio, montado na hora a
+   partir dos mesmos dados, em papel branco e na ordem de leitura. Fica
+   escondido até a impressão começar. */
+#relatorio{display:none}
+@media print{
+  @page{size:A4;margin:14mm 12mm}
+  html,body{background:#fff !important;color:#111 !important}
+  .topo,.wrap,#menu,#modal,.rodape,#paleta,#barra{display:none !important}
+  #relatorio{display:block;font:11pt/1.45 ui-sans-serif,system-ui,-apple-system,sans-serif;
+    color:#111;background:#fff}
+  #relatorio h1{font-size:21pt;margin:0 0 2mm;font-weight:700;letter-spacing:-.01em}
+  #relatorio h2{font-size:13pt;margin:9mm 0 2.5mm;padding-bottom:1.5mm;
+    border-bottom:1.5pt solid #111;font-weight:700}
+  #relatorio h3{font-size:11.5pt;margin:5mm 0 2mm;font-weight:700}
+  #relatorio .sub{color:#555;font-size:9.5pt;margin:0 0 4mm}
+  /* zera o estilo escuro das tabelas da tela: no papel é fundo branco */
+  #relatorio table{width:100%;min-width:0;border-collapse:collapse;margin:0 0 4mm;font-size:9pt}
+  #relatorio th,#relatorio td{background:#fff !important;color:#111}
+  #relatorio th{text-align:left;border-bottom:1pt solid #111;padding:1.6mm 2mm;
+    font-size:8pt;text-transform:uppercase;letter-spacing:.05em;color:#333 !important}
+  #relatorio td{border-bottom:.4pt solid #ccc;padding:1.6mm 2mm;vertical-align:top}
+  #relatorio td.n,#relatorio th.n{text-align:right;
+    font-variant-numeric:tabular-nums;white-space:nowrap}
+  #relatorio tr{break-inside:avoid}
+  #relatorio thead{display:table-header-group}
+  #relatorio .capa{margin-bottom:8mm;padding-bottom:5mm;border-bottom:2.5pt solid #111}
+  #relatorio .metas{display:flex;gap:9mm;font-size:10pt;margin-top:3mm}
+  #relatorio .metas b{display:block;font-size:14pt}
+  #relatorio .falta{font-weight:700}
+  #relatorio .tap{break-before:page}
+  #relatorio .cal{table-layout:fixed}
+  #relatorio .cal td{height:17mm;font-size:7.5pt;border:.4pt solid #ccc}
+  #relatorio .cal .d{font-weight:700;font-size:8.5pt;color:#666}
+  #relatorio .cal .fora{color:#bbb}
+  #relatorio .pe{font-size:8.5pt;color:#666;margin:-2mm 0 5mm}
+  #relatorio .nada{color:#777;font-style:italic}
+}
+</style>
+
+<script>
+/* ================= CATÁLOGO ================= */
+const TIPOS={
+  diaD:{nome:'Dia D',dias:1,desc:'Ação relâmpago de 1 dia',cor:0},
+  semana:{nome:'Semana temática',dias:5,desc:'5 a 8 dias em torno de um tema',cor:6,temas:true},
+  gap:{nome:'Ações de gap',dias:8,desc:'Destravar faixa de ticket ou frete',cor:2},
+  recompra:{nome:'Ações de recompra',dias:0,desc:'Contínua no mês',cor:4},
+  perpetuo:{nome:'Perpétuo',dias:0,desc:'E-mail e API rodando sempre',cor:5},
+  outro:{nome:'Outro formato',dias:5,desc:'Você define tudo',cor:3}
+};
+const CANAIS=[
+  ['E-mails base antiga','Base de compradores + leads','Pedro cria e Sarah programa'],
+  ['E-mails base captada','não tem','Pedro cria e Sarah programa'],
+  ['WhatsApp grupos antigos','Grupo VIP + Grupo de ofertas','Pedro cria e Sarah programa'],
+  ['WhatsApp grupos da campanha','não tem','Pedro cria e Sarah programa'],
+  ['WhatsApp API','Base com opt-in','Pedro cria e Sarah programa'],
+  ['Criativos em vídeo','UGC conversivo','Pedro cria e Gestor programa'],
+  ['Criativos em imagem','Estáticos emocionais','Pedro cria e Gestor programa'],
+  ['Instagram feed','Italo define o planejamento','Italo cria planejamento e mostra Gabriel'],
+  ['Instagram stories','Sequência antecipando + produtos + contagem','Italo cria e não precisa de aprovação'],
+  ['Página de captura','não tem','—'],
+  ['Alteração no site','Banner + tarja com timer + aviso nas PDPs + preço com desconto (não cupom)','Pedro']
+];
+/* ===== CATÁLOGO — é aqui que se mexe quando o portfólio ou o padrão muda ===== */
+/* Catálogo real da loja (Shopify · Botanika Brasil), puxado em 20/08/2026.
+   Quando o portfólio mudar é só pedir pro Claude sincronizar de novo. */
+const CATALOGO=[
+  {curto:'Tri[Mg]',      sku:'80.1.1', preco:87.50,  nome:'Tri[Mg] Complex — Magnésio 3 em 1 de Rápida Absorção'},
+  {curto:'Vit C',        sku:'80.1.2', preco:89.52,  nome:'Super Vitamina C — Vitamina C + Quercetina + Própolis'},
+  {curto:'Ômega 3',      sku:'80.1.3', preco:163.12, nome:'Super Ômega 3 + CoQ10 — Concentrado'},
+  {curto:'Hair',         sku:'80.1.5', preco:99.40,  nome:'Hair Botanika — Cabelos, Unhas e Pele'},
+  {curto:'Sleep',        sku:'80.1.6', preco:119.70, nome:'Sleep Inositol — Relaxamento e Rotina do Sono'},
+  {curto:'Creatina',     sku:'80.1.7', preco:128.30, nome:'Creatina Monohidratada + Magnésio Taurato'},
+  {curto:'Whey',         sku:'80.1.8', preco:147.30, nome:'Whey Balance Chocolate — Whey + Colágeno C-PURE®'},
+  {curto:'TetraVit D',   sku:'80.1.9', preco:117.12, nome:'TetraVit D — Vitaminas A, D, E e K em Gotas'},
+  {curto:'Kit Imunidade',sku:'kitimu', preco:361.71, nome:'Kit Imunidade — TetraVit D + Ômega 3 + Vit C', kit:true}
+];
+const SKUS=CATALOGO.filter(p=>!p.kit).map(p=>p.curto);
+const KITS=CATALOGO.filter(p=>p.kit).map(p=>[p.curto,'10% OFF']);
+const BONUS={universal:'Manual da Suplementação (PDF)',
+             influencer:'Guia da Imunidade Infantil (PDF)'};
+const EQUIPE=[
+  ['Gabriel','Preenche o TAP — define o que será feito e as datas'],
+  ['Gustavo','Distribui as tarefas no ClickUp e acompanha os status'],
+  ['Equipe','Realiza as tarefas, altera o status no ClickUp e avisa a próxima pessoa que precisa da demanda']];
+
+/* O que cada formato já traz pronto. Os valores do Dia D são os do TAP de
+   agosto; os demais formatos são ponto de partida — edite e siga. */
+const PADRAO={
+  diaD:{prep:2,desconto:'8% OFF',
+    cupom:'8% OFF geral (já embutido no preço no dia)',
+    frete:'Sim — para todos, sem piso mínimo neste dia',
+    produtos:'Todos os SKUs',
+    orderbump:'Definir SKU (ex: Vit C ou Tri[Mg]) no carrinho'},
+  semana:{prep:2,desconto:'10% OFF',
+    cupom:'10% OFF na linha do tema (já embutido no preço)',
+    frete:'Grátis acima de R$ 199',
+    produtos:'SKUs da linha do tema',
+    orderbump:'SKU complementar ao tema no carrinho'},
+  gap:{prep:0,desconto:'—',
+    cupom:'Sem cupom — o ganho vem do combo e do frete',
+    frete:'Grátis a partir de R$ 349 — é o gap que se quer destravar',
+    produtos:'SKUs que fecham a faixa de ticket',
+    orderbump:'Item de baixo valor que empurra o carrinho pra faixa'},
+  recompra:{prep:0,desconto:'12% OFF',
+    cupom:'12% OFF exclusivo para quem já comprou',
+    frete:'Grátis acima de R$ 199',
+    produtos:'Reposição do que a pessoa já comprou',
+    orderbump:'SKU complementar ao histórico de compra'},
+  perpetuo:{prep:0,desconto:'—',
+    cupom:'Sem cupom — oferta de catálogo',
+    frete:'Grátis acima de R$ 199',
+    produtos:'Catálogo completo',
+    orderbump:'Orderbump fixo do carrinho'},
+  outro:{prep:1,desconto:'',cupom:'',frete:'',produtos:'',orderbump:''}
+};
+
+/* Ritmo padrão de cada canal conforme o papel do dia. É o que sai preenchido
+   no cronograma; qualquer célula continua editável. */
+const RITMO={
+  'E-mails base antiga':{antecipacao:'1 sem CTA',amanha:'1 é amanhã',abertura:'2 vendas',
+    venda:'1 vendas',penultimo:'1 amanhã acaba',ultimo:'2 última chance'},
+  'E-mails base captada':{},
+  'WhatsApp grupos antigos':{antecipacao:'2',amanha:'2',abertura:'8',
+    venda:'4',penultimo:'4',ultimo:'8'},
+  'WhatsApp grupos da campanha':{},
+  'WhatsApp API':{antecipacao:'0',amanha:'1 sem CTA',abertura:'2 08h e 20h',
+    venda:'1',penultimo:'1',ultimo:'2 08h e 20h'},
+  'Criativos em vídeo':{antecipacao:'0',amanha:'0',abertura:'4',
+    venda:'2',penultimo:'2',ultimo:'4'},
+  'Criativos em imagem':{antecipacao:'0',amanha:'0',abertura:'4 com desconto',
+    venda:'2',penultimo:'2',ultimo:'4 última chance'},
+  'Instagram feed':{},
+  'Instagram stories':{abertura:'09h / 13h / 19h + CTA',venda:'09h / 19h',
+    penultimo:'09h / 19h',ultimo:'09h / 13h / 19h + contagem'},
+  'Página de captura':{},
+  'Alteração no site':{abertura:'00h no ar',ultimo:'23h59 tira do ar'}
+};
+
+/* Canais que faturam — proporção da meta e fatia do investimento, tiradas do
+   Dia D de agosto. Cada campanha pode sobrescrever no assistente. */
+const CANAIS_RECEITA=[
+  {n:'Tráfego',               pr:.267, invPr:.67, r:'Gestor'},
+  {n:'Influencer',            pr:.178, invPr:0,   r:'Joinny'},
+  {n:'Instagram Bio/stories', pr:.078, invPr:0,   r:'Italo'},
+  {n:'Atendimento',           pr:.056, invPr:0,   r:'Lissia'},
+  {n:'Grupos antigos',        pr:.156, invPr:0,   r:'Pedro'},
+  {n:'API',                   pr:.267, invPr:.33, r:'Pedro'}
+];
+const SPLIT=CANAIS_RECEITA.map(c=>[c.n,c.pr,c.r]);
+const CORES=['#35d07f','#5eb3f0','#a78bfa','#f5c451','#f06fa8','#f2777a','#0AB58F','#E36DBE'];
+const RAMOS=['#7B61FF','#F24726','#FF9D48','#F5C51E','#0AB58F','#E36DBE','#2D9BF0','#9510AC'];
+const STICKY=['#FFF9B1','#D5F692','#A6CCF5','#FFCEE0','#FFD599','#D0C6FF','#FFFFFF'];
+const MESES=['janeiro','fevereiro','março','abril','maio','junho','julho',
+  'agosto','setembro','outubro','novembro','dezembro'];
+
+/* ================= DADOS ================= */
+/* Começa vazio de propósito: quem abre o link cai direto no mês do
+   ciclo, em branco, pronto pra preencher. Os quadros do ciclo são
+   criados pelo garantirCiclo() logo abaixo. */
+let D={
+  prox:{mes:1,camp:1,mapa:1},
+  mesAtivo:0,
+  temas:[],
+  meses:[], mapas:[], campanhas:[]
+};
+
+let sel={t:'no',id:1},fer='sel',ativa=0,semanaSel=0,diaSel=null;
+let Z=1,PX=0,PY=0,editando=false,termo='',pilha=[],pilhaR=[],medidas={};
+let W={};
+
+const $=s=>document.querySelector(s);
+const esc=t=>String(t??'').replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m]));
+const brl=n=>'R$ '+Number(n||0).toLocaleString('pt-BR',{maximumFractionDigits:0});
+const brl2=n=>'R$ '+Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const dISO=s=>new Date(s+'T12:00:00');
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const dBR=d=>String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+const DOW=['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+
+const mesAtual=()=>D.meses.find(m=>m.id===D.mesAtivo)||D.meses[0];
+const campsMes=()=>D.campanhas.filter(c=>c.mesId===D.mesAtivo);
+const corCamp=c=>CORES[(D.campanhas.indexOf(c))%CORES.length];
+const mapaAtual=()=>D.mapas.find(m=>m.mesId===D.mesAtivo)||D.mapas[0];
+const M=()=>mapaAtual();
+
+/* ================= CICLO DO MÊS =================
+   O mês que a equipe está planejando agora e as marcas que entram
+   nele. Ao abrir o link, cada marca já tem seu mês, seu mapa e seu
+   calendário em branco — ninguém precisa criar nada pra começar.
+   Virou o mês? Troque ano/mes aqui e pronto; o que já foi planejado
+   antes continua guardado, é só escolher no seletor lá em cima. */
+const CICLO={ano:2026,mes:9,marcas:['Botanika','VermeFree'],meta:0};
+
+const marcaDo=m=>(m&&m.marca)||'Botanika';
+
+function garantirCiclo(){
+  D.prox=D.prox||{mes:1,camp:1,mapa:1};
+  D.meses=D.meses||[];D.mapas=D.mapas||[];D.campanhas=D.campanhas||[];
+  const proxId=arr=>arr.reduce((a,x)=>Math.max(a,x.id||0),0)+1;
+  let criou=false,primeiro=null;
+  CICLO.marcas.forEach(marca=>{
+    let m=D.meses.find(x=>x.ano===CICLO.ano&&x.mes===CICLO.mes&&marcaDo(x)===marca);
+    if(!m){
+      criou=true;
+      m={id:proxId(D.meses),ano:CICLO.ano,mes:CICLO.mes,marca,
+        metas:[CICLO.meta,Math.round(CICLO.meta*1.17),Math.round(CICLO.meta*1.33)],ref:''};
+      D.meses.push(m);
+      D.prox.mes=Math.max(D.prox.mes||1,m.id+1);
+      const mp={id:proxId(D.mapas),mesId:m.id,
+        nome:`Planejamento [${MESES[CICLO.mes-1].toUpperCase()}-${marca.toUpperCase()}]`,
+        layout:'direita',prox:2,proxItem:1,itens:[],
+        nos:[{id:1,pai:null,t:'🔥 '+MESES[CICLO.mes-1].toUpperCase()+' · '+marca.toUpperCase(),
+              cor:0,raizMes:m.id,x:4500,y:3000}]};
+      D.mapas.push(mp);
+      D.prox.mapa=Math.max(D.prox.mapa||1,mp.id+1);
+    }
+    if(!primeiro)primeiro=m;
+  });
+  /* Só reposiciona quando acabou de criar ou quando o mês salvo sumiu:
+     senão, quem recarregasse a página perderia a marca que estava vendo. */
+  if(primeiro&&(criou||!D.meses.some(x=>x.id===D.mesAtivo)))D.mesAtivo=primeiro.id;
+  return criou;
+}
+
+/* ================= GERADOR DE TAP ================= */
+function diasEntre(a,b){const out=[];const d=new Date(a);
+  while(d<=b&&out.length<40){out.push(new Date(d));d.setDate(d.getDate()+1)}return out}
+
+function fasesDe(tipo,ini,fim){
+  const dias=diasEntre(ini,fim);
+  if(tipo==='diaD'){
+    const a=new Date(ini);a.setDate(a.getDate()-2);
+    const b=new Date(ini);b.setDate(b.getDate()-1);
+    return [['Fase 1: Captação','não tem','—'],
+      ['Fase 2: Antecipação','sim',dBR(a)],
+      ['Fase 3: É amanhã','sim',dBR(b)],
+      ['Fase 4: Dia D (venda)','sim',dBR(ini)],
+      ['Fase 5: Última chance / relâmpago noturno','sim',dBR(ini)+' · 20h']];
+  }
+  if(tipo==='semana'||tipo==='outro'){
+    const n=dias.length,f=[];
+    f.push(['Fase 1: Captação','não tem','—']);
+    if(n>=6){f.push(['Fase 2: Antecipação','sim',dBR(dias[0])+' a '+dBR(dias[1])])}
+    else f.push(['Fase 2: Antecipação','sim',dBR(dias[0])]);
+    const iAmanha=n>=6?2:1;
+    f.push(['Fase 3: É amanhã a abertura','sim',dBR(dias[iAmanha])]);
+    f.push(['Fase 4: É hoje a abertura','sim',dBR(dias[iAmanha+1])]);
+    if(n-iAmanha-2>2)f.push(['Fase 5: Vendas','sim',
+      dBR(dias[iAmanha+2])+' a '+dBR(dias[n-3])]);
+    f.push(['Fase 6: Amanhã é o último dia','sim',dBR(dias[n-2])]);
+    f.push(['Fase 7: Hoje é o último dia','sim',dBR(dias[n-1])]);
+    return f;
+  }
+  if(tipo==='gap')return [
+    ['Fase 1: Diagnóstico do gap','sim',dBR(ini)],
+    ['Fase 2: Ativar combo / orderbump','sim',dBR(ini)],
+    ['Fase 3: Comunicar a base','sim',dBR(dias[Math.min(1,dias.length-1)])],
+    ['Fase 4: Medir e ajustar','sim',dBR(fim)]];
+  if(tipo==='recompra')return [
+    ['Fase 1: Segmentar quem não voltou','sim',dBR(ini)],
+    ['Fase 2: Funil de recompra no ar','sim',dBR(ini)],
+    ['Fase 3: Reforço para quem não abriu','sim',dBR(fim)]];
+  return [['Sempre no ar','sim',dBR(ini)+' a '+dBR(fim)]];
+}
+
+/* O cronograma cobre os dias de preparação, não só os de venda — no Dia D de
+   agosto ele começa dois dias antes, junto com a fase de antecipação. */
+function janelaDe(tipo,ini,fim){
+  const prep=(PADRAO[tipo]||PADRAO.outro).prep;
+  const a=new Date(ini);a.setDate(a.getDate()-prep);
+  return diasEntre(a,fim);
+}
+/* que papel cada dia da janela cumpre — é o que decide o ritmo dos canais */
+function papeisDe(tipo,ini,fim){
+  const dias=janelaDe(tipo,ini,fim);
+  const iAbertura=dias.findIndex(d=>iso(d)===iso(ini));
+  const n=dias.length;
+  return dias.map((d,i)=>{
+    if(i<iAbertura)return i===iAbertura-1?'amanha':'antecipacao';
+    if(i===iAbertura)return 'abertura';
+    if(tipo==='recompra'||tipo==='perpetuo')return 'venda';
+    if(i===n-1)return 'ultimo';
+    if(i===n-2)return 'penultimo';
+    return 'venda';
+  });
+}
+function colunasDe(ini,fim,tipo){
+  const dias=tipo?janelaDe(tipo,ini,fim):diasEntre(ini,fim);
+  if(dias.length<=9)return dias.map(d=>`${DOW[d.getDay()]} ${dBR(d)}`);
+  const out=[];
+  for(let i=0;i<dias.length;i+=7){
+    const a=dias[i],b=dias[Math.min(i+6,dias.length-1)];
+    out.push(`${dBR(a)}–${dBR(b)}`);
+  }
+  return out;
+}
+/* um papel por coluna; quando as colunas viram semanas, vale o papel do 1º dia */
+function papeisPorColuna(tipo,ini,fim){
+  const ps=papeisDe(tipo,ini,fim);
+  if(ps.length<=9)return ps;
+  const out=[];for(let i=0;i<ps.length;i+=7)out.push(ps[i]);return out;
+}
+
+/* As proporções do Dia D somam 1,002 — arredondar canal a canal faz o TAP
+   fechar acima da meta. O resto vai pro canal de maior fatia. */
+/* As duas fontes que consomem verba. O resto do faturamento vem de canal
+   que não se compra — influencer, base, atendimento, orgânico. */
+const FONTES=[{k:'traf',n:'Tráfego'},{k:'api',n:'API'}];
+const canalRec=n=>CANAIS_RECEITA.find(c=>c.n===n);
+
+/* Defaults nas mesmas proporções de sempre: quem não mexer em nada
+   continua com os números que o planejador já dava. */
+function fontesPadrao(meta,inv){
+  const f={};
+  FONTES.forEach(({k,n})=>{const c=canalRec(n);
+    f[k]={meta:Math.round(meta*c.pr),inv:Math.round(inv*c.invPr)}});
+  return f;
+}
+/* Rede de segurança para dado que não passou pelo passo 2 — campanha
+   antiga, JSON importado, meta encolhida depois. As fontes encolhem na
+   mesma proporção em vez de estourarem a meta. */
+function fontesValidas(meta,f){
+  if(!f)return fontesPadrao(meta,0);
+  const soma=FONTES.reduce((t,{k})=>t+(f[k]?.meta||0),0);
+  if(soma<=meta)return f;
+  const r={};
+  FONTES.forEach(({k})=>r[k]={meta:Math.round((f[k]?.meta||0)*meta/soma),inv:f[k]?.inv||0});
+  return r;
+}
+
+/* Quanto sobra da meta para os canais que não se compra. */
+const restoOrganico=(meta,f)=>Math.max(0,meta-FONTES.reduce((t,{k})=>t+(f?.[k]?.meta||0),0));
+const invTotal=f=>FONTES.reduce((t,{k})=>t+(f?.[k]?.inv||0),0);
+const roas=(m,i)=>i>0?(m/i).toFixed(1).replace('.',','):'—';
+
+function dividirReceita(meta,inv,fontes){
+  const f=fontes||fontesPadrao(meta,inv);
+  /* o que sobra depois de tráfego e API se reparte entre os outros canais,
+     na proporção que eles já tinham entre si */
+  const outros=CANAIS_RECEITA.filter(c=>!FONTES.some(x=>x.n===c.n));
+  const somaPr=outros.reduce((t,c)=>t+c.pr,0)||1;
+  const sobra=restoOrganico(meta,f);
+  const l=CANAIS_RECEITA.map(c=>{
+    const fon=FONTES.find(x=>x.n===c.n);
+    return fon
+      ? {n:c.n,r:c.r,on:true,inv:f[fon.k]?.inv||0,meta:f[fon.k]?.meta||0}
+      : {n:c.n,r:c.r,on:true,inv:0,meta:Math.round(sobra*c.pr/somaPr)};
+  });
+  /* o arredondamento vai pro maior canal que NÃO foi digitado à mão:
+     o número que ele escreveu no passo 2 é o que fica */
+  const livres=l.filter(x=>!FONTES.some(f=>f.n===x.n));
+  const somaM=l.reduce((t,x)=>t+x.meta,0);
+  if(somaM!==meta&&livres.length){
+    const a=livres.reduce((x,y)=>y.meta>x.meta?y:x);
+    a.meta+=meta-somaM;
+  }
+  return l;
+}
+
+/* Campanha criada antes do assistente ganhar oferta/canais cai no padrão do
+   formato — assim TAP antigo e novo geram igual. */
+function ofertaDe(c){
+  const P=PADRAO[c.tipo]||PADRAO.outro;
+  return {produtos:CATALOGO.map(p=>p.sku),modoDesc:'todos',
+    descGeral:parseInt(P.desconto)||0,descPorSku:{},extras:[],
+    frete:P.frete,brinde:'',
+    bonusUniversal:BONUS.universal,bonusInfluencer:BONUS.influencer, ...(c.oferta||{})};
+}
+const descontoDe=(o,sku)=>o.modoDesc==='cada'?(o.descPorSku[sku]??o.descGeral):o.descGeral;
+const pct=v=>v>0?v+'% OFF':'—';
+
+function gerarSecoes(c){
+  const dIni=dISO(c.inicio),dFim=dISO(c.fim);
+  const T=TIPOS[c.tipo]||TIPOS.outro, P=PADRAO[c.tipo]||PADRAO.outro;
+  const O=ofertaDe(c);
+  const canaisOn=CANAIS.filter(([n])=>!c.canais||c.canais.includes(n));
+  const escolhidos=CATALOGO.filter(p=>O.produtos.includes(p.sku));
+  const invTraf=Math.round(c.investimento*.67), invApi=c.investimento-invTraf;
+  const metaTraf=Math.round(c.meta*.267);
+  const roas=invTraf?(metaTraf/invTraf).toFixed(1).replace('.',','):'—';
+  const cols=colunasDe(dIni,dFim,c.tipo);
+  const papeis=papeisPorColuna(c.tipo,dIni,dFim);
+  const periodo=c.inicio===c.fim?dBR(dIni):`${dBR(dIni)} a ${dBR(dFim)}`;
+  const tema=c.tema?` — tema ${c.tema}`:'';
+
+  const rec=(c.receita||dividirReceita(c.meta,c.investimento,
+    fontesValidas(c.meta,c.fontes||fontesPadrao(c.meta,c.investimento||0)))).filter(x=>x.on!==false);
+  const metas=[];
+  rec.filter(x=>x.inv>0).forEach(x=>metas.push([`Investimento — ${x.n}`,brl(x.inv),x.r]));
+  metas.push(['ROAS alvo',roas,'Gestor']);
+  rec.forEach(x=>metas.push([`Meta faturamento — ${x.n}`,brl(x.meta),x.r]));
+  const somaInv=rec.reduce((t,x)=>t+x.inv,0), somaMeta=rec.reduce((t,x)=>t+x.meta,0);
+  metas.push(['Meta faturamento total',brl(somaMeta||c.meta),''],
+    ['Investimento API e tráfego',brl(somaInv||c.investimento),''],
+    ['Lucro (aprox.)',brl((somaMeta||c.meta)-(somaInv||c.investimento)),'']);
+  const tot=[metas.length-3,metas.length-2,metas.length-1];
+
+  return [
+    {t:'SOBRE O EVENTO',c:['Campo','Valor'],l:[
+      ['Nome da Campanha',c.nome],
+      ['Formato da campanha',`${T.desc}${tema} (${periodo})`],
+      ['Cupom automático',O.modoDesc==='cada'
+        ?'Desconto por produto (já embutido no preço) — ver SOBRE A OFERTA'
+        :`${O.descGeral}% OFF geral (já embutido no preço)`],
+      ['Bônus universal',`${O.bonusUniversal} — todos que comprarem`],
+      ['Bônus via influencer',`${O.bonusInfluencer} — só quem comprar pela influencer`],
+      ...(O.brinde?[['Brinde',O.brinde]]:[])]},
+    {t:'EQUIPE',c:['Quem','Responsabilidade'],l:EQUIPE.map(e=>[...e])},
+    {t:'FASES',c:['Fase','Tem?','Data'],l:fasesDe(c.tipo,dIni,dFim)},
+    {t:'SOBRE A OFERTA',c:['Produto','Detalhe','Desconto'],l:[
+      ...escolhidos.map(p=>[p.curto+(p.kit?' · kit':''),
+        `${p.nome} · SKU ${p.sku} · ${brl2(p.preco)}`, pct(descontoDe(O,p.sku))]),
+      ...O.extras.map(t=>['Fora do catálogo',t,'—']),
+      ['Bônus universal',O.bonusUniversal,'—'],
+      ['Bônus via influencer',O.bonusInfluencer,'—'],
+      ...(O.brinde?[['Brinde',O.brinde,'—']]:[]),
+      ['Frete grátis',O.frete,'—']]},
+    {t:'AUMENTO DE TICKET MÉDIO',c:['Estratégia','Detalhe','Desconto'],l:[
+      ['Orderbump',P.orderbump,'10% / 15%'],
+      ['Desconto por volume','3 un = 10% · 5 un = 15% · 8 un = 20% — empilha com o desconto da ação','até 20%']]},
+    {t:'METAS',c:['Item','Valor','Responsável'],l:metas,tot},
+    {t:'CANAIS · CRONOGRAMA',c:['Canal','Base',...cols,'Quem faz'],
+      l:canaisOn.map(([n,b,q])=>{
+        const r=RITMO[n]||{};
+        return [n,b,...papeis.map(pa=>r[pa]??'—'),q];
+      })}
+  ];
+}
+
+/* ================= ASSISTENTE DE CAMPANHA ================= */
+let AS={};
+function assistente(noId,sugerida){
+  const m=mesAtual();
+  const prim=new Date(m.ano,m.mes-1,1);
+  AS={noId,tipo:null,tema:null,
+    inicio:iso(new Date(m.ano,m.mes-1,Math.min(7,28))),
+    fim:iso(new Date(m.ano,m.mes-1,Math.min(7,28))),
+    meta:sugerida>0?Math.round(sugerida):45000,sugerida:sugerida>0?Math.round(sugerida):0,
+    /* a verba nasce em 10% da meta — a mesma proporção do par 45.000/4.500
+       que o planejador já usava, mas agora acompanhando a ação */
+    inv:Math.round((sugerida>0?sugerida:45000)*.1),fontes:null,nome:'',
+    produtos:CATALOGO.map(p=>p.sku),   // todos participam até você tirar algum
+    modoDesc:'todos',descGeral:8,descPorSku:{},
+    extras:[],                          // produto escrito na mão
+    canais:CANAIS.map(c=>c[0]),         // canais de execução ligados
+    receita:null};
+  passo1();
+}
+function passo1(){
+  $('#modal-cx').className='cx';
+  $('#modal-cx').innerHTML=`
+    <h3>Nova campanha</h3>
+    <p class="sub">Escolha o formato. O TAP e o calendário se montam a partir dele.</p>
+    <div class="opcoes">${Object.entries(TIPOS).map(([k,t])=>
+      `<button class="op" onclick="escolherTipo('${k}')">${t.nome}<small>${t.desc}</small></button>`).join('')}
+      <button class="op livre" onclick="noLivre()">Livre<small>Só escrever, igual no Miro — sem TAP, sem datas</small></button></div>
+    <div class="bts"><button onclick="fecharModal()">Cancelar</button></div>`;
+  $('#modal').classList.add('on');
+}
+/* "Livre": nasce só o nó no mapa, pra escrever como no Miro */
+function noLivre(){
+  fecharModal();
+  guardar();
+  const alvo=AS.noId?acharNo(AS.noId):null;
+  if(alvo){sel={t:'no',id:alvo.id}}
+  else{
+    const r=M().nos.find(n=>!n.pai);
+    const n={id:M().prox++,pai:r?.id,t:'novo',
+      x:(r?.x??4500)+380,y:(r?.y??3000)+filhos(r?.id).length*56};
+    M().nos.push(n);sel={t:'no',id:n.id};
+  }
+  document.querySelector('nav.paginas button[data-pg="mapa"]').click();
+  organizar();setTimeout(()=>editar(true),80);
+}
+function escolherTipo(k){
+  AS.tipo=k;
+  const m=mesAtual(),T=TIPOS[k];
+  if(k==='recompra'||k==='perpetuo'){
+    AS.inicio=iso(new Date(m.ano,m.mes-1,1));
+    AS.fim=iso(new Date(m.ano,m.mes,0));
+    /* veio do "criar ação para o resto"? então o resto é a meta dela */
+    AS.meta=k==='perpetuo'?0:(AS.sugerida||30000);
+    AS.inv=k==='perpetuo'?0:Math.round(AS.meta*.1);
+    AS.fontes=null;
+  }else{
+    const d=dISO(AS.inicio),f=new Date(d);f.setDate(d.getDate()+Math.max(0,T.dias-1));
+    AS.fim=iso(f);
+  }
+  if(T.temas)passoTema();else passo2();
+}
+function passoTema(){
+  $('#modal-cx').innerHTML=`
+    <h3>Qual tema</h3>
+    <p class="sub">Os temas que a Botanika já rodou, ou um novo.</p>
+    <div class="opcoes">${D.temas.map(t=>
+      `<button class="op" onclick="escolherTema('${esc(t)}')">${esc(t)}</button>`).join('')}
+      <button class="op" onclick="novoTema()" style="border-style:dashed">+ novo tema</button></div>
+    <div class="bts"><button onclick="passo1()">Voltar</button></div>`;
+}
+function escolherTema(t){AS.tema=t;AS.nome='Semana '+t;passo2()}
+function novoTema(){
+  const t=prompt('Nome do tema (ex: Imunidade, Fitness, Energia):');
+  if(!t)return;
+  if(!D.temas.includes(t))D.temas.push(t);
+  escolherTema(t);
+}
+function passo2(){
+  const T=TIPOS[AS.tipo];
+  if(!AS.nome)AS.nome=T.nome+' — '+MESES[mesAtual().mes-1];
+  if(!AS.fontes)AS.fontes=fontesPadrao(AS.meta,AS.inv);
+  $('#modal-cx').innerHTML=`
+    <h3>${T.nome}${AS.tema?' · '+esc(AS.tema):''}</h3>
+    <p class="sub">Datas, meta e verba. O faturamento das fontes pagas sai de dentro
+      da meta que você escreveu — o resto vem do que não se compra.</p>
+    <label><b>Nome da campanha</b><input id="w-nome" value="${esc(AS.nome)}"></label>
+    <div class="dupla">
+      <label><b>Início</b><input type="date" id="w-ini" value="${AS.inicio}"></label>
+      <label><b>Fim</b><input type="date" id="w-fim" value="${AS.fim}"></label>
+    </div>
+    <label><b>Meta de faturamento da ação</b>
+      <input type="number" id="w-meta" value="${AS.meta}" step="1000"></label>
+    <div class="fontes" id="w-fontes">
+      <div class="cabf"><span class="nm">De onde vem esse faturamento</span>
+        <span class="col">fatura</span><span class="col">investe</span><span class="rs">ROAS</span></div>
+      ${FONTES.map(({k,n})=>`<div class="linf">
+        <span class="nm">${n}</span>
+        <input type="number" id="w-m-${k}" step="500" value="${AS.fontes[k].meta}">
+        <input type="number" id="w-i-${k}" step="100" value="${AS.fontes[k].inv}">
+        <span class="rs" id="w-r-${k}">—</span></div>`).join('')}
+      <div class="linf resto"><span class="nm">Resto — influencer, base, atendimento, orgânico</span>
+        <span class="vl" id="w-resto">—</span><span class="col"></span><span class="rs"></span></div>
+    </div>
+    <div class="resumo" id="w-resumo"></div>
+    <div class="bts"><button onclick="passo1()">Voltar</button>
+      <button class="ok" onclick="irPasso3()">Produtos e oferta →</button></div>`;
+  ['w-ini','w-fim','w-meta',...FONTES.flatMap(({k})=>['w-m-'+k,'w-i-'+k])]
+    .forEach(id=>{const e=$('#'+id);if(e)e.oninput=resumoW});
+  resumoW();
+}
+function lerFontesW(){
+  const f={};
+  FONTES.forEach(({k})=>f[k]={meta:+$('#w-m-'+k)?.value||0,inv:+$('#w-i-'+k)?.value||0});
+  return f;
+}
+function guardaPasso2(){
+  AS.nome=$('#w-nome').value.trim()||AS.nome;
+  AS.inicio=$('#w-ini').value;AS.fim=$('#w-fim').value;
+  const metaAnt=AS.meta,fAnt=JSON.stringify(AS.fontes);
+  AS.meta=+$('#w-meta').value||0;
+  AS.fontes=lerFontesW();
+  AS.inv=invTotal(AS.fontes);
+  /* mexeu nos números? a divisão por canal do passo 4 tem que nascer de novo */
+  if(metaAnt!==AS.meta||fAnt!==JSON.stringify(AS.fontes))AS.receita=null;
+}
+function irPasso3(){
+  guardaPasso2();
+  /* a regra é dele: o faturamento esperado tem que caber na meta da ação */
+  if(restoOrganico(AS.meta,AS.fontes)===0&&
+     FONTES.reduce((t,{k})=>t+AS.fontes[k].meta,0)>AS.meta){
+    resumoW();
+    return alert('Tráfego e API somados passam da meta da ação.\n\n'+
+      'O faturamento esperado de cada fonte sai de dentro da meta — '+
+      'baixe as fontes ou suba a meta antes de seguir.');
+  }
+  passo3();
+}
+
+/* ---------- passo 3: quais produtos entram e com qual desconto ---------- */
+function passo3(){
+  const P=PADRAO[AS.tipo]||PADRAO.outro;
+  if(!AS.descGeralTocado)AS.descGeral=parseInt(P.desconto)||8;
+  if(AS.frete===undefined)AS.frete=P.frete;
+  if(AS.bonusUniversal===undefined)AS.bonusUniversal=BONUS.universal;
+  if(AS.bonusInfluencer===undefined)AS.bonusInfluencer=BONUS.influencer;
+  if(AS.brinde===undefined)AS.brinde='';
+  $('#modal-cx').className='cx larga';
+  $('#modal-cx').innerHTML=`
+    <div class="passos">Passo <b>3</b> de 4 · oferta</div>
+    <h3>Produtos e desconto</h3>
+    <p class="sub">O catálogo vem da Shopify. Desmarque o que não entra e escreva o que não está na loja.</p>
+    ${marcaDo(mesAtual())==='Botanika'?'':
+      `<p class="sub" style="color:var(--amar)">Este mês é da <b>${esc(marcaDo(mesAtual()))}</b> e a lista
+       abaixo é o catálogo da Botanika. Use <b>Mesmo % para todos</b> e escreva os produtos
+       à mão, ou me peça pra cadastrar o catálogo da ${esc(marcaDo(mesAtual()))}.</p>`}
+    <div class="radio">
+      <button id="r-todos" class="${AS.modoDesc==='todos'?'on':''}" onclick="modoDesc('todos')">Mesmo % para todos</button>
+      <button id="r-cada" class="${AS.modoDesc==='cada'?'on':''}" onclick="modoDesc('cada')">Um % por produto</button>
+    </div>
+    <div id="desc-geral" style="${AS.modoDesc==='todos'?'':'display:none'}">
+      <label><b>Desconto da ação</b><input type="number" id="w-desc" value="${AS.descGeral}" min="0" max="90" step="1"></label>
+    </div>
+    <div class="cab"><span class="nm">Produto</span><span class="col">Preço</span><span class="col">% OFF</span></div>
+    <div class="lista" id="lista-prod">${CATALOGO.map(pr=>{
+      const on=AS.produtos.includes(pr.sku);
+      return `<div class="lin ${on?'':'off'}" data-sku="${pr.sku}">
+        <input type="checkbox" ${on?'checked':''} onchange="ligarProduto('${pr.sku}',this.checked)">
+        <span class="nm">${esc(pr.curto)}${pr.kit?' · kit':''}<small>${esc(pr.nome)} · SKU ${esc(pr.sku)}</small></span>
+        <span class="col" style="width:110px;flex:none;text-align:center;color:var(--txt2)">${brl2(pr.preco)}</span>
+        <input type="number" class="d-sku" data-sku="${pr.sku}" min="0" max="90"
+          value="${AS.descPorSku[pr.sku]??AS.descGeral}"
+          style="${AS.modoDesc==='cada'?'':'visibility:hidden'}"
+          onchange="AS.descPorSku['${pr.sku}']=+this.value">
+      </div>`}).join('')}</div>
+    <label><b>Produto fora do catálogo (um por linha)</b>
+      <textarea id="w-extras" rows="2" placeholder="Ex: Combo Fitness · 15% OFF">${esc(AS.extras.join('\n'))}</textarea></label>
+    <div class="dupla">
+      <label><b>Frete grátis</b><input id="w-frete" value="${esc(AS.frete)}"></label>
+      <label><b>Brinde (opcional)</b><input id="w-brinde" value="${esc(AS.brinde)}" placeholder="Ex: coqueteleira nas compras acima de R$ 400"></label>
+    </div>
+    <div class="dupla">
+      <label><b>Bônus universal</b><input id="w-bu" value="${esc(AS.bonusUniversal)}"></label>
+      <label><b>Bônus via influencer</b><input id="w-bi" value="${esc(AS.bonusInfluencer)}"></label>
+    </div>
+    <div class="bts"><button onclick="passo2()">Voltar</button>
+      <button class="ok" onclick="irPasso4()">Canais e metas →</button></div>`;
+  $('#w-desc').oninput=e=>{AS.descGeral=+e.target.value||0;AS.descGeralTocado=true;
+    document.querySelectorAll('.d-sku').forEach(i=>{if(AS.descPorSku[i.dataset.sku]===undefined)i.value=AS.descGeral})};
+}
+function modoDesc(m){AS.modoDesc=m;guardaPasso3();passo3()}
+function ligarProduto(sku,on){
+  AS.produtos=on?[...new Set([...AS.produtos,sku])]:AS.produtos.filter(x=>x!==sku);
+  document.querySelector(`.lin[data-sku="${sku}"]`)?.classList.toggle('off',!on);
+}
+function guardaPasso3(){
+  if(!$('#w-frete'))return;
+  AS.frete=$('#w-frete').value;AS.brinde=$('#w-brinde').value;
+  AS.bonusUniversal=$('#w-bu').value;AS.bonusInfluencer=$('#w-bi').value;
+  AS.extras=$('#w-extras').value.split('\n').map(t=>t.trim()).filter(Boolean);
+}
+function irPasso4(){guardaPasso3();passo4()}
+
+/* ---------- passo 4: canais, investimento e meta de cada um ---------- */
+function passo4(){
+  if(!AS.receita)AS.receita=dividirReceita(AS.meta,AS.inv,AS.fontes);
+  $('#modal-cx').className='cx larga';
+  $('#modal-cx').innerHTML=`
+    <div class="passos">Passo <b>4</b> de 4 · canais</div>
+    <h3>Onde entra a verba e de onde vem o faturamento</h3>
+    <p class="sub">Já vem dividido na proporção do Dia D de agosto. Mexa no que for diferente.</p>
+    <div class="cab"><span class="nm">Canal que fatura</span><span class="col">Investimento</span><span class="col">Meta</span></div>
+    <div class="lista">${AS.receita.map((c,i)=>`
+      <div class="lin ${c.on?'':'off'}" data-i="${i}">
+        <input type="checkbox" ${c.on?'checked':''} onchange="ligarReceita(${i},this.checked)">
+        <span class="nm">${esc(c.n)}<small>${esc(c.r)}</small></span>
+        <input type="number" step="100" value="${c.inv}" onchange="AS.receita[${i}].inv=+this.value||0;somaW()">
+        <input type="number" step="500" value="${c.meta}" onchange="AS.receita[${i}].meta=+this.value||0;somaW()">
+      </div>`).join('')}</div>
+    <div class="resumo" id="w-soma"></div>
+    <h3 style="font-size:15px;margin:18px 0 4px">Canais de execução</h3>
+    <p class="sub">Quem for desmarcado não entra no cronograma.</p>
+    <div class="lista">${CANAIS.map(([n,b])=>{
+      const on=AS.canais.includes(n);
+      return `<div class="lin ${on?'':'off'}" data-canal="${esc(n)}">
+        <input type="checkbox" ${on?'checked':''} onchange="ligarCanal('${esc(n)}',this.checked)">
+        <span class="nm">${esc(n)}<small>${esc(b)}</small></span></div>`}).join('')}</div>
+    <div class="bts"><button onclick="passo3()">Voltar</button>
+      <button class="ok" onclick="criarCampanha()">Criar campanha e TAP</button></div>`;
+  somaW();
+}
+function ligarReceita(i,on){AS.receita[i].on=on;
+  document.querySelector(`.lin[data-i="${i}"]`)?.classList.toggle('off',!on);somaW()}
+function ligarCanal(n,on){
+  AS.canais=on?[...new Set([...AS.canais,n])]:AS.canais.filter(x=>x!==n);
+  document.querySelector(`.lin[data-canal="${n}"]`)?.classList.toggle('off',!on);
+}
+function somaW(){
+  const at=AS.receita.filter(c=>c.on);
+  const si=at.reduce((s,c)=>s+c.inv,0), sm=at.reduce((s,c)=>s+c.meta,0);
+  const roas=si?(sm/si).toFixed(1).replace('.',','):'—';
+  const dif=sm-AS.meta;
+  $('#w-soma').innerHTML=
+    `Investimento somado: <b>${brl(si)}</b> · faturamento somado: <b>${brl(sm)}</b> ·
+     ROAS <b>${roas}</b>.<br>
+     ${Math.abs(dif)<1?'Bate certo com a meta da campanha.':
+       `<span style="color:var(--amar)">${dif>0?'Passa':'Falta'} ${brl(Math.abs(dif))}
+        para a meta de ${brl(AS.meta)} — ajuste os canais ou volte e mude a meta.</span>`}`;
+}
+function resumoW(){
+  const ini=dISO($('#w-ini').value),fim=dISO($('#w-fim').value);
+  const meta=+$('#w-meta').value||0;
+  const f=lerFontesW(),inv=invTotal(f);
+  /* o ROAS de cada fonte e o resto aparecem enquanto ele digita */
+  FONTES.forEach(({k})=>{const e=$('#w-r-'+k);if(e)e.textContent=roas(f[k].meta,f[k].inv)});
+  const sobra=restoOrganico(meta,f),excedeu=meta-FONTES.reduce((t,{k})=>t+f[k].meta,0)<0;
+  const er=$('#w-resto');
+  if(er){er.textContent=excedeu?'passou da meta':brl(sobra);
+    er.style.color=excedeu?'var(--verm)':'';}
+  if(isNaN(ini)||isNaN(fim)||fim<ini){$('#w-resumo').innerHTML='Datas inválidas.';return}
+  const nd=janelaDe(AS.tipo,ini,fim).length, nv=diasEntre(ini,fim).length;
+  const m=mesAtual();
+  const fora=ini<new Date(m.ano,m.mes-1,1)||fim>new Date(m.ano,m.mes,0,23,59);
+  const outras=campsMes().reduce((s,c)=>s+(c.meta||0),0);
+  $('#w-resumo').innerHTML=
+    `Vai gerar <b>${nd} ${nd>1?'dias':'dia'}</b> de cronograma${nd>nv?
+       ` (${nv} de venda + ${nd-nv} de preparação)`:''}, com ${CANAIS.length} canais,
+     ${fasesDe(AS.tipo,ini,fim).length} fases e ${SKUS.length} SKUs já na oferta.<br>
+     ${FONTES.map(({k,n})=>`${n}: ${brl(f[k].inv)} para faturar ${brl(f[k].meta)}
+       (ROAS <b>${roas(f[k].meta,f[k].inv)}</b>)`).join(' · ')}.
+     Verba total <b>${brl(inv)}</b>, ROAS da ação <b>${roas(meta,inv)}</b>.<br>
+     ${excedeu?'<span style="color:var(--verm)">Tráfego e API somados passam da meta da ação —\
+        o faturamento esperado precisa caber dentro dela.</span><br>':''}
+     Com esta, o mês soma <b>${brl(outras+meta)}</b> de ${m.metas[0]?brl(m.metas[0]):
+       '<span style="color:var(--amar)">uma meta que ainda não foi definida</span>'} da Meta 1${
+       m.metas[0]?` — ${Math.round(100*meta/m.metas[0])}% da meta nesta ação, e sobram ${
+         brl(Math.max(0,m.metas[0]-outras-meta))}`:''}.
+     ${fora?'<br><span style="color:var(--amar)">As datas saem do mês selecionado.</span>':''}`;
+}
+function criarCampanha(){
+  const nome=(AS.nome||'').trim()||'Campanha sem nome';
+  const inicio=AS.inicio,fim=AS.fim;
+  if(!inicio||!fim||dISO(fim)<dISO(inicio))return alert('Confira as datas.');
+  const oferta={produtos:AS.produtos,modoDesc:AS.modoDesc,descGeral:AS.descGeral,
+    descPorSku:{...AS.descPorSku},extras:AS.extras,frete:AS.frete,brinde:AS.brinde,
+    bonusUniversal:AS.bonusUniversal,bonusInfluencer:AS.bonusInfluencer};
+  const c={id:D.prox.camp++,mesId:D.mesAtivo,nome,tipo:AS.tipo,tema:AS.tema,
+    oferta,canais:AS.canais,receita:AS.receita,
+    meta:AS.meta||0,fontes:fontesValidas(AS.meta||0,AS.fontes),
+    investimento:invTotal(fontesValidas(AS.meta||0,AS.fontes)),
+    inicio,fim,secoes:[]};
+  c.secoes=gerarSecoes(c);
+  D.campanhas.push(c);
+
+  guardar();
+  const raiz=M().nos.find(n=>!n.pai);
+  if(AS.noId){const n=acharNo(AS.noId);if(n){n.t=nome;n.campId=c.id;n.cor=TIPOS[c.tipo].cor}}
+  else if(raiz){
+    M().nos.push({id:M().prox++,pai:raiz.id,t:nome,campId:c.id,cor:TIPOS[c.tipo].cor,
+      x:(raiz.x??4500)+380,y:(raiz.y??3000)+filhos(raiz.id).length*56});
+  }
+  fecharModal();organizar();ativa=D.campanhas.indexOf(c);
+  pintarMes();pintarSemana();pintarTAP();
+  aviso(`"${nome}" criada — TAP, calendário e mapa atualizados.`);
+}
+
+/* ================= MESES E MAPAS ================= */
+function novoMes(){
+  const hoje=new Date();
+  const m=prompt('Mês e ano (ex: 09/2026):',
+    `${String(hoje.getMonth()+2>12?1:hoje.getMonth()+2).padStart(2,'0')}/${hoje.getFullYear()}`);
+  if(!m)return;
+  const [mm,aa]=m.split('/').map(Number);
+  if(!mm||!aa||mm<1||mm>12)return aviso('Formato inválido.');
+  const marca=(prompt('De qual marca? (Botanika ou VermeFree)','Botanika')||'').trim()||'Botanika';
+  /* o mesmo mês pode existir uma vez por marca — o que não pode é repetir a dupla */
+  if(D.meses.some(x=>x.mes===mm&&x.ano===aa&&marcaDo(x).toLowerCase()===marca.toLowerCase()))
+    return aviso('Esse mês já existe para '+marca+'.');
+  const m1=+prompt('Meta 1 (só números):','300000')||300000;
+  const novo={id:D.prox.mes++,ano:aa,mes:mm,marca,
+    metas:[m1,Math.round(m1*1.17),Math.round(m1*1.33)],ref:''};
+  D.meses.push(novo);
+  D.mapas.push({id:D.prox.mapa++,mesId:novo.id,
+    nome:`Planejamento [${MESES[mm-1].toUpperCase()}-${marca.toUpperCase()}]`,layout:'direita',
+    prox:2,proxItem:1,itens:[],
+    nos:[{id:1,pai:null,t:'🔥 '+MESES[mm-1].toUpperCase()+' · '+marca.toUpperCase(),
+          cor:0,raizMes:novo.id,x:4500,y:3000}]});
+  D.mesAtivo=novo.id;pilha=[];pilhaR=[];
+  sel={t:'no',id:1};tudo();
+  aviso(`${MESES[mm-1]} de ${aa} · ${marca} criado, com mapa e calendário próprios.`);
+}
+function trocarMes(id){
+  D.mesAtivo=id;ativa=Math.max(0,D.campanhas.indexOf(campsMes()[0]));
+  semanaSel=0;diaSel=null;pilha=[];pilhaR=[];
+  sel={t:'no',id:M().nos.find(n=>!n.pai)?.id||1};
+  tudo();
+}
+function novoMapa(){
+  if(!confirm('Isso substitui o mapa deste mês por um novo em branco. Continuar?'))return;
+  const m=mesAtual(),mp=M();
+  guardar();
+  mp.nos=[{id:1,pai:null,t:'🔥 '+MESES[m.mes-1].toUpperCase(),cor:0,raizMes:m.id,x:4500,y:3000}];
+  mp.itens=[];mp.prox=2;mp.proxItem=1;
+  sel={t:'no',id:1};organizar();aviso('Mapa novo criado para '+MESES[m.mes-1]+'.');
+}
+
+/* ================= MAPA ================= */
+const itens=()=>M().itens||(M().itens=[]);
+const filhos=id=>M().nos.filter(n=>n.pai===id);
+const acharNo=id=>M().nos.find(n=>n.id===id);
+const acharItem=id=>itens().find(n=>n.id===id);
+const alvoSel=()=>sel.t==='no'?acharNo(sel.id):sel.t==='item'?acharItem(sel.id):null;
+function nivel(n){let k=0,p=n.pai,g=0;while(p&&g++<80){k++;p=acharNo(p)?.pai}return k}
+function ramoCor(n){let a=n,g=0;while(a&&a.cor===undefined&&g++<80)a=acharNo(a.pai);return RAMOS[(a?.cor)||0]}
+function descendentes(id){let c=0;filhos(id).forEach(f=>{c+=1+descendentes(f.id)});return c}
+function ehDesc(id,p){let x=acharNo(p)?.pai,g=0;while(x&&g++<80){if(x===id)return true;x=acharNo(x)?.pai}return false}
+function visivel(n){let p=n.pai,g=0;while(p&&g++<80){const a=acharNo(p);if(!a)break;if(a.fech)return false;p=a.pai}return true}
+function lado(n){const r=M().nos.find(x=>!x.pai);if(!r||n.id===r.id)return 1;
+  let a=n,g=0;while(a.pai&&a.pai!==r.id&&g++<80)a=acharNo(a.pai);return (a.x??0)<(r.x??0)?-1:1}
+const campDoNo=n=>n?.campId?D.campanhas.find(c=>c.id===n.campId):null;
+
+function guardar(){pilha.push(JSON.stringify(M()));if(pilha.length>60)pilha.shift();pilhaR=[];hist()}
+function desfazer(){if(!pilha.length)return;pilhaR.push(JSON.stringify(M()));
+  Object.assign(M(),JSON.parse(pilha.pop()));if(!alvoSel())sel={t:'no',id:M().nos[0]?.id};render();hist()}
+function refazer(){if(!pilhaR.length)return;pilha.push(JSON.stringify(M()));
+  Object.assign(M(),JSON.parse(pilhaR.pop()));if(!alvoSel())sel={t:'no',id:M().nos[0]?.id};render();hist()}
+function hist(){$('#b-undo').disabled=!pilha.length;$('#b-redo').disabled=!pilhaR.length}
+
+function transform(){
+  $('#mundo').style.transform=`translate(${PX}px,${PY}px) scale(${Z})`;
+  $('#zpc').textContent=Math.round(Z*100)+'%';
+  const g=$('#grade'),p=24*Z;
+  g.style.backgroundSize=`${p}px ${p}px`;g.style.backgroundPosition=`${PX%p}px ${PY%p}px`;
+  posPaleta();
+}
+function zoomFator(f,cx,cy){
+  const q=$('#quadro'),r=q.getBoundingClientRect();
+  cx=cx??r.width/2;cy=cy??r.height/2;
+  const novo=Math.min(4,Math.max(.08,Z*f));if(novo===Z)return;
+  const wx=(cx-PX)/Z,wy=(cy-PY)/Z;Z=novo;PX=cx-wx*Z;PY=cy-wy*Z;transform();
+}
+const zoom=(f,cx,cy)=>zoomFator(f,cx,cy);
+function centrar(){const n=alvoSel();if(!n)return ajustar();
+  const q=$('#quadro');PX=q.clientWidth/2-n.x*Z;PY=q.clientHeight/2-n.y*Z;transform()}
+function ajustar(){
+  const pts=[...M().nos.filter(visivel),...itens()];if(!pts.length)return;
+  const xs=pts.map(n=>n.x??4500),ys=pts.map(n=>n.y??3000);
+  const x1=Math.min(...xs)-230,x2=Math.max(...xs)+290;
+  const y1=Math.min(...ys)-150,y2=Math.max(...ys)+150;
+  const q=$('#quadro'),w=q.clientWidth,h=q.clientHeight;if(!w||!h)return;
+  Z=Math.min(1.4,Math.max(.08,Math.min(w/(x2-x1),h/(y2-y1))*.92));
+  PX=w/2-((x1+x2)/2)*Z;PY=h/2-((y1+y2)/2)*Z;transform();
+}
+function telaCheia(){
+  const q=$('#quadro');
+  if(q.classList.contains('larga'))larguraTotal();
+  q.classList.toggle('cheio');marcarModo();setTimeout(ajustar,80);
+}
+function larguraTotal(){
+  const q=$('#quadro');
+  if(q.classList.contains('cheio'))return telaCheia();
+  const ligando=!q.classList.contains('larga');
+  q.classList.toggle('larga',ligando);
+  if(ligando)alturaLarga();else q.style.height='';
+  marcarModo();setTimeout(ajustar,80);
+}
+/* mede a sobra entre o topo do canvas e o rodapé em vez de chutar um número.
+   O piso é a altura do modo normal: alargar nunca pode devolver menos canvas. */
+function alturaLarga(){
+  const q=$('#quadro');
+  if(!q.classList.contains('larga'))return;
+  q.style.height='';
+  const normal=Math.min(innerHeight*.74,760);
+  const topo=q.getBoundingClientRect().top;
+  const rod=$('.rodape')?.offsetHeight||0;
+  q.style.height=Math.round(Math.max(normal,innerHeight-topo-rod-16))+'px';
+}
+function marcarModo(){
+  const q=$('#quadro');
+  $('#b-larga')?.classList.toggle('on',q.classList.contains('larga'));
+  $('#b-cheio')?.classList.toggle('on',q.classList.contains('cheio'));
+}
+addEventListener('resize',()=>{alturaLarga();if($('#quadro').classList.contains('cheio'))ajustar()});
+function ferramenta(f){fer=f;$('#subformas').classList.remove('on');
+  document.querySelectorAll('#ferramentas [data-fer]').forEach(b=>b.classList.toggle('on',b.dataset.fer===f));
+  $('#quadro').classList.toggle('criando',f!=='sel')}
+function menuFormas(){
+  const s=$('#subformas');
+  if(s.classList.contains('on'))return s.classList.remove('on');
+  s.innerHTML=[['ret','Retângulo','R'],['oval','Oval','O'],['losango','Losango',''],['tri','Triângulo','']]
+    .map(([k,n,t])=>`<button onclick="ferramentaForma('${k}')">${n}<span class="k">${t}</span></button>`).join('');
+  s.classList.add('on');
+  const b=document.querySelector('[data-fer="forma"]').getBoundingClientRect();
+  const q=$('#quadro').getBoundingClientRect();
+  s.style.top=Math.max(8,b.top-q.top-60)+'px';
+}
+let formaAtual='ret';
+function ferramentaForma(k){formaAtual=k;ferramenta('forma')}
+
+function organizar(){
+  const raiz=M().nos.find(n=>!n.pai);if(!raiz)return;
+  const P=56;raiz.x=4500;raiz.y=3000;
+  const contar=id=>{const a=acharNo(id);if(a?.fech)return 1;
+    const f=filhos(id);return f.length?f.reduce((s,c)=>s+contar(c.id),0):1};
+  const esp=(pai,s,d)=>{if(pai.fech)return;const f=filhos(pai.id);if(!f.length)return;
+    const tot=f.reduce((a,n)=>a+contar(n.id),0);let y=pai.y-(tot*P)/2;
+    f.forEach(n=>{const h=contar(n.id);n.x=pai.x+s*d;n.y=y+(h*P)/2;y+=h*P;esp(n,s,330)})};
+  const n1=filhos(raiz.id);
+  if(M().layout==='radial'){
+    const dir=n1.filter((_,i)=>i%2===0),eq=n1.filter((_,i)=>i%2===1);
+    [[dir,1],[eq,-1]].forEach(([L,s])=>{const tot=L.reduce((a,n)=>a+contar(n.id),0);
+      let y=raiz.y-(tot*P)/2;
+      L.forEach(n=>{const h=contar(n.id);n.x=raiz.x+s*380;n.y=y+(h*P)/2;y+=h*P;esp(n,s,330)})});
+  }else{
+    const tot=n1.reduce((a,n)=>a+contar(n.id),0);let y=raiz.y-(tot*P)/2;
+    n1.forEach(n=>{const h=contar(n.id);n.x=raiz.x+380;n.y=y+(h*P)/2;y+=h*P;esp(n,1,330)});
+  }
+  render();ajustar();
+}
+function medir(){medidas={};
+  document.querySelectorAll('#mundo .no').forEach(e=>medidas[e.dataset.id]={w:e.offsetWidth,h:e.offsetHeight})}
+function fios(){
+  let s='';
+  M().nos.forEach(n=>{
+    if(!n.pai||!visivel(n))return;
+    const p=acharNo(n.pai);if(!p)return;
+    const mp=medidas[p.id]||{w:120},mn=medidas[n.id]||{w:120};
+    const dir=n.x>=p.x?1:-1;
+    const x1=p.x+dir*(mp.w/2),x2=n.x-dir*(mn.w/2);
+    const d=Math.max(28,Math.abs(x2-x1)*.5);
+    s+=`<path d="M${x1} ${p.y} C${x1+dir*d} ${p.y}, ${x2-dir*d} ${n.y}, ${x2} ${n.y}"
+      fill="none" stroke="${ramoCor(n)}" stroke-width="${nivel(n)===1?2.4:1.6}"
+      stroke-linecap="round" opacity="${n.feito?.28:.95}"/>`;
+  });
+  $('#fios').innerHTML=s;
+}
+function marcarSel(){document.querySelectorAll('#mundo .el').forEach(e=>
+  e.classList.toggle('sel',e.dataset.tipo===sel.t&&+e.dataset.id===sel.id));posPaleta()}
+
+function render(){
+  const mundo=$('#mundo');
+  mundo.querySelectorAll('.el').forEach(e=>e.remove());
+  M().nos.forEach(n=>{
+    if(!visivel(n))return;
+    if(n.x===undefined){n.x=4500;n.y=3000}
+    const k=nivel(n),cor=ramoCor(n),c=campDoNo(n);
+    const d=document.createElement('div');
+    d.className='el no'+(k===0?' raiz':'')+(n.feito?' feito':'')
+      +(sel.t==='no'&&sel.id===n.id?' sel':'');
+    if(termo)d.classList.add(n.t.toLowerCase().includes(termo)?'achado':'apagado');
+    d.dataset.id=n.id;d.dataset.tipo='no';
+    d.style.left=n.x+'px';d.style.top=n.y+'px';d.style.borderColor=cor;
+    if(n.fundo)d.style.background=n.fundo;
+    if(n.feito){const o=document.createElement('span');o.className='ok';o.textContent='✓';d.appendChild(o)}
+    const ct=document.createElement('span');ct.className='conteudo';ct.textContent=n.t;d.appendChild(ct);
+    /* a raiz carrega a meta do mês e o buraco que falta dividir: é o
+       topo da engenharia reversa, e o mapa é a árvore dessa divisão */
+    if(n.raizMes){
+      const {meta,resto}=contas();
+      const b=document.createElement('span');b.className='selo';
+      b.style.cursor='pointer';b.onpointerdown=e=>e.stopPropagation();
+      if(!meta){b.textContent='definir meta';b.title='Passo 1: a meta do mês';
+        b.onclick=e=>{e.stopPropagation();editarMetasMes()}}
+      else{b.textContent=brl(meta);b.title='Meta 1 do mês';
+        b.onclick=e=>{e.stopPropagation();editarMetasMes()}}
+      d.appendChild(b);
+      if(meta&&resto>0){
+        const r=document.createElement('span');r.className='selo';
+        r.style.background='#f5c451';r.style.color='#08120d';r.style.cursor='pointer';
+        r.textContent='falta '+brl(resto);
+        r.title='Criar uma ação que cubra o que falta';
+        r.onpointerdown=e=>e.stopPropagation();
+        r.onclick=e=>{e.stopPropagation();sel={t:'no',id:n.id};assistente(null,resto)};
+        d.appendChild(r);
+      }
+    }
+    if(c){const b=document.createElement('span');b.className='selo';
+      b.style.background=corCamp(c);b.style.color='#08120d';
+      const metaMes=mesAtual().metas[0]||0;
+      const fatia=metaMes&&c.meta?Math.round(100*c.meta/metaMes):0;
+      b.textContent=c.meta?brl(c.meta)+(fatia?' · '+fatia+'%':''):'TAP';
+      b.title=(c.meta&&fatia?fatia+'% da meta do mês · ':'')+'Abrir o TAP de '+c.nome;
+      b.style.cursor='pointer';
+      b.onpointerdown=e=>e.stopPropagation();
+      b.onclick=e=>{e.stopPropagation();irCampanha(D.campanhas.indexOf(c))};
+      d.appendChild(b)}
+    if(n.nota){const b=document.createElement('span');b.className='selo';
+      b.textContent='nota';b.title=n.nota;d.appendChild(b)}
+    const s=lado(n)>0?'dir':'esq';
+    if(filhos(n.id).length){
+      const f=document.createElement('button');f.className='fecho '+s;
+      f.textContent=n.fech?String(descendentes(n.id)):'–';
+      f.onpointerdown=e=>e.stopPropagation();
+      f.onclick=e=>{e.stopPropagation();guardar();n.fech=!n.fech;render()};
+      d.appendChild(f)}
+    const mais=document.createElement('button');mais.className='mais '+s;
+    mais.textContent='+';mais.title=n.raizMes?'nova campanha':'novo filho';
+    mais.onpointerdown=e=>e.stopPropagation();
+    mais.onclick=e=>{e.stopPropagation();sel={t:'no',id:n.id};
+      n.raizMes?assistente(null):addFilho()};
+    d.appendChild(mais);
+    ligar(d,n,'no');mundo.appendChild(d);
+  });
+  itens().forEach(it=>{
+    const d=document.createElement('div');
+    d.className='el '+it.tipo+(it.forma?' '+it.forma:'')+(sel.t==='item'&&sel.id===it.id?' sel':'');
+    if(termo)d.classList.add((it.t||'').toLowerCase().includes(termo)?'achado':'apagado');
+    d.dataset.id=it.id;d.dataset.tipo='item';
+    d.style.left=it.x+'px';d.style.top=it.y+'px';
+    if(it.tipo==='sticky')d.style.background=it.cor||'#FFF9B1';
+    if(it.tipo==='forma')d.style.borderColor=it.cor||'#4262ff';
+    if(it.tipo==='texto')d.style.color=it.cor||'#1a1a1a';
+    const c=document.createElement('span');c.className='conteudo';c.textContent=it.t||'';
+    d.appendChild(c);ligar(d,it,'item');mundo.appendChild(d);
+  });
+  requestAnimationFrame(()=>{medir();fios();posPaleta()});hist();
+}
+
+function ligar(el,obj,tipo){
+  el.addEventListener('pointerdown',e=>{
+    if(editando||e.button===2)return;
+    e.stopPropagation();fecharMenu();
+    sel={t:tipo,id:obj.id};marcarSel();
+    const x0=e.clientX,y0=e.clientY,ox=obj.x,oy=obj.y;
+    let moveu=false,alvo=null;
+    el.setPointerCapture(e.pointerId);
+    const mover=ev=>{
+      const dx=(ev.clientX-x0)/Z,dy=(ev.clientY-y0)/Z;
+      if(Math.abs(dx)>3||Math.abs(dy)>3){if(!moveu)guardar();moveu=true}
+      obj.x=ox+dx;obj.y=oy+dy;el.style.left=obj.x+'px';el.style.top=obj.y+'px';
+      if(tipo==='no')fios();
+      if(moveu&&tipo==='no'&&obj.pai){
+        el.style.pointerEvents='none';
+        const sob=document.elementFromPoint(ev.clientX,ev.clientY)?.closest('.no');
+        el.style.pointerEvents='';
+        const id=sob?+sob.dataset.id:null;
+        const ok=id&&id!==obj.id&&id!==obj.pai&&!ehDesc(obj.id,id);
+        if(alvo&&alvo!==sob)alvo.classList.remove('alvo');
+        alvo=ok?sob:null;if(alvo)alvo.classList.add('alvo');
+      }
+      posPaleta();
+    };
+    const soltar=()=>{
+      el.removeEventListener('pointermove',mover);
+      try{el.releasePointerCapture(e.pointerId)}catch(_){}
+      if(alvo){const nv=+alvo.dataset.id;alvo.classList.remove('alvo');obj.pai=nv;
+        const p=acharNo(nv);if(p&&p.fech)p.fech=false;organizar()}
+      else if(tipo==='no'&&moveu){medir();fios()}
+      posPaleta();
+    };
+    el.addEventListener('pointermove',mover);
+    el.addEventListener('pointerup',soltar,{once:true});
+    el.addEventListener('pointercancel',soltar,{once:true});
+  });
+  el.addEventListener('dblclick',e=>{e.stopPropagation();sel={t:tipo,id:obj.id};editar()});
+  el.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();
+    sel={t:tipo,id:obj.id};marcarSel();abrirMenu(e.clientX,e.clientY)});
+}
+
+(function(){
+  const q=$('#quadro');
+  /* cinto e suspensório: além da saída no handler abaixo, os painéis param o
+     evento antes dele chegar no canvas — o retarget do pointer capture varia
+     entre navegadores e não vale confiar num só caminho */
+  ['#ferramentas','#zoomcx','#titulo-q','#paleta','#subformas'].forEach(sel=>
+    $(sel)?.addEventListener('pointerdown',e=>e.stopPropagation()));
+  q.addEventListener('pointerdown',e=>{
+    /* os controles flutuantes moram dentro do #quadro; sem esta saída o
+       setPointerCapture abaixo retarga o clique pro canvas e o botão nunca
+       recebe o próprio onclick */
+    if(e.target.closest('#ferramentas,#zoomcx,#titulo-q,#paleta,#subformas')){fecharMenu();return}
+    if(editando)return;fecharMenu();$('#subformas').classList.remove('on');
+    if(fer!=='sel'){const r=q.getBoundingClientRect();
+      criarEm(fer,(e.clientX-r.left-PX)/Z,(e.clientY-r.top-PY)/Z);return}
+    sel={t:null,id:null};marcarSel();
+    const x0=e.clientX,y0=e.clientY,px=PX,py=PY;
+    q.classList.add('pan');q.setPointerCapture(e.pointerId);
+    const mover=ev=>{PX=px+(ev.clientX-x0);PY=py+(ev.clientY-y0);transform()};
+    const soltar=()=>{q.removeEventListener('pointermove',mover);q.classList.remove('pan');
+      try{q.releasePointerCapture(e.pointerId)}catch(_){}};
+    q.addEventListener('pointermove',mover);
+    q.addEventListener('pointerup',soltar,{once:true});
+    q.addEventListener('pointercancel',soltar,{once:true});
+  });
+  q.addEventListener('wheel',e=>{
+    e.preventDefault();let dx=e.deltaX,dy=e.deltaY;
+    if(e.deltaMode===1){dx*=16;dy*=16}
+    if(e.ctrlKey||e.metaKey){const r=q.getBoundingClientRect();
+      zoomFator(Math.exp(-dy*.0035),e.clientX-r.left,e.clientY-r.top)}
+    else{PX-=dx;PY-=dy;transform()}
+    posPaleta();
+  },{passive:false});
+  q.addEventListener('contextmenu',e=>e.preventDefault());
+})();
+
+function criarEm(tipo,x,y){
+  guardar();
+  if(tipo==='no'){
+    const r=M().nos.find(z=>!z.pai);
+    const n={id:M().prox++,pai:r?.id,t:'novo',x,y};
+    M().nos.push(n);sel={t:'no',id:n.id};
+  }else{
+    const it={id:M().proxItem++,tipo,x,y,t:tipo==='texto'?'Texto':''};
+    if(tipo==='sticky')it.cor='#FFF9B1';
+    if(tipo==='forma'){it.forma=formaAtual;it.cor='#4262ff'}
+    itens().push(it);sel={t:'item',id:it.id};
+  }
+  ferramenta('sel');render();setTimeout(()=>editar(true),30);
+}
+function editar(novo){
+  const el=document.querySelector(`#mundo .el[data-tipo="${sel.t}"][data-id="${sel.id}"]`);
+  if(!el)return;
+  const obj=alvoSel(),c=el.querySelector('.conteudo');
+  if(!novo)guardar();
+  editando=true;
+  c.setAttribute('contenteditable','true');c.focus();
+  const r=document.createRange();r.selectNodeContents(c);
+  const s=getSelection();s.removeAllRanges();s.addRange(r);
+  const fim=()=>{if(!editando)return;editando=false;
+    obj.t=c.textContent.trim()||(sel.t==='no'?'sem título':'');
+    const camp=campDoNo(obj);if(camp){camp.nome=obj.t;pintarMes();pintarSemana();pintarAbas()}
+    c.removeAttribute('contenteditable');render()};
+  c.onblur=fim;
+  c.onkeydown=e=>{e.stopPropagation();
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();c.blur()}
+    if(e.key==='Escape'){e.preventDefault();c.textContent=obj.t;c.blur()}};
+}
+function posPaleta(){
+  const p=$('#paleta'),obj=alvoSel();
+  if(!obj||!sel.t){p.classList.remove('on');return}
+  if(sel.t==='no'&&!visivel(obj)){p.classList.remove('on');return}
+  const el=document.querySelector(`#mundo .el[data-tipo="${sel.t}"][data-id="${sel.id}"]`);
+  if(!el){p.classList.remove('on');return}
+  pintarPaleta();p.classList.add('on');
+  const q=$('#quadro').getBoundingClientRect(),r=el.getBoundingClientRect();
+  let x=r.left-q.left+r.width/2-p.offsetWidth/2;
+  let y=r.top-q.top-p.offsetHeight-11;
+  if(y<8)y=r.bottom-q.top+11;
+  p.style.left=Math.max(8,Math.min(x,q.width-p.offsetWidth-8))+'px';p.style.top=y+'px';
+}
+function pintarPaleta(){
+  const obj=alvoSel(),p=$('#paleta');
+  if(sel.t==='no'){
+    const c=campDoNo(obj);
+    p.innerHTML=RAMOS.slice(0,6).map((cor,i)=>
+      `<button title="cor" onclick="corRamo(${i})"><span class="cor" style="background:${cor}"></span></button>`).join('')
+      +`<span class="div"></span><button title="destaque" onclick="destaque()">✦</button>
+        <button title="nota" onclick="abrirNota()">✎</button>
+        <button title="concluído" onclick="marcarFeito()">✓</button>`
+      +(c?`<span class="div"></span><button title="abrir TAP" onclick="irCampanha(${D.campanhas.indexOf(c)})">↗</button>`:'');
+  }else if(obj?.tipo==='sticky'){
+    p.innerHTML=STICKY.map(c=>`<button onclick="corItem('${c}')">
+      <span class="cor" style="background:${c}"></span></button>`).join('')
+      +`<span class="div"></span><button onclick="apagar()">🗑</button>`;
+  }else if(obj?.tipo==='forma'){
+    p.innerHTML=['ret','oval','losango'].map(f=>
+      `<button onclick="formaTipo('${f}')">${f==='ret'?'▭':f==='oval'?'◯':'◇'}</button>`).join('')
+      +'<span class="div"></span>'
+      +RAMOS.slice(0,5).map(c=>`<button onclick="corItem('${c}')">
+        <span class="cor" style="background:${c}"></span></button>`).join('')
+      +`<span class="div"></span><button onclick="apagar()">🗑</button>`;
+  }else{
+    p.innerHTML=RAMOS.slice(0,5).map(c=>`<button onclick="corItem('${c}')">
+      <span class="cor" style="background:${c}"></span></button>`).join('')
+      +`<span class="div"></span><button onclick="apagar()">🗑</button>`;
+  }
+}
+function corRamo(i){const n=alvoSel();if(!n)return;guardar();n.cor=i;render()}
+function corItem(c){const o=alvoSel();if(!o)return;guardar();o.cor=c;render()}
+function formaTipo(f){const o=alvoSel();if(!o)return;guardar();o.forma=f;render()}
+function destaque(){const n=alvoSel();if(!n)return;guardar();
+  const o=[undefined,'#D5F692','#F5C51E','#FFCEE0','#A6CCF5'];
+  n.fundo=o[(o.indexOf(n.fundo)+1)%o.length];if(!n.fundo)delete n.fundo;render()}
+function apagar(){
+  if(sel.t==='item'){guardar();M().itens=itens().filter(x=>x.id!==sel.id);
+    sel={t:null,id:null};render();return}
+  delNo();
+}
+function addFilho(){
+  const p=sel.t==='no'?acharNo(sel.id):null;if(!p)return;
+  guardar();if(p.fech)p.fech=false;
+  const s=p.pai?lado(p):1;
+  const n={id:M().prox++,pai:p.id,t:'novo',x:(p.x??4500)+s*330,
+    y:(p.y??3000)+filhos(p.id).length*56};
+  M().nos.push(n);sel={t:'no',id:n.id};render();setTimeout(editar,20);
+}
+function addIrmao(){
+  if(sel.t!=='no')return;const a=acharNo(sel.id);if(!a||!a.pai)return addFilho();
+  guardar();const n={id:M().prox++,pai:a.pai,t:'novo',x:a.x,y:a.y+60};
+  M().nos.splice(M().nos.indexOf(a)+1,0,n);sel={t:'no',id:n.id};render();setTimeout(editar,20);
+}
+function delNo(){
+  if(sel.t!=='no')return;const a=acharNo(sel.id);if(!a)return;
+  if(!a.pai)return aviso('A raiz do mês não pode ser excluída.');
+  const c=campDoNo(a),d=descendentes(sel.id);
+  if(c&&!confirm(`"${a.t}" está ligado a uma campanha. Excluir só o nó do mapa? (a campanha e o TAP continuam)`))return;
+  if(!c&&d&&!confirm(`Excluir "${a.t}" e mais ${d} ${d>1?'nós':'nó'} abaixo?`))return;
+  guardar();
+  const rem=id=>{filhos(id).forEach(f=>rem(f.id));M().nos=M().nos.filter(x=>x.id!==id)};
+  rem(sel.id);sel={t:'no',id:a.pai};render();
+}
+function duplicarRamo(){
+  if(sel.t!=='no')return;const a=acharNo(sel.id);if(!a||!a.pai)return;
+  guardar();
+  const cop=(o,np,dy)=>{const n={...JSON.parse(JSON.stringify(o)),id:M().prox++,pai:np,y:(o.y??3000)+dy};
+    delete n.campId;M().nos.push(n);filhos(o.id).forEach(f=>cop(f,n.id,dy));return n};
+  sel={t:'no',id:cop(a,a.pai,64).id};render();
+}
+function marcarFeito(){const n=alvoSel();if(!n||sel.t!=='no')return;guardar();n.feito=!n.feito;render()}
+function moverIrmao(dir){
+  if(sel.t!=='no')return;const a=acharNo(sel.id);if(!a||!a.pai)return;
+  const irm=filhos(a.pai),i=irm.indexOf(a),j=i+dir;if(j<0||j>=irm.length)return;
+  guardar();const ia=M().nos.indexOf(a),ib=M().nos.indexOf(irm[j]);
+  M().nos.splice(ia,1);M().nos.splice(ib,0,a);organizar();
+}
+let noNota=null;
+function abrirNota(){
+  const n=alvoSel();if(!n)return;noNota=sel.id;
+  $('#modal-cx').innerHTML=`<h3>Nota</h3><p class="sub">${esc(n.t||'')}</p>
+    <textarea id="nt" style="height:170px">${esc(n.nota||'')}</textarea>
+    <div class="bts"><button onclick="fecharModal()">Cancelar</button>
+      <button class="ok" onclick="salvarNota()">Salvar</button></div>`;
+  $('#modal').classList.add('on');setTimeout(()=>$('#nt').focus(),50);
+}
+function salvarNota(){const n=acharNo(noNota);
+  if(n){guardar();const v=$('#nt').value.trim();if(v)n.nota=v;else delete n.nota;render()}
+  fecharModal()}
+function fecharModal(){$('#modal').classList.remove('on')}
+function fecharTudo(a){guardar();M().nos.forEach(n=>{if(filhos(n.id).length&&n.pai)n.fech=!a});render()}
+function trocarLayout(){M().layout=M().layout==='radial'?'direita':'radial';organizar()}
+function buscar(v){termo=v.trim().toLowerCase();render();
+  if(termo){const a=M().nos.find(n=>visivel(n)&&n.t.toLowerCase().includes(termo));
+    if(a){sel={t:'no',id:a.id};centrar();marcarSel()}}}
+function navegar(dir){
+  if(sel.t!=='no')return;const a=acharNo(sel.id);if(!a)return;
+  let al=null;
+  if(dir==='pai')al=a.pai;
+  else if(dir==='filho'){if(a.fech){guardar();a.fech=false;render()}al=filhos(a.id)[0]?.id}
+  else{const irm=a.pai?filhos(a.pai):[a];const i=irm.indexOf(a);
+    al=irm[i+(dir==='cima'?-1:1)]?.id}
+  if(al){sel={t:'no',id:al};marcarSel();centrar()}
+}
+function abrirMenu(x,y){
+  const m=$('#menu');
+  if(sel.t==='item'){
+    m.innerHTML=`<button onclick="fecharMenu();editar()">Editar texto<span class="atalho">F2</span></button>
+      <hr><button class="perigo" onclick="fecharMenu();apagar()">Excluir<span class="atalho">Del</span></button>`;
+  }else{
+    const a=acharNo(sel.id),raiz=!a.pai,nf=filhos(sel.id).length,c=campDoNo(a);
+    m.innerHTML=`
+      ${raiz?`<button class="destaque" onclick="fecharMenu();assistente(null)">+ Nova campanha do mês</button><hr>`:''}
+      ${!raiz&&!c?`<button class="destaque" onclick="fecharMenu();assistente(${a.id})">Transformar em campanha…</button><hr>`:''}
+      ${c?`<button class="destaque" onclick="fecharMenu();irCampanha(${D.campanhas.indexOf(c)})">Abrir o TAP</button>
+           <button onclick="fecharMenu();ativa=${D.campanhas.indexOf(c)};editarPeriodo()">Datas e meta</button><hr>`:''}
+      <button onclick="fecharMenu();addFilho()">Novo filho<span class="atalho">Tab</span></button>
+      ${raiz?'':'<button onclick="fecharMenu();addIrmao()">Novo irmão<span class="atalho">Enter</span></button>'}
+      <button onclick="fecharMenu();editar()">Renomear<span class="atalho">F2</span></button>
+      <hr>
+      <button onclick="fecharMenu();abrirNota()">${a.nota?'Editar nota':'Adicionar nota'}</button>
+      <button onclick="fecharMenu();marcarFeito()">${a.feito?'Desmarcar concluído':'Marcar como concluído'}</button>
+      ${nf?`<button onclick="fecharMenu();guardar();acharNo(${sel.id}).fech=!acharNo(${sel.id}).fech;render()">
+        ${a.fech?'Abrir ramo':'Fechar ramo'}<span class="atalho">Espaço</span></button>`:''}
+      ${raiz?`<hr><button onclick="fecharMenu();fecharTudo(false)">Fechar todos os ramos</button>
+              <button onclick="fecharMenu();fecharTudo(true)">Abrir todos os ramos</button>
+              <button onclick="fecharMenu();trocarLayout()">Alternar layout</button>
+              <button onclick="fecharMenu();organizar()">Reorganizar</button>`
+             :`<button onclick="fecharMenu();moverIrmao(-1)">Mover para cima</button>
+               <button onclick="fecharMenu();moverIrmao(1)">Mover para baixo</button>
+               <button onclick="fecharMenu();duplicarRamo()">Duplicar ramo<span class="atalho">Ctrl+D</span></button>
+               <hr><button class="perigo" onclick="fecharMenu();delNo()">Excluir<span class="atalho">Del</span></button>`}`;
+  }
+  m.classList.add('on');
+  const r=m.getBoundingClientRect();
+  m.style.left=Math.min(x,innerWidth-r.width-10)+'px';
+  m.style.top=Math.min(y,innerHeight-r.height-10)+'px';
+}
+function fecharMenu(){$('#menu').classList.remove('on')}
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#menu'))fecharMenu()});
+
+document.addEventListener('keydown',e=>{
+  if($('#modal').classList.contains('on')){if(e.key==='Escape')fecharModal();return}
+  if(!$('#pg-mapa').classList.contains('on')||editando)return;
+  const a=document.activeElement;
+  if(a&&(a.isContentEditable||a.tagName==='INPUT'||a.tagName==='TEXTAREA'))return;
+  const cmd=e.ctrlKey||e.metaKey;
+  if(cmd&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?refazer():desfazer();return}
+  if(cmd&&e.key.toLowerCase()==='d'){e.preventDefault();duplicarRamo();return}
+  if(/^[vnst]$/i.test(e.key)){ferramenta({v:'sel',n:'sticky',s:'forma',t:'texto'}[e.key.toLowerCase()]);return}
+  if(/^w$/i.test(e.key)){e.preventDefault();larguraTotal();return}
+  if(/^f$/i.test(e.key)){e.preventDefault();telaCheia();return}
+  if(e.key==='Tab'){e.preventDefault();addFilho()}
+  else if(e.key==='Enter'){e.preventDefault();addIrmao()}
+  else if(e.key==='F2'){e.preventDefault();editar()}
+  else if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();apagar()}
+  else if(e.key===' '){e.preventDefault();if(sel.t==='no'){const n=acharNo(sel.id);
+    if(n&&filhos(n.id).length){guardar();n.fech=!n.fech;render()}}}
+  else if(e.key==='Escape'){const q=$('#quadro');
+    if(q.classList.contains('cheio'))telaCheia();
+    else if(q.classList.contains('larga'))larguraTotal();
+    else ferramenta('sel')}
+  else if(e.key==='ArrowUp'){e.preventDefault();navegar('cima')}
+  else if(e.key==='ArrowDown'){e.preventDefault();navegar('baixo')}
+  else if(e.key==='ArrowLeft'){e.preventDefault();navegar(sel.t==='no'&&lado(acharNo(sel.id))>0?'pai':'filho')}
+  else if(e.key==='ArrowRight'){e.preventDefault();navegar(sel.t==='no'&&lado(acharNo(sel.id))>0?'filho':'pai')}
+});
+$('#q-nome').addEventListener('input',e=>{M().nome=e.target.value});
+
+/* ================= MÊS ================= */
+function semanasDoMes(){
+  const m=mesAtual();
+  const prim=new Date(m.ano,m.mes-1,1);
+  const ini=new Date(prim);ini.setDate(1-prim.getDay());
+  const out=[];
+  for(let i=0;i<6;i++){
+    const a=new Date(ini);a.setDate(ini.getDate()+i*7);
+    const b=new Date(a);b.setDate(a.getDate()+6);
+    if(a.getMonth()===m.mes-1||b.getMonth()===m.mes-1)out.push({a,b,n:out.length+1});
+  }
+  return out;
+}
+function pecasNoDia(d){
+  let t=0;
+  campsMes().forEach(c=>{
+    const s=c.secoes.find(x=>/CANAIS/i.test(x.t));if(!s)return;
+    s.c.forEach((col,i)=>{
+      const mm=String(col).match(/(\d{2})\/(\d{2})/);if(!mm)return;
+      if(+mm[1]!==d.getDate()||+mm[2]!==d.getMonth()+1)return;
+      s.l.forEach(l=>{const v=String(l[i]||'').trim();
+        if(!v||v==='—'||v==='0')return;const n=v.match(/^\d+/);t+=n?+n[0]:1});
+    });
+  });
+  return t;
+}
+function calendario(){
+  const m=mesAtual();
+  $('#tit-cal').textContent=MESES[m.mes-1]+' de '+m.ano;
+  $('#cal-cab').innerHTML=['dom','seg','ter','qua','qui','sex','sáb'].map(d=>`<div>${d}</div>`).join('');
+  const S=semanasDoMes(),hoje=new Date(),cps=campsMes();
+  $('#calendario').innerHTML=S.map(s=>{
+    const at=cps.map(c=>({c,i:D.campanhas.indexOf(c)}))
+      .filter(o=>dISO(o.c.inicio)<=s.b&&dISO(o.c.fim)>=s.a);
+    const fx=[];
+    at.forEach(o=>{
+      const i1=dISO(o.c.inicio)<s.a?0:dISO(o.c.inicio).getDay();
+      const i2=dISO(o.c.fim)>s.b?6:dISO(o.c.fim).getDay();
+      let f=0;while(fx.some(x=>x.faixa===f&&!(x.fim<i1||x.ini>i2)))f++;
+      fx.push({...o,ini:i1,fim:i2,faixa:f});
+    });
+    const nf=fx.length?Math.max(...fx.map(f=>f.faixa))+1:0,alt=nf*23;
+    const dias=[...Array(7)].map((_,k)=>{
+      const d=new Date(s.a);d.setDate(s.a.getDate()+k);
+      const fora=d.getMonth()!==m.mes-1;
+      const eh=d.toDateString()===hoje.toDateString();
+      const p=fora?0:pecasNoDia(d);
+      return `<div class="cal-dia ${fora?'fora':''} ${eh?'hoje':''} ${diaSel===iso(d)?'sel':''}"
+        style="padding-top:${8+alt}px;min-height:${76+alt}px" onclick="verDia('${iso(d)}')">
+        <div class="n">${d.getDate()}</div>
+        ${p?`<div class="pecas">${p} peça${p>1?'s':''}</div>`:''}</div>`;
+    }).join('');
+    const barras=fx.map(f=>{
+      const larg=(f.fim-f.ini+1)/7*100,esqp=f.ini/7*100;
+      const ci=dISO(f.c.inicio)<s.a,cf=dISO(f.c.fim)>s.b;
+      return `<div class="barra" title="${esc(f.c.nome)}" onclick="irCampanha(${f.i})"
+        style="left:calc(${esqp}% + 6px);width:calc(${larg}% - 12px);top:${28+f.faixa*23}px;
+        background:${corCamp(f.c)};
+        border-top-left-radius:${ci?0:5}px;border-bottom-left-radius:${ci?0:5}px;
+        border-top-right-radius:${cf?0:5}px;border-bottom-right-radius:${cf?0:5}px">
+        ${ci?'‹ ':''}${esc(f.c.nome)}${cf?' ›':''}</div>`;
+    }).join('');
+    return `<div class="cal-sem"><div class="cal-dias">${dias}</div>
+      <div class="cal-barras">${barras}</div></div>`;
+  }).join('');
+  $('#legenda').innerHTML=cps.map(c=>
+    `<span><i style="background:${corCamp(c)}"></i>${esc(c.nome)}</span>`).join('');
+}
+function verDia(d0){
+  diaSel=diaSel===d0?null:d0;calendario();
+  if(!diaSel){$('#dia-detalhe').innerHTML='';return}
+  const d=dISO(d0),linhas=[];
+  campsMes().forEach(c=>{
+    const s=c.secoes.find(x=>/CANAIS/i.test(x.t));if(!s)return;
+    s.c.forEach((col,i)=>{
+      const mm=String(col).match(/(\d{2})\/(\d{2})/);if(!mm)return;
+      if(+mm[1]!==d.getDate()||+mm[2]!==d.getMonth()+1)return;
+      s.l.forEach(l=>{const v=String(l[i]||'').trim();
+        if(!v||v==='—'||v==='0')return;
+        linhas.push({camp:c.nome,canal:l[0],oq:v,quem:l[s.c.length-1]||'—'})});
+    });
+  });
+  const at=campsMes().filter(c=>dISO(c.inicio)<=d&&dISO(c.fim)>=d).map(c=>c.nome);
+  $('#dia-detalhe').innerHTML=`
+    <h2 class="sec">${dBR(d)} · ${['domingo','segunda','terça','quarta','quinta','sexta','sábado'][d.getDay()]}</h2>
+    <p class="dica">${at.length?'Ativas: '+at.join(' · '):'Nenhuma campanha ativa neste dia.'}</p>
+    ${linhas.length?`<div class="tab-caixa"><table>
+      <thead><tr><th>Campanha</th><th>Canal</th><th>O que sai</th><th>Quem faz</th></tr></thead>
+      <tbody>${linhas.map(l=>`<tr><td><div class="cel">${esc(l.camp)}</div></td>
+        <td><div class="cel">${esc(l.canal)}</div></td><td><div class="cel">${esc(l.oq)}</div></td>
+        <td><div class="cel">${esc(l.quem)}</div></td></tr>`).join('')}</tbody></table></div>`
+    :'<div class="vazio">Nada programado. Preencha o cronograma no TAP da campanha.</div>'}`;
+}
+/* ================= ENGENHARIA REVERSA =================
+   O jeito do Gabriel: começa pela meta do mês, e desce dividindo até
+   chegar na ação. Antes disso o planejador não tinha nem onde preencher
+   a meta — os meses nasciam com zero e não havia editor. */
+function editarMetasMes(){
+  const m=mesAtual();
+  $('#modal-cx').className='cx';
+  $('#modal-cx').innerHTML=`<h3>Metas de ${MESES[m.mes-1]} ${m.ano} · ${esc(marcaDo(m))}</h3>
+    <p class="sub">Passo 1 da engenharia reversa. Meta 1 é a que o mês precisa
+      entregar; as outras duas são os cenários bom e ótimo.</p>
+    <label><b>Meta 1 — a que vale</b>
+      <input type="number" id="m-1" value="${m.metas[0]||''}" step="1000" placeholder="300000"></label>
+    <div class="dupla">
+      <label><b>Meta 2</b><input type="number" id="m-2" value="${m.metas[1]||''}" step="1000"></label>
+      <label><b>Meta 3</b><input type="number" id="m-3" value="${m.metas[2]||''}" step="1000"></label></div>
+    <p class="sub">Deixe 2 e 3 em branco e eu calculo em cima da Meta 1 (+17% e +33%).</p>
+    <label><b>Ticket médio</b>
+      <input type="number" id="m-tk" value="${m.ticket||''}" step="10" placeholder="200"></label>
+    <p class="sub">Com o ticket, a escada mostra quantos pedidos cada ação
+      precisa trazer. Em branco, ela só trabalha em reais.</p>
+    <label><b>Referência</b>
+      <input id="m-ref" value="${esc(m.ref||'')}" placeholder="ex: mesmo mês do ano passado +20%"></label>
+    <div class="bts"><button onclick="fecharModal()">Cancelar</button>
+      <button class="ok" onclick="salvarMetasMes()">Salvar</button></div>`;
+  $('#modal').classList.add('on');
+}
+function salvarMetasMes(){
+  const m=mesAtual(),m1=+$('#m-1').value||0;
+  m.metas=[m1,+$('#m-2').value||Math.round(m1*1.17),+$('#m-3').value||Math.round(m1*1.33)];
+  m.ticket=+$('#m-tk').value||0;
+  m.ref=$('#m-ref').value.trim();
+  fecharModal();guardar();pintarMes();pintarSemana();render();
+  aviso(m1?`Meta de ${brl(m1)} definida. Agora divida por ação.`:'Metas atualizadas.');
+}
+
+/* O quanto da meta já está atribuído a alguma ação, e o que sobrou.
+   O resto é o que a engenharia reversa existe para zerar. */
+function contas(){
+  const m=mesAtual(),cps=campsMes();
+  const meta=m.metas[0]||0;
+  const soma=cps.reduce((s,c)=>s+(c.meta||0),0);
+  const inv=cps.reduce((s,c)=>s+(c.investimento||0),0);
+  return {m,cps,meta,soma,inv,resto:meta-soma,
+    pct:meta?Math.round(soma/meta*100):0,
+    ticket:m.ticket||0,
+    pedidos:m.ticket?Math.round(meta/m.ticket):0};
+}
+const pedidosDe=(v,ticket)=>ticket?Math.round(v/ticket):0;
+
+function pintarEscada(){
+  const {m,cps,meta,soma,inv,resto,pct,ticket,pedidos}=contas();
+  const passo=(n,titulo,valor,classe,pe,extra='')=>
+    `<div class="degrau"><div class="cab"><span class="np">${n}</span>
+       <h4>${titulo}</h4><span class="vlr ${classe||''}">${valor}</span></div>
+       ${pe?`<div class="pe">${pe}</div>`:''}${extra}</div>`;
+
+  if(!meta)return `<div class="degrau"><div class="cab"><span class="np">1</span>
+      <h4>Meta do mês</h4><span class="vlr a">a definir</span></div>
+      <div class="pe">O método começa aqui: sem a meta do mês não há o que dividir.
+        <button class="mini forte" onclick="editarMetasMes()">definir a meta</button></div></div>`;
+
+  let h=passo(1,'Meta do mês',brl(meta),'',
+    `Meta 2 ${brl(m.metas[1])} · Meta 3 ${brl(m.metas[2])}` +
+    (m.ref?` · ${esc(m.ref)}`:'') +
+    ` <button class="mini" onclick="editarMetasMes()">ajustar</button>`);
+
+  if(ticket)h+=passo(2,'Pedidos necessários',pedidos.toLocaleString('pt-BR'),'',
+    `Meta 1 dividida pelo ticket médio de ${brl(ticket)}`);
+
+  /* a barra: cada ação com sua fatia, e o buraco no fim */
+  const trilho=`<div class="trilho">${cps.map(c=>
+      `<i style="width:${meta?Math.max(0,100*(c.meta||0)/meta):0}%;background:${corCamp(c)}"
+        title="${esc(c.nome)}"></i>`).join('')}</div>`;
+
+  const linhas=cps.map(c=>{
+    const p=meta?Math.round(100*(c.meta||0)/meta):0;
+    return `<div class="fatia"><span class="bolinha" style="background:${corCamp(c)}"></span>
+      <span class="nm">${esc(c.nome)}</span>
+      <span class="pc">${c.meta?p+'%':'—'}</span>
+      <span class="vl">${c.meta?brl(c.meta):'contínuo'}</span>
+      ${ticket?`<span class="ped">${c.meta?pedidosDe(c.meta,ticket).toLocaleString('pt-BR')+' pedidos':''}</span>`:''}
+      <button class="mini" onclick="irCampanha(${D.campanhas.indexOf(c)})">abrir TAP</button></div>`;
+  }).join('');
+
+  const fecho = resto>0
+    ? `<div class="fatia resto"><span class="nm">Falta atribuir a alguma ação</span>
+        <span class="pc">${Math.round(100*resto/meta)}%</span>
+        <span class="vl">${brl(resto)}</span>
+        ${ticket?`<span class="ped">${pedidosDe(resto,ticket).toLocaleString('pt-BR')} pedidos</span>`:''}
+        <button class="mini forte" onclick="assistente(null,${resto})">criar ação para o resto</button></div>`
+    : resto<0
+    ? `<div class="fatia sobra"><span class="nm">As ações já passam da Meta 1</span>
+        <span class="pc">+${Math.round(100*(-resto)/meta)}%</span>
+        <span class="vl">${brl(-resto)}</span></div>`
+    : `<div class="fatia sobra"><span class="nm">Meta inteira dividida em ações</span>
+        <span class="pc">100%</span><span class="vl">${brl(soma)}</span></div>`;
+
+  h+=passo(ticket?3:2,'Dividido por ação',brl(soma),resto>0?'a':'v',
+    `${pct}% da Meta 1 já está numa ação` + (cps.length?'':' — nenhuma campanha ainda'),
+    trilho+linhas+fecho);
+
+  /* último degrau: quanto do faturamento é comprado e quanto não é */
+  const fz=cps.map(c=>fontesValidas(c.meta||0,c.fontes||fontesPadrao(c.meta||0,c.investimento||0)));
+  const porFonte=FONTES.map(({k,n})=>({n,
+    meta:fz.reduce((t,f)=>t+(f[k]?.meta||0),0),
+    inv:fz.reduce((t,f)=>t+(f[k]?.inv||0),0)}));
+  const compradoM=porFonte.reduce((t,x)=>t+x.meta,0);
+  const linhasF=porFonte.map(x=>
+    `<div class="fatia"><span class="nm">${x.n}</span>
+      <span class="pc">${soma?Math.round(100*x.meta/soma)+'%':'—'}</span>
+      <span class="vl">${brl(x.meta)}</span>
+      <span class="ped">${brl(x.inv)} de verba</span>
+      <span class="pc">ROAS ${roas(x.meta,x.inv)}</span></div>`).join('') +
+    `<div class="fatia"><span class="nm">Não se compra — influencer, base, atendimento, orgânico</span>
+      <span class="pc">${soma?Math.round(100*(soma-compradoM)/soma)+'%':'—'}</span>
+      <span class="vl">${brl(Math.max(0,soma-compradoM))}</span>
+      <span class="ped">—</span><span class="pc"></span></div>`;
+
+  h+=passo(ticket?4:3,'De onde vem o faturamento das ações',brl(inv)+' de verba','',
+    inv?`ROAS alvo do que já está atribuído: <b>${roas(soma,inv)}</b>`
+       :'Nenhum investimento previsto nas ações ainda',
+    cps.length?linhasF:'');
+  return h;
+}
+
+function pintarMes(){
+  const m=mesAtual(),cps=campsMes();
+  $('#tit-mes').innerHTML=MESES[m.mes-1].replace(/^./,x=>x.toUpperCase())+' <b>'+m.ano+'</b>'+
+    ' <span class="marca-mes">'+esc(marcaDo(m))+'</span>';
+  $('#sel-mes').innerHTML=D.meses.map(x=>
+    `<option value="${x.id}" ${x.id===D.mesAtivo?'selected':''}>
+      ${MESES[x.mes-1]} ${x.ano} · ${esc(marcaDo(x))}</option>`).join('');
+  $('#metas-topo').innerHTML=m.metas.map((v,i)=>
+    `<span>Meta ${i+1} <b>${v?brl(v):'a definir'}</b></span>`).join('')+
+    (m.ref?`<span>${esc(m.ref)}</span>`:'');
+  const soma=cps.reduce((s,c)=>s+(c.meta||0),0);
+  const inv=cps.reduce((s,c)=>s+(c.investimento||0),0);
+  /* mês recém-criado vem com meta zero: sem a guarda a divisão dá NaN */
+  const falta=m.metas[0]-soma,pct=m.metas[0]?Math.round(soma/m.metas[0]*100):0;
+  $('#cartoes-mes').innerHTML=`
+    <div class="cartao"><div class="rot">Meta 1</div>
+      <div class="num">${m.metas[0]?brl(m.metas[0]):'a definir'}</div>
+      <div class="pe">${esc(m.ref||'defina em Datas e meta')}</div></div>
+    <div class="cartao"><div class="rot">Somado nas campanhas</div>
+      <div class="num ${pct>=100?'v':'a'}">${brl(soma)}</div><div class="pe">${pct}% da Meta 1</div></div>
+    <div class="cartao"><div class="rot">Sem campanha atrelada</div>
+      <div class="num ${falta>0?'a':'v'}">${brl(Math.max(0,falta))}</div>
+      <div class="pe">vem do perpétuo e da base</div></div>
+    <div class="cartao"><div class="rot">Investimento previsto</div><div class="num">${brl(inv)}</div>
+      <div class="pe">ROAS alvo do mês ${inv?(soma/inv).toFixed(1).replace('.',','):'—'}</div></div>`;
+  $('#escada').innerHTML=pintarEscada();
+  $('#lista-camp-mes').innerHTML=cps.length?cps.map(c=>
+    `<div class="faixa-camp"><span class="bolinha" style="background:${corCamp(c)}"></span>
+      <span class="nm">${esc(c.nome)}</span>
+      <span class="tp">${TIPOS[c.tipo]?.nome||c.tipo}</span>
+      <span class="dt">${dBR(dISO(c.inicio))} – ${dBR(dISO(c.fim))}</span>
+      <span class="mt">${c.meta?brl(c.meta):'contínuo'}</span>
+      ${cuSeloCamp(c)}
+      <button class="mini" onclick="irCampanha(${D.campanhas.indexOf(c)})">abrir TAP</button>
+    </div>`).join(''):'<div class="vazio">Nenhuma campanha ainda. Use “+ nova campanha”.</div>';
+  calendario();
+}
+
+/* ================= SEMANA ================= */
+function pintarSemana(){
+  const S=semanasDoMes(),m=mesAtual();
+  $('#sel-semana').innerHTML=S.map((s,i)=>
+    `<button class="${i===semanaSel?'on':''}" onclick="semanaSel=${i};pintarSemana()">
+      Semana ${s.n} · ${dBR(s.a)}–${dBR(s.b)}</button>`).join('');
+  const s=S[semanaSel];if(!s)return;
+  const at=campsMes().filter(c=>dISO(c.inicio)<=s.b&&dISO(c.fim)>=s.a);
+  const metaSem=at.filter(c=>c.meta>0).reduce((t,c)=>t+c.meta,0);
+  const rateio=Math.round(m.metas[0]/S.length);
+  $('#cartoes-semana').innerHTML=`
+    <div class="cartao"><div class="rot">Meta rateada do mês</div><div class="num">${brl(rateio)}</div>
+      <div class="pe">${m.ticket?pedidosDe(rateio,m.ticket).toLocaleString('pt-BR')+
+        ' pedidos na semana · ':''}Meta 1 dividida por ${S.length} semanas</div></div>
+    <div class="cartao"><div class="rot">Metas de campanha na semana</div>
+      <div class="num ${metaSem>=rateio?'v':'a'}">${brl(metaSem)}</div>
+      <div class="pe">${metaSem>=rateio?'cobre o rateio':'abaixo do rateio'}</div></div>
+    <div class="cartao"><div class="rot">Campanhas ativas</div><div class="num">${at.length}</div>
+      <div class="pe">${at.filter(c=>c.secoes.length).length} com TAP pronto</div></div>`;
+  $('#camp-semana').innerHTML=at.length?at.map(c=>
+    `<div class="faixa-camp"><span class="bolinha" style="background:${corCamp(c)}"></span>
+      <span class="nm">${esc(c.nome)}</span>
+      <span class="tp">${TIPOS[c.tipo]?.nome||''}</span>
+      <span class="dt">${dBR(dISO(c.inicio))} – ${dBR(dISO(c.fim))}</span>
+      <span class="mt">${c.meta?brl(c.meta):'contínuo'}</span>
+      ${cuSeloCamp(c)}
+      <button class="mini" onclick="irCampanha(${D.campanhas.indexOf(c)})">abrir</button></div>`).join('')
+    :'<div class="vazio">Nenhuma campanha nesta semana.</div>';
+  const blocos=at.map(c=>{
+    const sc=c.secoes.find(x=>/CANAIS/i.test(x.t));if(!sc)return '';
+    const idx=sc.c.map((col,i)=>({col,i})).filter(o=>{
+      const mm=String(o.col).match(/(\d{2})\/(\d{2})/);if(!mm)return false;
+      const d=new Date(m.ano,+mm[2]-1,+mm[1]);return d>=s.a&&d<=s.b});
+    if(!idx.length)return '';
+    const ln=sc.l.filter(l=>idx.some(o=>{const v=String(l[o.i]||'').trim();
+      return v&&v!=='—'&&v!=='0'}));
+    if(!ln.length)return '';
+    return `<h2 class="sec" style="margin-top:20px">${esc(c.nome)}</h2>
+      <div class="tab-caixa"><table>
+      <thead><tr><th>Canal</th>${idx.map(o=>`<th>${esc(sc.c[o.i])}</th>`).join('')}<th>Quem faz</th></tr></thead>
+      <tbody>${ln.map(l=>`<tr><td><div class="cel">${esc(l[0])}</div></td>
+        ${idx.map(o=>`<td><div class="cel">${esc(l[o.i]||'—')}</div></td>`).join('')}
+        <td><div class="cel">${esc(l[sc.c.length-1]||'—')}</div></td></tr>`).join('')}
+      </tbody></table></div>`;
+  }).filter(Boolean).join('');
+  $('#canais-semana').innerHTML=blocos||
+    '<div class="vazio">Nenhuma campanha desta semana tem cronograma preenchido.</div>';
+}
+
+/* ================= TAP ================= */
+function pintarAbas(){
+  const cps=campsMes();
+  const metaMes=mesAtual().metas[0]||0;
+  $('#abas').innerHTML=cps.map(c=>{
+    const i=D.campanhas.indexOf(c);
+    return `<button class="aba ${i===ativa?'on':''}" onclick="ativa=${i};pintarTAP()">
+      ${esc(c.nome)} <span class="vlr">${c.meta?brl(c.meta):'contínuo'}${
+        c.meta&&metaMes?' · '+Math.round(100*c.meta/metaMes)+'%':''}</span></button>`}).join('')
+    +`<button class="aba nova" onclick="assistente(null)">+ nova campanha</button>`;
+}
+function pintarTAP(){
+  pintarAbas();
+  const c=D.campanhas[ativa];
+  if(!c||c.mesId!==D.mesAtivo){
+    $('#secoes').innerHTML='<div class="vazio">Escolha uma campanha acima.</div>';return}
+  $('#secoes').innerHTML=c.secoes.map((s,si)=>`
+    <div class="sec-cab"><h3>${esc(s.t)}</h3>
+      <button class="mini" onclick="addCol(${si})">+ coluna</button>
+      <button class="mini perigo" onclick="delSecao(${si})">excluir seção</button></div>
+    <div class="tab-caixa"><table>
+      <thead><tr>${s.c.map((col,ci)=>
+        `<th><span contenteditable class="cab-ed" data-s="${si}" data-c="${ci}">${esc(col)}</span></th>`).join('')}</tr></thead>
+      <tbody>${s.l.map((l,li)=>`<tr class="${(s.tot||[]).includes(li)?'total':''}">
+        ${s.c.map((_,ci)=>`<td><div class="cel" contenteditable
+          data-s="${si}" data-l="${li}" data-i="${ci}">${esc(l[ci]||'')}</div></td>`).join('')}
+      </tr>`).join('')}</tbody></table>
+      <div class="add-linha">
+        <button class="mini" onclick="addLinha(${si})">+ linha</button>
+        <button class="mini" onclick="addTotal(${si})">+ linha de total</button>
+        <button class="mini perigo" onclick="delLinha(${si})">− última linha</button>
+      </div></div>`).join('')
+    ||'<div class="vazio">TAP vazio.</div>';
+  document.querySelectorAll('#secoes .cel[contenteditable]').forEach(el=>{
+    el.onblur=e=>{const{s,l,i}=e.target.dataset;
+      D.campanhas[ativa].secoes[s].l[l][i]=e.target.innerText.trim();pintarMes()}});
+  document.querySelectorAll('#secoes .cab-ed').forEach(el=>{
+    el.onblur=e=>{const{s,c:ci}=e.target.dataset;
+      D.campanhas[ativa].secoes[s].c[ci]=e.target.innerText.trim();pintarMes()}});
+}
+const secTap=si=>D.campanhas[ativa].secoes[si];
+function addCol(si){const s=secTap(si);s.c.push('nova coluna');s.l.forEach(l=>l.push(''));pintarTAP()}
+function addLinha(si){const s=secTap(si);s.l.push(s.c.map(()=>''));pintarTAP()}
+function addTotal(si){const s=secTap(si);s.l.push(s.c.map((_,i)=>i===0?'Total':''));
+  (s.tot=s.tot||[]).push(s.l.length-1);pintarTAP()}
+function delLinha(si){const s=secTap(si);if(s.l.length>1){s.l.pop();
+  s.tot=(s.tot||[]).filter(i=>i<s.l.length)}pintarTAP()}
+function delSecao(si){if(confirm('Excluir esta seção?')){D.campanhas[ativa].secoes.splice(si,1);pintarTAP()}}
+function novaSecao(){const t=prompt('Nome da seção:','NOVA SEÇÃO');if(!t)return;
+  D.campanhas[ativa].secoes.push({t:t.toUpperCase(),c:['Campo','Valor'],l:[['','']]});pintarTAP()}
+function irCampanha(i){ativa=i;const c=D.campanhas[i];
+  if(c&&c.mesId!==D.mesAtivo)D.mesAtivo=c.mesId;
+  document.querySelector('[data-pg="camp"]').click();pintarMes();pintarSemana();pintarTAP()}
+function duplicarTAP(){const c=JSON.parse(JSON.stringify(D.campanhas[ativa]));
+  c.id=D.prox.camp++;c.nome+=' (cópia)';D.campanhas.splice(ativa+1,0,c);ativa++;
+  pintarTAP();pintarMes();pintarSemana()}
+function editarPeriodo(){
+  const c=D.campanhas[ativa];if(!c)return;
+  const f=c.fontes||fontesPadrao(c.meta,c.investimento||0);
+  $('#modal-cx').innerHTML=`<h3>${esc(c.nome)}</h3>
+    <p class="sub">Mudar as datas regera o cronograma e as fases.</p>
+    <label><b>Nome</b><input id="e-nome" value="${esc(c.nome)}"></label>
+    <div class="dupla">
+      <label><b>Início</b><input type="date" id="e-ini" value="${c.inicio}"></label>
+      <label><b>Fim</b><input type="date" id="e-fim" value="${c.fim}"></label></div>
+    <label><b>Meta de faturamento da ação</b>
+      <input type="number" id="e-meta" value="${c.meta}" step="1000"></label>
+    <div class="fontes">
+      <div class="cabf"><span class="nm">De onde vem esse faturamento</span>
+        <span class="col">fatura</span><span class="col">investe</span><span class="rs"></span></div>
+      ${FONTES.map(({k,n})=>`<div class="linf"><span class="nm">${n}</span>
+        <input type="number" id="e-m-${k}" step="500" value="${f[k].meta}">
+        <input type="number" id="e-i-${k}" step="100" value="${f[k].inv}">
+        <span class="rs"></span></div>`).join('')}
+    </div>
+    <p class="sub">O que sobrar da meta fica com influencer, base, atendimento e orgânico.</p>
+    <label><b>Regerar seções automáticas</b>
+      <select id="e-reger"><option value="nao">Não — manter o que já preenchi</option>
+        <option value="sim">Sim — refazer fases, metas e cronograma</option></select></label>
+    <div class="bts"><button onclick="fecharModal()">Cancelar</button>
+      <button class="ok" onclick="salvarPeriodo()">Salvar</button></div>`;
+  $('#modal').classList.add('on');
+}
+function salvarPeriodo(){
+  const c=D.campanhas[ativa];
+  c.nome=$('#e-nome').value.trim()||c.nome;
+  c.inicio=$('#e-ini').value;c.fim=$('#e-fim').value;
+  c.meta=+$('#e-meta').value||0;
+  const f={};FONTES.forEach(({k})=>f[k]={meta:+$('#e-m-'+k).value||0,inv:+$('#e-i-'+k).value||0});
+  if(FONTES.reduce((t,{k})=>t+f[k].meta,0)>c.meta)
+    return aviso('Tráfego e API somados passam da meta da ação — não salvei.');
+  const mudou=JSON.stringify(f)!==JSON.stringify(c.fontes);
+  c.fontes=f;c.investimento=invTotal(f);
+  /* mexeu nas fontes: a divisão por canal do TAP precisa nascer de novo */
+  if(mudou)c.receita=null;
+  if($('#e-reger').value==='sim')c.secoes=gerarSecoes(c);
+  const n=M().nos.find(x=>x.campId===c.id);if(n)n.t=c.nome;
+  fecharModal();render();pintarMes();pintarSemana();pintarTAP();aviso('Campanha atualizada.');
+}
+function regerarCronograma(){
+  const c=D.campanhas[ativa];if(!c)return;
+  if(!confirm('Isso refaz a seção CANAIS · CRONOGRAMA com as datas atuais. O que estiver preenchido nela se perde. Continuar?'))return;
+  const i=c.secoes.findIndex(s=>/CANAIS/i.test(s.t));
+  const novo=gerarSecoes(c).find(s=>/CANAIS/i.test(s.t));
+  if(i>=0)c.secoes[i]=novo;else c.secoes.push(novo);
+  pintarTAP();pintarMes();aviso('Cronograma regerado.');
+}
+function excluirTAP(){
+  const c=D.campanhas[ativa];if(!c)return;
+  if(!confirm(`Excluir "${c.nome}"? O nó no mapa continua, mas sem vínculo.`))return;
+  M().nos.forEach(n=>{if(n.campId===c.id)delete n.campId});
+  D.campanhas.splice(ativa,1);ativa=Math.max(0,D.campanhas.indexOf(campsMes()[0]));
+  render();pintarMes();pintarSemana();pintarTAP();
+}
+
+/* ================= I/O ================= */
+function abrirTroca(txt,msg,ed){
+  $('#troca').classList.add('on');$('#troca-msg').textContent=msg;
+  const t=$('#troca-txt');t.readOnly=!ed;
+  t.scrollIntoView({behavior:'smooth',block:'center'});
+  if(!ed){t.value=txt;t.onblur=null;setTimeout(()=>{t.focus();t.select()},250)}
+  else{t.value='';t.placeholder='Cole o JSON e clique fora da caixa.';t.focus();
+    t.onblur=()=>{try{const n=JSON.parse(t.value);if(!n.campanhas||!n.meses)throw 0;
+      D=n;ativa=0;pilha=[];pilhaR=[];sel={t:'no',id:M().nos.find(x=>!x.pai)?.id||1};
+      tudo();fecharTroca();aviso('Importado.')}
+      catch(e){aviso('Não consegui ler esse JSON.')}}}
+}
+function fecharTroca(){$('#troca').classList.remove('on');$('#troca-txt').onblur=null}
+/* ================= EXPORTAR PDF =================
+   Monta o relatório do mês inteiro e manda imprimir: no diálogo de
+   impressão, "Salvar como PDF". Sai um documento em papel branco, na
+   ordem de leitura, e não uma captura da tela escura. */
+function montarRelatorio(){
+  const {m,cps,meta,soma,inv,resto,pct,ticket,pedidos}=contas();
+  const marca=marcaDo(m), hoje=new Date();
+  const tab=(cabs,linhas,cls='')=>linhas.length
+    ? `<table class="${cls}"><thead><tr>${cabs.map(c=>
+        `<th class="${/^R\$|%|n:/.test(c)?'n':''}">${esc(c.replace(/^n:/,''))}</th>`).join('')}</tr></thead>
+       <tbody>${linhas.map(l=>`<tr>${l.map((v,i)=>
+        `<td class="${/^n:/.test(cabs[i])?'n':''}">${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`
+    : '<p class="nada">Nada preenchido ainda.</p>';
+
+  let h=`<div class="capa">
+    <h1>${MESES[m.mes-1].replace(/^./,x=>x.toUpperCase())} de ${m.ano} · ${esc(marca)}</h1>
+    <p class="sub">Planejamento do mês${m.ref?' · '+esc(m.ref):''} ·
+      emitido em ${hoje.toLocaleDateString('pt-BR')}</p>
+    <div class="metas">
+      <span>Meta 1<b>${meta?brl(meta):'a definir'}</b></span>
+      <span>Meta 2<b>${brl(m.metas[1])}</b></span>
+      <span>Meta 3<b>${brl(m.metas[2])}</b></span>
+      ${ticket?`<span>Ticket médio<b>${brl(ticket)}</b></span>
+        <span>Pedidos<b>${pedidos.toLocaleString('pt-BR')}</b></span>`:''}
+    </div></div>`;
+
+  /* 1. a engenharia reversa */
+  h+='<h2>Engenharia reversa — da meta até a ação</h2>';
+  if(!meta)h+='<p class="nada">A meta do mês ainda não foi definida.</p>';
+  else{
+    const linhas=cps.map(c=>[esc(c.nome),TIPOS[c.tipo]?.nome||c.tipo,
+      c.meta?Math.round(100*c.meta/meta)+'%':'—',
+      c.meta?brl(c.meta):'contínuo',
+      ticket&&c.meta?pedidosDe(c.meta,ticket).toLocaleString('pt-BR'):'—']);
+    if(resto>0)linhas.push([`<span class="falta">Falta atribuir a alguma ação</span>`,'',
+      Math.round(100*resto/meta)+'%',`<span class="falta">${brl(resto)}</span>`,
+      ticket?pedidosDe(resto,ticket).toLocaleString('pt-BR'):'—']);
+    h+=tab(['Ação','Formato','n:%','n:R$ meta','n:Pedidos'],linhas);
+    h+=`<p class="pe">${pct}% da Meta 1 já está numa ação.
+      ${resto>0?brl(resto)+' ainda sem ação.':resto<0?'As ações passam da Meta 1 em '+brl(-resto)+'.'
+        :'Meta inteira dividida.'}</p>`;
+
+    /* 2. de onde vem o faturamento */
+    const fz=cps.map(c=>fontesValidas(c.meta||0,c.fontes||fontesPadrao(c.meta||0,c.investimento||0)));
+    const pf=FONTES.map(({k,n})=>({n,
+      meta:fz.reduce((t,f)=>t+(f[k]?.meta||0),0),
+      inv:fz.reduce((t,f)=>t+(f[k]?.inv||0),0)}));
+    const comprado=pf.reduce((t,x)=>t+x.meta,0);
+    h+='<h2>De onde vem o faturamento</h2>';
+    h+=tab(['Fonte','n:%','n:Fatura','n:Verba','n:ROAS'],
+      pf.map(x=>[x.n,soma?Math.round(100*x.meta/soma)+'%':'—',brl(x.meta),brl(x.inv),roas(x.meta,x.inv)])
+      .concat([['Não se compra — influencer, base, atendimento, orgânico',
+        soma?Math.round(100*(soma-comprado)/soma)+'%':'—',
+        brl(Math.max(0,soma-comprado)),'—','—']]));
+    h+=`<p class="pe">Verba total ${brl(inv)} · ROAS alvo do que já está atribuído ${roas(soma,inv)}.</p>`;
+  }
+
+  /* 3. calendário do mês */
+  const S=semanasDoMes();
+  h+='<h2>Calendário</h2>';
+  h+=`<table class="cal"><thead><tr>${DOW.map(d=>`<th>${d}</th>`).join('')}</tr></thead><tbody>`+
+    S.map(sm=>'<tr>'+[...Array(7)].map((_,i)=>{
+      const d=new Date(sm.a);d.setDate(sm.a.getDate()+i);
+      const fora=d.getMonth()!==m.mes-1;
+      const at=fora?[]:campsMes().filter(c=>dISO(c.inicio)<=d&&dISO(c.fim)>=d);
+      return `<td><span class="d ${fora?'fora':''}">${d.getDate()}</span>`+
+        at.map(c=>`<div>${esc(c.nome)}</div>`).join('')+'</td>';
+    }).join('')+'</tr>').join('')+'</tbody></table>';
+
+  /* 4. execução no ClickUp, quando a página trouxe os dados */
+  if(cuTarefas&&cuTarefas.length){
+    const gs=cuAgrupar(cuVisiveis()).filter(g=>!g.orfa);
+    if(gs.length){
+      h+='<h2>Execução no ClickUp</h2>';
+      h+=tab(['Ação','n:Feitas','n:Total','n:Atrasadas','Situação'],
+        gs.map(g=>[esc(g.nome),String(g.feitas),String(g.total),String(g.atrasadas),
+          g.pronta?'pronta para conferir':g.atrasadas?'atrasada':'em andamento']));
+      h+=`<p class="pe">${cuRetrato?'Retrato de ':'Lido em '}${
+        new Date(cuQuando).toLocaleString('pt-BR')}.</p>`;
+    }
+  }
+
+  /* 5. um TAP por campanha, cada um começando em página nova */
+  cps.forEach(c=>{
+    const f=fontesValidas(c.meta||0,c.fontes||fontesPadrao(c.meta||0,c.investimento||0));
+    h+=`<div class="tap"><h2>${esc(c.nome)}</h2>
+      <p class="sub">${TIPOS[c.tipo]?.nome||c.tipo}${c.tema?' · '+esc(c.tema):''} ·
+        ${dBR(dISO(c.inicio))} a ${dBR(dISO(c.fim))} ·
+        meta ${c.meta?brl(c.meta):'contínuo'}${meta&&c.meta?` (${Math.round(100*c.meta/meta)}% do mês)`:''} ·
+        verba ${brl(c.investimento||0)} · ROAS ${roas(c.meta||0,c.investimento||0)}</p>`;
+    h+=tab(['Fonte','n:Fatura','n:Verba','n:ROAS'],
+      FONTES.map(({k,n})=>[n,brl(f[k]?.meta||0),brl(f[k]?.inv||0),roas(f[k]?.meta||0,f[k]?.inv||0)])
+      .concat([['Não se compra',brl(restoOrganico(c.meta||0,f)),'—','—']]));
+    (c.secoes||[]).forEach(sec=>{
+      h+=`<h3>${esc(sec.t)}</h3>`;
+      h+=tab(sec.c.map(String),(sec.l||[]).map(l=>l.map(v=>esc(v==null?'':v))));
+    });
+    h+='</div>';
+  });
+  return h;
+}
+
+function exportarPDF(){
+  const alvo=$('#relatorio');
+  alvo.innerHTML=montarRelatorio();
+  const antes=document.title;
+  document.title=`Planejamento ${MESES[mesAtual().mes-1]} ${mesAtual().ano} - ${marcaDo(mesAtual())}`;
+  const limpa=()=>{document.title=antes};
+  try{
+    window.print();
+    setTimeout(limpa,1500);
+    aviso('No diálogo de impressão, escolha "Salvar como PDF".');
+  }catch(e){
+    limpa();
+    aviso('Seu navegador bloqueou a impressão daqui — use Ctrl+P (ou Cmd+P).');
+  }
+}
+
+function copiarTexto(){
+  const m=mesAtual(),L=[`BOTANIKA — ${MESES[m.mes-1]} ${m.ano}`,
+    m.metas.map((v,i)=>`Meta ${i+1} ${brl(v)}`).join(' · '),'','MAPA MENTAL — '+(M().nome||'')];
+  const anda=(id,k)=>filhos(id).forEach(n=>{
+    L.push('  '.repeat(k)+(n.feito?'[x] ':'· ')+n.t+(n.nota?'  ('+n.nota+')':''));anda(n.id,k+1)});
+  const r=M().nos.find(n=>!n.pai);if(r){L.push(r.t);anda(r.id,1)}
+  L.push('');
+  campsMes().forEach(c=>{
+    L.push('='.repeat(50),`${c.nome.toUpperCase()} — ${TIPOS[c.tipo]?.nome||''} — ${c.meta?brl(c.meta):'contínuo'}`,
+      `${dBR(dISO(c.inicio))} a ${dBR(dISO(c.fim))}`,'');
+    c.secoes.forEach(s=>{L.push(s.t,s.c.join(' | '),'-'.repeat(40));
+      s.l.forEach(l=>L.push(l.join(' | ')));L.push('')});
+  });
+  abrirTroca(L.join('\n'),'Está tudo selecionado — só dar Cmd+C.',false);
+}
+function exportarJSON(){abrirTroca(JSON.stringify(D,null,2),'JSON selecionado — Cmd+C para guardar.',false)}
+function importarJSON(){abrirTroca('','Cole o JSON e clique fora da caixa.',true)}
+function zerar(){
+  if(!confirm('Isso apaga tudo. Você exportou antes?'))return;
+  D={prox:{mes:1,camp:1,mapa:1},mesAtivo:0,temas:[],
+    meses:[],mapas:[],campanhas:[]};
+  garantirCiclo();
+  ativa=0;sel={t:'no',id:1};diaSel=null;pilha=[];pilhaR=[];
+  try{localStorage.removeItem(CHAVE)}catch(e){}
+  ultimoSalvo='';tudo();salvar();aviso('Zerado.')
+}
+function aviso(m){$('#msg').textContent=m;$('#msg').style.color='';
+  setTimeout(marcaSalvo,4000)}
+
+document.querySelectorAll('nav.paginas button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('nav.paginas button').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pagina').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');$('#pg-'+b.dataset.pg).classList.add('on');
+    if(b.dataset.pg==='mapa')setTimeout(()=>{alturaLarga();ajustar();posPaleta()},40);
+    if(b.dataset.pg==='gestao')cuLer();
+  };
+});
+
+function tudo(){
+  $('#q-nome').value=M().nome||'';
+  D.campanhas.forEach(c=>{if(!c.secoes.length)c.secoes=gerarSecoes(c)});
+  organizar();pintarMes();pintarSemana();
+  const cps=campsMes();ativa=cps.length?D.campanhas.indexOf(cps[0]):0;
+  pintarTAP();
+  /* trocou o mês, trocou a marca: a Gestão segue o seletor */
+  if(typeof cuPintar==='function'&&$('#g-corpo'))cuPintar();
+}
+/* ================= SALVAR ================= */
+/* Chave nova a cada ciclo: setembro começa do zero, e o que já foi
+   planejado antes continua guardado na chave antiga caso precise. */
+const CHAVE='planejamento-setembro-2026';
+let ultimoSalvo='';
+
+function salvar(){
+  try{
+    const txt=JSON.stringify(D);
+    if(txt===ultimoSalvo)return false;
+    localStorage.setItem(CHAVE,txt);
+    ultimoSalvo=txt;
+    marcaSalvo();
+    return true;
+  }catch(e){
+    // cota estourada ou navegador anônimo: avisa uma vez e segue sem salvar
+    if(!salvar.avisou){salvar.avisou=true;
+      $('#msg').textContent='não deu pra salvar neste navegador — exporte o JSON';
+      $('#msg').style.color='var(--amar)';}
+    return false;
+  }
+}
+function marcaSalvo(){
+  const m=$('#msg');if(!m)return;
+  const h=new Date();
+  m.style.color='';
+  m.textContent='salvo '+String(h.getHours()).padStart(2,'0')+':'+
+    String(h.getMinutes()).padStart(2,'0')+
+    (typeof estadoRodape==='function'?' · '+estadoRodape():'');
+}
+function carregar(){
+  let txt=null;
+  try{txt=localStorage.getItem(CHAVE)}catch(e){return false}
+  if(!txt)return false;
+  try{
+    const g=JSON.parse(txt);
+    if(!g||!Array.isArray(g.meses)||!g.meses.length)return false;
+    D=g;ultimoSalvo=txt;
+    return true;
+  }catch(e){return false}
+}
+/* Varre em vez de instrumentar cada mutação: são dezenas de pontos que mexem
+   em D e um esquecido viraria trabalho perdido sem ninguém perceber. */
+setInterval(salvar,1500);
+addEventListener('beforeunload',salvar);
+addEventListener('visibilitychange',()=>{if(document.hidden)salvar()});
+
+/* ================= BASE DE DADOS =================
+   O planejamento deixa de morar só no navegador: vai para uma tabela no
+   Supabase da Botanika, com histórico — cada gravação vira uma versão, e
+   nada se perde por sobrescrita.
+
+   A chave abaixo é a publicável (anon), feita para ficar em página aberta;
+   ela só alcança as duas tabelas do planejador, pelas políticas de acesso.
+   A chave de serviço nunca entra aqui.
+
+   Onde a página não puder sair para a internet — dentro do visualizador de
+   Artifacts o navegador bloqueia qualquer chamada externa — nada quebra:
+   a base fica marcada como indisponível e valem as camadas de baixo, o
+   arquivo compartilhado e o navegador. */
+const SB={
+  url:'https://sjkuysdmixfzeerxuudn.supabase.co',
+  chave:'sb_publishable_PmR8gIHBTlrnHnQTTn39mA_puv-TlGH',
+  tabela:'planejamento_tap'
+};
+let sbOk=null;          // null = ainda não sei, true/false = respondeu ou não
+let sbVersao=0, sbRemoto='', sbEnviando=false, sbUltimo=0, sbMudouEm=0, sbSujo=false;
+const SB_ESPERA=2500, SB_MIN_ENTRE=5000;
+
+/* Identifica a aba no histórico sem pedir nada a ninguém: só para dar
+   para saber que duas gravações vieram de pessoas diferentes. */
+function sbQuem(){
+  try{
+    let q=localStorage.getItem('tap-quem');
+    if(!q){q='aba-'+Math.random().toString(36).slice(2,7);localStorage.setItem('tap-quem',q)}
+    return q;
+  }catch(e){return null}
+}
+const sbCab=extra=>Object.assign({apikey:SB.chave,Authorization:'Bearer '+SB.chave,
+  'Content-Type':'application/json'},extra||{});
+
+/* Rede com prazo: sem isso uma conexão pendurada deixa a página esperando
+   para sempre por uma resposta que não vem. */
+async function sbFetch(u,o){
+  const ct=new AbortController(),t=setTimeout(()=>ct.abort(),8000);
+  try{return await fetch(u,Object.assign({signal:ct.signal},o||{}))}
+  finally{clearTimeout(t)}
+}
+
+async function sbBaixar(){
+  const r=await sbFetch(`${SB.url}/rest/v1/${SB.tabela}`+
+    `?chave=eq.${encodeURIComponent(CHAVE)}&select=estado,versao`,{headers:sbCab()});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const l=await r.json();
+  return l[0]||null;
+}
+async function sbGravar(){
+  const txt=JSON.stringify(D);
+  if(txt===sbRemoto)return false;
+  const r=await sbFetch(`${SB.url}/rest/v1/${SB.tabela}`,{method:'POST',
+    headers:sbCab({Prefer:'resolution=merge-duplicates,return=representation'}),
+    body:JSON.stringify([{chave:CHAVE,estado:D,atualizado_por:sbQuem()}])});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const l=await r.json();
+  if(l[0])sbVersao=l[0].versao;
+  sbRemoto=txt;sbUltimo=Date.now();
+  return true;
+}
+async function sbEnviar(){
+  if(sbEnviando||!sbOk)return;
+  if(Date.now()-sbUltimo<SB_MIN_ENTRE)return;
+  sbEnviando=true;
+  try{
+    if(await sbGravar()){sbSujo=false;marcaSalvo()}
+    else sbSujo=false;
+  }catch(e){
+    /* caiu a rede no meio: continua salvo no navegador e tenta de novo */
+    sbOk=false;marcaSalvo();
+  }
+  sbEnviando=false;
+}
+
+/* Puxa o que a equipe gravou. Só adota quando esta aba não tem mudança
+   pendente — senão o que a pessoa está digitando sumiria embaixo dela. */
+async function sbPuxar(){
+  if(!sbOk||sbSujo||sbEnviando)return;
+  try{
+    const linha=await sbBaixar();
+    if(!linha||linha.versao<=sbVersao)return;
+    sbVersao=linha.versao;sbRemoto=JSON.stringify(linha.estado);
+    D=linha.estado;garantirCiclo();
+    ultimoSalvo='';salvar();tudo();
+    aviso('Atualizado com o que a equipe gravou.');
+  }catch(e){sbOk=false;marcaSalvo()}
+}
+
+/* ================= COMPARTILHADO ENTRE A EQUIPE =================
+   O estado vive num arquivo de dados ao lado da página. Publicar só esse
+   arquivo mantém esta aba rodando (a página não recarrega) e faz as outras
+   pegarem a versão nova. localStorage continua embaixo como cópia local. */
+const ARQ='dados/estado-setembro-2026.json';
+let API=null;                 // namespace do artifact, ou null fora dele
+let modo='local';             // 'nuvem' | 'local' | 'leitura'
+let enviando=false, sujo=false, ultimoEnvio=0, remoto='';
+const ESPERA=4000, MIN_ENTRE=9000;
+
+async function baixarEstado(){
+  try{
+    const r=await fetch(ARQ+'?t='+Date.now(),{cache:'no-store'});
+    if(!r.ok)return null;
+    const g=await r.json();
+    return (g&&Array.isArray(g.meses)&&g.meses.length)?g:null;
+  }catch(e){return null}
+}
+
+function faixa(html,alerta){
+  const n=$('#nuvem');
+  if(!html){n.className='';n.innerHTML='';return}
+  n.className='on'+(alerta?' alerta':'');n.innerHTML=html;
+}
+
+function estadoRodape(){
+  if(sbOk)return 'na base da Botanika'+(sbSujo?' · gravando':'');
+  if(modo==='leitura')return 'somente leitura — suas mudanças ficam só nesta aba';
+  if(modo==='nuvem')return 'compartilhado com a equipe';
+  return 'salvo só neste navegador';
+}
+
+/* Publica o arquivo de dados. Só é chamado depois de ESPERA sem mudança,
+   e nunca mais de uma vez a cada MIN_ENTRE — cada publicação vira uma
+   versão, então não dá pra mandar a cada tecla. */
+async function enviar(){
+  if(!API||modo!=='nuvem'||enviando)return;
+  const agora=Date.now();
+  if(agora-ultimoEnvio<MIN_ENTRE){sujo=true;return}
+  const txt=JSON.stringify(D);
+  if(txt===remoto){sujo=false;return}
+  enviando=true;sujo=false;
+  try{
+    await API.publish({[ARQ]:{content:txt,contentType:'application/json'}});
+    remoto=txt;ultimoEnvio=Date.now();
+    marcaSalvo();
+  }catch(e){
+    const c=e?.code||'upstream_error';
+    if(c==='conflict'){
+      // outra pessoa publicou primeiro — quem decide o que fazer é você
+      faixa(`<b>Outra pessoa salvou.</b> A versão dela é mais recente que a sua.
+        <button class="forte" onclick="pegarDelesEBaixar()">Ver a versão dela</button>
+        <button onclick="mandarPorCima()">Mandar a minha por cima</button>`,true);
+    }else if(['not_writer','not_granted','not_declared','consent_required'].includes(c)){
+      modo='leitura';
+      faixa(`Você está vendo este planejamento em <b>somente leitura</b> —
+        o que mexer fica só nesta aba. Peça acesso de edição a quem compartilhou.`);
+      marcaSalvo();
+    }else if(c==='capability_disabled'){
+      modo='local';
+      faixa(`Salvando <b>só neste navegador</b>. Compartilhamento indisponível aqui
+        — costuma ser link público, que não aceita gravação.`);
+      marcaSalvo();
+    }else if(c==='too_large'){
+      modo='local';
+      faixa(`O planejamento ficou grande demais pra sincronizar.
+        Salvando só neste navegador — exporte o JSON e me chame.`,true);
+    }else if(c==='rate_limited'){
+      ultimoEnvio=Date.now()+15000;sujo=true;
+    }else{
+      sujo=true;   // transitório: tenta de novo no próximo ciclo
+    }
+  }finally{enviando=false}
+}
+function pegarDelesEBaixar(){location.reload()}
+async function mandarPorCima(){
+  faixa('');
+  try{
+    await API.publish({[ARQ]:{content:JSON.stringify(D),contentType:'application/json'}});
+    remoto=JSON.stringify(D);ultimoEnvio=Date.now();marcaSalvo();
+  }catch(e){faixa('Não deu pra sobrescrever. Exporte o JSON antes de recarregar.',true)}
+}
+
+/* laço único: cópia local sempre, nuvem quando parar de mexer */
+let mudouEm=0, ultimoTxt='';
+let sbPuxouEm=0;
+setInterval(()=>{
+  const txt=JSON.stringify(D);
+  if(txt!==ultimoTxt){ultimoTxt=txt;mudouEm=Date.now();sujo=true;
+    if(sbOk&&txt!==sbRemoto){sbSujo=true;sbMudouEm=Date.now()}}
+  if(sujo&&mudouEm&&Date.now()-mudouEm>=ESPERA)enviar();
+  if(sbSujo&&sbMudouEm&&Date.now()-sbMudouEm>=SB_ESPERA)sbEnviar();
+  /* e de tempos em tempos, o que a equipe gravou do outro lado */
+  if(sbOk&&!sbSujo&&Date.now()-sbPuxouEm>15000){sbPuxouEm=Date.now();sbPuxar()}
+},1500);
+
+/* ================= INÍCIO ================= */
+(async function(){
+  try{API=await window.claude?.use?.('artifact')||null}catch(e){API=null}
+  modo=API?'nuvem':'local';
+
+  const daEquipe=API?await baixarEstado():null;
+  if(daEquipe){D=daEquipe;remoto=JSON.stringify(D);ultimoSalvo=''}
+  else carregar();
+  /* Vale para os três caminhos (nuvem, cópia local, primeira visita):
+     o mês do ciclo existe sempre, vazio, e nada do que já foi
+     planejado antes é apagado. */
+  garantirCiclo();
+  sel={t:'no',id:M()?.nos.find(n=>!n.pai)?.id||1};
+  tudo();salvar();
+  ultimoTxt=JSON.stringify(D);
+  marcaSalvo();
+  /* A base entra depois, sem segurar a abertura: esperar a rede para
+     desenhar deixaria a página em branco em conexão ruim. Quando ela
+     responde, o que a equipe gravou passa a valer. */
+  sbConciliar();
+})();
+
+async function sbConciliar(){
+  let linha=null;
+  try{linha=await sbBaixar();sbOk=true}
+  catch(e){sbOk=false;marcaSalvo();return}
+  if(linha){
+    sbVersao=linha.versao;sbRemoto=JSON.stringify(linha.estado);
+    /* só adota se ninguém mexeu em nada ainda nesta aba */
+    if(!sbSujo&&sbRemoto!==JSON.stringify(D)){
+      D=linha.estado;garantirCiclo();ultimoSalvo='';salvar();tudo();
+    }
+  }else{
+    /* base vazia: sobe o que existe aqui, para ela nascer com o plano */
+    sbUltimo=0;await sbEnviar();
+  }
+  marcaSalvo();
+}
+
+/* ================= GESTÃO — execução no ClickUp =================
+   Lê as tarefas do ClickUp com a credencial de quem abre a página: nenhum
+   token mora aqui. Fora do claude.ai a capacidade não existe e a página
+   explica isso em vez de ficar vazia.
+
+   Constantes que valem revisar quando o time mudar: */
+const CU_SERVIDOR='ClickUp';
+const CU_LISTAS=[{id:'901328142624',marca:'Botanika'},{id:'901328142677',marca:'VermeFree'}];
+const CU_FEITO=['feito','concluido','concluído','complete','completed','closed','done'];
+const CU_MARCAS=/^(botanika|vermefree|verme free)$/i;
+const CU_PAG_MAX=12;               // teto de segurança na paginação
+
+/* Retrato do ClickUp, injetado no build a partir de dados/clickup.json.
+   É o que faz a Gestão funcionar num link aberto: uma página que declara
+   conector não pode ser compartilhada com ninguém, então esta leva os
+   dados dentro. Quem tem o ClickUp conectado lê ao vivo e ignora o
+   retrato; todo o resto vê a foto, com a data dela carimbada. */
+const CU_RETRATO={
+"em": 1787946309000,
+"listas": {"901328142624":"Botanika","901328142677":"VermeFree"},
+"tarefas": [
+["86ak7yr8f","DIA D KIDS — Gravar depoimento em vídeo com a Poly · SÁB 29/08 até 18h | VERMEFREE","a fazer",["Ítalo Neves"],"1788037200000","901328142677"],
+["86ak7umut","CONVERSÃO E TICKET — Implementar carrinho contínuo · SEX 19/09 até 18h | VERMEFREE","a fazer",["Pedro Lage"],"1789851600000","901328142677"],
+["86ak7umaf","CONVERSÃO E TICKET — Implementar as novas imagens no site e nas LPs · SEX 05/09 até 18h | VERMEFREE","a fazer",["Pedro Lage"],"1788642000000","901328142677"],
+["86ak7um0n","CONVERSÃO E TICKET — Implementar pop-up e seleção invertida · SEX 05/09 até 18h | VERMEFREE","a fazer",["Pedro Lage"],"1788642000000","901328142677"],
+["86ak7ukkg","CONVERSÃO E TICKET — Criar as imagens de benefício e quebra de objeções · QUA 03/09 até 18h | VERMEFREE","a fazer",["Ítalo Neves"],"1788469200000","901328142677"],
+["86ak7uka2","CONVERSÃO E TICKET — 01/09 a 19/09 | VERMEFREE","a fazer",["Pedro Lage"],"1789246800000","901328142677"],
+["86ak7u1z7","DIA D KIDS — Reverter site, pausar campanha e registrar resultado · TER 01/09 até 09h | VERMEFREE","a fazer",["Pedro Lage"],"1788264000000","901328142677"],
+["86ak7u1r7","DIA D KIDS — Acompanhar a campanha durante o dia · SEG 31/08 | VERMEFREE","a fazer",["Pedro Lage"],"1788228000000","901328142677"],
+["86ak7u1fr","DIA D KIDS — Conferir que tudo entrou no ar · SEG 31/08 até 08h | VERMEFREE","a fazer",["Pedro Lage"],"1788174000000","901328142677"],
+["86ak7u18r","DIA D KIDS — Publicar no Instagram · SÁB 29 a SEG 31/08 | VERMEFREE","a fazer",["Ítalo Neves"],"1788217200000","901328142677"],
+["86ak7u11w","DIA D KIDS — Subir criativos e preparar o tráfego · QUI 27/08 até 18h | VERMEFREE","a fazer",["Pedro Lage"],"1787864400000","901328142677"],
+["86ak7u0tj","DIA D KIDS — Preparar todas as alterações do site · QUI 27/08 até 18h | VERMEFREE","a fazer",["Pedro Lage"],"1787864400000","901328142677"],
+["86ak7u0ex","DIA D KIDS — Programar todos os disparos · QUI 27/08 até 18h | VERMEFREE","a fazer",["Sarah | Gestora de Automações"],"1787864400000","901328142677"],
+["86ak7u03z","DIA D KIDS — Criar todas as artes · QUI 27/08 até 18h | VERMEFREE","a fazer",["Ítalo Neves"],"1787864400000","901328142677"],
+["86ak7tzpj","DIA D KIDS — Criar toda a copy · QUI 27/08 até 18h | VERMEFREE","a fazer",["Pedro Lage"],"1787864400000","901328142677"],
+["86ak7tz6a","DIA D KIDS — 31/08 | VERMEFREE","a fazer",["Pedro Lage"],"1788264000000","901328142677"],
+["86ak58xg5","RECOMPRA NOVA SAÚDE — Criar 3 artes para o perfil da marca · TER 25/08 até 14h | VERMEFREE","a fazer",["Ítalo Neves"],"1787677200000","901328142677"],
+["86ak58x9m","RECOMPRA NOVA SAÚDE — Programar 3 posts no perfil da marca · deixar pronto TER 25/08 | VERMEFREE","fazendo",["Ítalo Neves"],"1787950800000","901328142677"],
+["86ak58x19","RECOMPRA NOVA SAÚDE — Instagram da VermeFree","feito",["Ítalo Neves"],"1787950800000","901328142677"],
+["86ak58wpk","Criar 2 artes para o perfil do Doutor — entregar TER 25/08 até 14h | Recompra Nova Saúde","feito",["Ítalo Neves"],"1787677200000","901328142677"],
+["86ak58w9z","RECOMPRA NOVA SAÚDE — Programar 2 posts no perfil do Doutor · deixar pronto TER 25/08 | VERMEFREE","a fazer",["Ítalo Neves"],"1787691600000","901328142677"],
+["86ak58vzz","RECOMPRA NOVA SAÚDE — Instagram do Doutor","feito",["Ítalo Neves"],"1787691600000","901328142677"],
+["86ak58vtf","Criar copy dos 3 e-mails — entregar TER 25/08 até 14h | Recompra Nova Saúde","feito",["Pedro Lage"],"1787677200000","901328142677"],
+["86ak58vk3","Programar 3 e-mails para QUA 26, QUI 27 e SEX 28/08 às 15h — deixar pronto TER 25/08 | Recompra Nova Saúde","feito",["Sarah | Gestora de Automações"],"1787691600000","901328142677"],
+["86ak58uwr","RECOMPRA NOVA SAÚDE — E-mail Marketing | Assinantes","feito",["Sarah | Gestora de Automações"],"1787691600000","901328142677"],
+["86ak58tev","Criar copy dos 3 disparos de API — entregar TER 25/08 até 14h | Recompra Nova Saúde","feito",["Pedro Lage"],"1787677200000","901328142677"],
+["86ak58t9f","Programar 3 disparos de API para QUA 26, QUI 27 e SEX 28/08 às 12h — deixar pronto TER 25/08 | Recompra Nova Saúde","feito",["Sarah | Gestora de Automações"],"1787691600000","901328142677"],
+["86ak58t0e","RECOMPRA NOVA SAÚDE — WhatsApp API | Assinantes","feito",["Sarah | Gestora de Automações"],"1787691600000","901328142677"],
+["86ak58rq3","Configurar frete grátis sem valor mínimo — TER 25/08 até 10h | Recompra Nova Saúde","feito",["Pedro Lage"],"1787662800000","901328142677"],
+["86ak58rcp","Criar e configurar cupom de 15% na Shopify — TER 25/08 até 10h | Recompra Nova Saúde","feito",["Pedro Lage"],"1787662800000","901328142677"],
+["86ak58qzj","RECOMPRA NOVA SAÚDE — Cupom e frete | VERMEFREE","a fazer",["Pedro Lage"],"1787662800000","901328142677"],
+["86ak3ywn3","[VermeFree / CRM] Criar copy de Automação de Abandono de Checkout para WhatsApp","feito",["Pedro Lage"],null,"901328142677"],
+["86ak3yv0h","CONFIGURAR ENVIO DE CAMPANHA DE DEPOIMENTOS E UGC | BOTANIKA + VERMEFREE","a fazer",["Sarah | Gestora de Automações"],null,"901328142677"],
+["86ak3yqtr","[VermeFree / CRM] Criar copy/página para captura de aniversário e dados do cliente","feito",["Pedro Lage"],null,"901328142677"],
+["86ak3ynzq","[VermeFree] Criar copy de Recompra — Ciclo da Lua","feito",["Pedro Lage"],"1787382000000","901328142677"],
+["86ak3x2rd","IMPLEMENTAR AUTOMAÇÃO DE ABANDONO DE CHECKOUT — WhatsApp | VERMEFREE","a fazer",["Sarah | Gestora de Automações"],null,"901328142677"],
+["86ak3x2j9","[VermeFree] Criar Destaque de Compra pelo WhatsApp no Instagram","feito",["Ítalo Neves"],null,"901328142677"],
+["86ak3x2dj","[VermeFree + Botanika] Estruturar Copy para mensagem e Página de Campanha de Depoimentos e UGC com Clientes","feito",["Pedro Lage"],null,"901328142677"],
+["86ak3x28x","[VermeFree] Transformar Live com Grazi em Conteúdos e Criativos","feito",["Ítalo Neves"],null,"901328142677"],
+["86ak3x1a4","[VermeFree] Direcionar Linha Editorial para Protocolo Kids e Prescritores","feito",["Ítalo Neves"],null,"901328142677"],
+["86ak3x12a","[VermeFree] Estruturar Quadros e Atrações Recorrentes para os Stories","feito",["Ítalo Neves"],null,"901328142677"],
+["86ak3x0t9","IMPLEMENTAR IA PARA TRANSCRIÇÃO DAS REUNIÕES — daily e KPI | VERMEFREE","a fazer",["Gestão Alliance"],null,"901328142677"],
+["86ak3x0k8","LEVANTAR STATUS E ENTREGAS DAS UGCs | VERMEFREE","a fazer",["polyana costa ribeiro"],"1787295600000","901328142677"],
+["86ak2fjvx","IMPLEMENTAR CAPTURA DE ANIVERSÁRIO E DADOS DO CLIENTE | VERMEFREE","a fazer",["Sarah | Gestora de Automações"],"1787295600000","901328142677"],
+["86ak2fj56","[VermeFree + Botanika] Validar e Implementar Checkout Próprio com Claude","feito",["Pedro Lage"],"1787295600000","901328142677"],
+["86ak2fhmm","CRIAR LANDING PAGES INDIVIDUAIS POR PRODUTO | VERMEFREE","a fazer",["Pedro Lage"],"1787727600000","901328142677"],
+["86ak2ffuq","[VermeFree] Automatizar Régua Mensal de Recompra — Ciclo da Lua","feito",["Sarah | Gestora de Automações"],"1787468400000","901328142677"],
+["86ak2ffdp","IMPLEMENTAR UPSELL DO ÓLEO DE ALHO | VERMEFREE","a fazer",["Pedro Lage"],"1787122800000","901328142677"],
+["86ak2fevf","IMPLEMENTAR ORDER BUMP DO PROTOCOLO | VERMEFREE","a fazer",["Pedro Lage"],"1787122800000","901328142677"],
+["86ak2f0x6","ESTRUTURAR PROGRAMA DE UGC COM BIANCA | BOTANIKA + VERMEFREE","a fazer",["Vanessa Ferreira"],"1787295600000","901328142677"],
+["86ak0nr64","CLINT - Configurar e organizar Clint","feito",["Sarah | Gestora de Automações"],"1787295600000","901328142677"],
+["86ak0nqap","Criar e Subir 5 ads em vídeo","feito",["Pedro Lage"],null,"901328142677"],
+["86ak0nqan","Criar e Subir 5 ads em imagem","feito",["Pedro Lage"],null,"901328142677"],
+["86ak0nqa9","VERME-FREE | LUA NOVA | Criativos de tráfego","feito",["Pedro Lage"],null,"901328142677"],
+["86ak0nq91","Responder os e-mails antigos","feito",["polyana costa ribeiro"],"1786690800000","901328142677"],
+["86ak0nq8x","AÇÕES DE RECOMPRA — Identificar etapa com maior perda de clientes | VERMEFREE","a fazer",["Pedro Lage"],null,"901328142677"],
+["86ak0nq8q","AÇÕES DE RECOMPRA — Criar mensagem de direcionamento para o WhatsApp | VERMEFREE","a fazer",["Pedro Lage"],"1786690800000","901328142677"],
+["86ak0nq8k","AÇÕES DE RECOMPRA — Acompanhar faturamento por SKU | VERMEFREE","a fazer",["Pedro Lage"],null,"901328142677"],
+["86ak0nq8j","AÇÕES DE RECOMPRA — Acompanhar conversão de cada toque do funil | VERMEFREE","a fazer",["Pedro Lage"],null,"901328142677"],
+["86ak0nq8h","AÇÕES DE RECOMPRA — Configurar resposta automática no e-mail | VERMEFREE","a fazer",["Sarah | Gestora de Automações"],"1786690800000","901328142677"],
+["86ak0nq8d","AÇÕES DE RECOMPRA — Criar cupom da recompra perpétua | VERMEFREE","a fazer",["Pedro Lage"],"1786690800000","901328142677"],
+["86ak0nq8c","AÇÕES DE RECOMPRA — Criar copies do funil perpétuo | VERMEFREE","a fazer",["Pedro Lage"],"1786690800000","901328142677"],
+["86ak0nq88","SUPORTE | Automação do e-mail de atendimento","feito",["Sarah | Gestora de Automações"],"1786690800000","901328142677"],
+["86ak0nq87","AÇÕES DE RECOMPRA — Monitorar recompra sem cupom | VERMEFREE","a fazer",["Pedro Lage"],null,"901328142677"],
+["86ak0nq86","AÇÕES DE RECOMPRA — Monitorar recompra com cupons | VERMEFREE","a fazer",["Pedro Lage"],null,"901328142677"],
+["86ak0nq83","AÇÕES DE RECOMPRA — Programar automação no WhatsApp e e-mail | VERMEFREE","a fazer",["Sarah | Gestora de Automações"],"1786690800000","901328142677"],
+["86ak0nq80","Monitorar faturamento total de recompra | Ações de Recompra","feito",["Pedro Lage"],"1786690800000","901328142677"],
+["86ak0nq7y","AÇÕES DE RECOMPRA — Automação perpétua pós-compra | VERMEFREE","a fazer",["Sarah | Gestora de Automações"],"1786690800000","901328142677"],
+["86ak0nq7x","AÇÕES DE RECOMPRA — Configurar a automação | VERMEFREE","a fazer",["Sarah | Gestora de Automações"],"1786690800000","901328142677"],
+["86ak0nq7v","AÇÕES DE RECOMPRA — Criar as mensagens do funil | VERMEFREE","a fazer",["Pedro Lage"],"1786690800000","901328142677"],
+["86ak0nq7u","AÇÕES DE RECOMPRA — Criar e configurar o cupom | VERMEFREE","a fazer",["Pedro Lage"],"1786690800000","901328142677"],
+["86ak0nq7t","AÇÕES DE RECOMPRA — Acompanhamento | VERMEFREE","a fazer",["Pedro Lage"],"1786690800000","901328142677"],
+["86ak0nq7p","AÇÕES DE RECOMPRA — Cupons | VERMEFREE","a fazer",["Pedro Lage"],"1786690800000","901328142677"],
+["86ak0nq7n","AÇÕES DE RECOMPRA — WhatsApp API | VERMEFREE","a fazer",["Sarah | Gestora de Automações"],"1786690800000","901328142677"]
+]};
+
+/* linhas enxutas → o formato que o resto da página já entende */
+function cuDoRetrato(){
+  if(!CU_RETRATO||!CU_RETRATO.tarefas)return null;
+  return CU_RETRATO.tarefas.map(([id,name,status,quem,due,lista])=>({
+    id,name,status,url:'https://app.clickup.com/t/'+id,
+    assignees:(quem||[]).map(username=>({username})),
+    due_date:due,list:{id:lista}}));
+}
+
+let MCP=null, cuTarefas=null, cuQuando=0, cuErro=null, cuLendo=false, cuAba='acoes';
+let cuRetrato=false;   /* está mostrando a foto, não a leitura ao vivo */
+/* A Gestão segue o seletor de mês como todas as outras páginas: mostra a
+   marca do mês aberto. O botão do topo abre as duas quando for preciso. */
+let cuSoMarca=true;
+
+const cuNorm=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+const cuFeita=t=>CU_FEITO.includes(cuNorm(t.status));
+
+/* A ação sai do próprio nome da tarefa, que a equipe já escreve num padrão:
+
+     DIA D KIDS — E-mail Marketing | Base geral        ← mãe: ação em caixa alta
+     Criar copy do e-mail — QUA 26/08 | Dia D Kids     ← filha: ação depois do |
+
+   Caixa alta antes do travessão identifica a mãe. Nas filhas a ação vem no
+   fim. Quando o fim é só a marca, a tarefa não diz a que ação pertence — vai
+   para "sem ação identificada" em vez de virar uma ação chamada BOTANIKA. */
+function cuAcaoDe(nome){
+  const s=String(nome||'').replace(/\s+/g,' ').trim();
+  if(!s)return '';
+  const trav=s.indexOf('—');
+  const cabeca=(trav>0?s.slice(0,trav):s.split('|')[0]).trim();
+  const letras=cabeca.replace(/[^A-Za-zÀ-ÿ]/g,'');
+  if(letras.length>=4&&letras===letras.toUpperCase())return cabeca;
+  const barra=s.lastIndexOf('|');
+  if(barra>0){
+    const fim=s.slice(barra+1).trim();
+    if(fim&&!CU_MARCAS.test(fim))return fim;
+  }
+  return '';
+}
+
+/* "Dia D Kids" e "DIA D KIDS" são a mesma ação. */
+const cuChave=n=>cuNorm(n).replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ');
+
+/* De que marca é a tarefa. Quem manda é o nome, não a lista: hoje as duas
+   marcas convivem na mesma lista do ClickUp, e a equipe escreve a marca no
+   fim ("| VERMEFREE", "| BOTANIKA + VERMEFREE") ou no começo
+   ("[VermeFree / CRM]"). Uma tarefa pode ser das duas. Nome sem marca cai
+   pra lista de origem; sem nenhum dos dois, ela aparece nas duas, porque
+   sumir calado seria pior. */
+function cuMarcasDe(t){
+  const s=cuNorm(t?.name),r=[];
+  if(/verme\s*-?\s*free/.test(s))r.push('VermeFree');
+  if(/botanika/.test(s))r.push('Botanika');
+  if(r.length)return r;
+  const daLista=CU_LISTAS.find(l=>l.id===String(t?.list?.id||''));
+  return daLista?[daLista.marca]:[];
+}
+function cuVisiveis(){
+  const ts=cuTarefas||[];
+  if(!cuSoMarca)return ts;
+  const alvo=cuNorm(marcaDo(mesAtual()));
+  return ts.filter(t=>{const m=cuMarcasDe(t);return !m.length||m.some(x=>cuNorm(x)===alvo)});
+}
+
+/* O filtro escondeu tudo. Uma página em branco parece defeito; então ela
+   diz o que aconteceu e dá a saída num clique. */
+function cuNadaDaMarca(){
+  const marca=esc(marcaDo(mesAtual())),n=(cuTarefas||[]).length;
+  return `<div class="g-aviso"><b>Nenhuma tarefa da ${marca} no ClickUp.</b>
+    As ${n} tarefas de Gestão Operacional ou citam outra marca no nome, ou
+    estão na lista da outra marca. Enquanto a lista da ${marca} não for
+    usada, veja as duas juntas.
+    <button class="g-tap" onclick="cuTrocarMarca()">ver as duas marcas</button></div>`;
+}
+function cuTrocarMarca(){cuSoMarca=!cuSoMarca;cuPintar();pintarMes();pintarSemana()}
+
+/* ---- ação do ClickUp ↔ campanha do TAP ----
+   Os dois lados já usam o mesmo nome; casar por nome normalizado é o que
+   liga a execução ao planejamento sem pedir nada novo pra equipe. */
+let cuLiga=new Map();
+function cuLigar(){
+  cuLiga=new Map();
+  campsMes().forEach(c=>{const k=cuChave(c.nome);if(k)cuLiga.set(k,c)});
+}
+function cuCampanhaDe(nome){
+  const k=cuChave(nome);
+  if(!k)return null;
+  if(cuLiga.has(k))return cuLiga.get(k);
+  /* "Dia D Kids" casa com "Dia D Kids — Volta às aulas", mas só a partir de
+     5 letras: chave curta demais casaria com qualquer coisa. */
+  if(k.length<5)return null;
+  for(const [ck,c] of cuLiga)if(ck.length>=5&&(ck.includes(k)||k.includes(ck)))return c;
+  return null;
+}
+
+/* Quanto da campanha do TAP já foi executado. Refeito só quando muda o mês,
+   a leitura ou o filtro — as faixas do Mês e da Semana chamam por linha. */
+let cuExecMemo=null,cuExecSel='';
+function cuExecIndice(){
+  const sel=D.mesAtivo+'|'+cuQuando+'|'+(cuSoMarca?1:0);
+  if(cuExecMemo&&cuExecSel===sel)return cuExecMemo;
+  cuExecMemo=new Map();cuExecSel=sel;cuLigar();
+  if(cuTarefas)for(const g of cuAgrupar(cuVisiveis())){
+    if(g.orfa)continue;
+    const c=cuCampanhaDe(g.nome);if(!c)continue;
+    const a=cuExecMemo.get(c)||{total:0,feitas:0,atrasadas:0};
+    cuExecMemo.set(c,{total:a.total+g.total,feitas:a.feitas+g.feitas,
+      atrasadas:a.atrasadas+g.atrasadas});
+  }
+  return cuExecMemo;
+}
+/* Selo de execução nas faixas de campanha do Mês e da Semana. */
+function cuSeloCamp(c){
+  if(!cuTarefas)return '';
+  const e=cuExecIndice().get(c);
+  if(!e)return '<span class="exec sem">sem tarefas no ClickUp</span>';
+  const cls=e.atrasadas?'atras':(e.feitas===e.total?'ok':'');
+  return `<span class="exec ${cls}">${e.feitas}/${e.total} feitas`+
+    (e.atrasadas?` · ${e.atrasadas} atrasada${e.atrasadas>1?'s':''}`:'')+'</span>';
+}
+
+function cuAgrupar(tarefas){
+  const por=new Map();
+  for(const t of tarefas){
+    const nome=cuAcaoDe(t.name);
+    const k=nome?cuChave(nome):'__sem__';
+    if(!por.has(k))por.set(k,{nome:nome||'Sem ação identificada',orfa:!nome,tarefas:[]});
+    /* o rótulo mais legível ganha: "Dia D Kids" em vez de "DIA D KIDS" */
+    const g=por.get(k);
+    if(nome&&nome!==nome.toUpperCase()&&g.nome===g.nome.toUpperCase())g.nome=nome;
+    g.tarefas.push(t);
+  }
+  const agora=Date.now();
+  return [...por.values()].map(g=>{
+    const feitas=g.tarefas.filter(cuFeita).length;
+    const atrasadas=g.tarefas.filter(t=>!cuFeita(t)&&t.due_date&&+t.due_date<agora).length;
+    return {...g,total:g.tarefas.length,feitas,atrasadas,
+      pronta:g.tarefas.length>0&&feitas===g.tarefas.length};
+  }).sort((a,b)=>(a.orfa-b.orfa)||(b.atrasadas-a.atrasadas)||(a.feitas/a.total-b.feitas/b.total));
+}
+
+/* ---- leitura ---- */
+async function cuLer({forcar=false}={}){
+  if(cuLendo)return;
+  if(!MCP){
+    const r=cuDoRetrato();
+    if(r){cuTarefas=r;cuQuando=CU_RETRATO.em||0;cuRetrato=true}
+    cuPintar();return;
+  }
+  if(!forcar&&cuTarefas&&Date.now()-cuQuando<60000){cuPintar();return}
+  cuLendo=true;cuErro=null;cuPintar();
+  try{
+    const todas=[];let pagina=0,maisTem=true,carimbo=0;
+    while(maisTem&&pagina<CU_PAG_MAX){
+      const r=await MCP.callTool(CU_SERVIDOR,'clickup_filter_tasks',{
+        list_ids:CU_LISTAS.map(l=>l.id),include_closed:true,subtasks:true,page:pagina});
+      const d=r?.payload||{};
+      (d.tasks||[]).forEach(t=>todas.push(t));
+      if(r?.cache?.storedAt)carimbo=Math.max(carimbo,r.cache.storedAt);
+      maisTem=d.has_more===true;pagina=(d.next_page??pagina+1);
+    }
+    cuTarefas=todas;cuQuando=carimbo||Date.now();cuRetrato=false;
+  }catch(e){
+    cuErro=e||{code:'upstream_error'};
+    /* só server_unavailable e rate_limited pedem nova tentativa, e uma só */
+    if(cuErro.retryable===true&&!cuLer._retentou){
+      cuLer._retentou=true;
+      const espera=Math.min(cuErro.retryAfterMs||1500,60000)+Math.random()*400;
+      setTimeout(()=>{cuLendo=false;cuLer({forcar:true})},espera);
+      cuPintar();return;
+    }
+  }
+  cuLer._retentou=false;cuLendo=false;cuPintar();
+  /* as faixas de campanha do Mês e da Semana passam a mostrar a execução */
+  try{if($('#lista-camp-mes'))pintarMes();if($('#camp-semana'))pintarSemana()}catch(e){}
+}
+
+/* Cada código tem uma saída diferente. Um aviso genérico esconderia
+   justamente a ação que destrava a página. */
+function cuMsgErro(e){
+  const c=e?.code||'upstream_error';
+  if(c==='needs_reauth')return ['Sua conexão com o ClickUp expirou.',
+    'Reconecte em claude.ai → Configurações → Conectores.'];
+  if(c==='server_not_connected')return ['O ClickUp não está conectado nesta conta.',
+    'Adicione em claude.ai → Configurações → Conectores.'];
+  if(c==='selection_required')return ['Você tem mais de um ClickUp conectado.',
+    'Escolha qual usar quando o aviso aparecer, e atualize.'];
+  if(c==='blocked_by_policy'||c==='approval_required')
+    return ['A política da organização bloqueia esta leitura do ClickUp.',
+      'Fale com quem administra o espaço.'];
+  if(c==='not_in_manifest')return ['Esta página não tem permissão para essa leitura.',
+    'Foi publicada sem o ClickUp no manifesto.'];
+  if(c==='server_unavailable')return ['O ClickUp não respondeu agora.','Tente atualizar em instantes.'];
+  if(c==='tool_error')return ['O ClickUp recusou a consulta.',e?.message||''];
+  return ['Não consegui ler o ClickUp.',e?.message||''];
+}
+
+/* ---- desenho ---- */
+const CU_DIAS=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+const cuDia=ms=>{const d=new Date(+ms);return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})};
+const cuISO=ms=>{const d=new Date(+ms);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+
+function cuLinhaTarefa(t){
+  const feita=cuFeita(t);
+  const atras=!feita&&t.due_date&&+t.due_date<Date.now();
+  const quem=(t.assignees||[]).map(a=>a.username).join(', ');
+  return `<div class="g-tar${feita?' feita':''}">
+    <a href="${esc(t.url)}" target="_blank" rel="noopener">${esc(t.name)}</a>
+    ${quem?`<span class="g-quem">${esc(quem.split(' ')[0])}</span>`:''}
+    ${t.due_date?`<span class="g-prazo${atras?' vencido':''}">${cuDia(t.due_date)}</span>`:''}
+  </div>`;
+}
+
+function cuPintarAcoes(){
+  cuLigar();
+  const gs=cuAgrupar(cuVisiveis());
+  if(!gs.length)return '<div class="g-vazio">Nenhuma tarefa '+
+    (cuSoMarca?'da '+esc(marcaDo(mesAtual()))+' ':'')+
+    'nas listas de Gestão Operacional.</div>';
+  return gs.map(g=>{
+    const pct=g.total?Math.round(100*g.feitas/g.total):0;
+    const selo=g.pronta?'<span class="g-selo ok">pronta para conferir</span>'
+      :g.atrasadas?`<span class="g-selo atras">${g.atrasadas} atrasada${g.atrasadas>1?'s':''}</span>`
+      :'<span class="g-selo anda">em andamento</span>';
+    const faltam=g.tarefas.filter(t=>!cuFeita(t))
+      .sort((a,b)=>(+a.due_date||9e15)-(+b.due_date||9e15));
+    const c=g.orfa?null:cuCampanhaDe(g.nome);
+    return `<div class="g-acao">
+      <div class="g-cab"><h3>${esc(g.nome)}</h3>
+        <span class="g-frac">${g.feitas} de ${g.total} feitas</span>${g.orfa?'':selo}
+        ${c?`<button class="g-tap" onclick="irCampanha(${D.campanhas.indexOf(c)})">abrir TAP</button>`:''}</div>
+      <div class="g-barra"><i style="width:${pct}%"></i></div>
+      ${faltam.length?`<div class="g-lista">${faltam.map(cuLinhaTarefa).join('')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function cuPintarSemana(){
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const seg=new Date(hoje);seg.setDate(hoje.getDate()-((hoje.getDay()+6)%7));
+  const dias=[...Array(7)].map((_,i)=>{const d=new Date(seg);d.setDate(seg.getDate()+i);return d});
+  const hojeISO=cuISO(hoje.getTime());
+  const porDia=new Map();
+  for(const t of cuVisiveis()){
+    if(!t.due_date)continue;
+    const k=cuISO(t.due_date);
+    if(!porDia.has(k))porDia.set(k,[]);
+    porDia.get(k).push(t);
+  }
+  const blocos=dias.map(d=>{
+    const k=cuISO(d.getTime());const ts=(porDia.get(k)||[])
+      .sort((a,b)=>cuFeita(a)-cuFeita(b));
+    if(!ts.length)return '';
+    return `<div class="g-dia${k===hojeISO?' hoje':''}">
+      <h4>${CU_DIAS[d.getDay()]} ${d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}
+        · ${ts.filter(cuFeita).length} de ${ts.length} feitas</h4>
+      ${ts.map(t=>{const a=cuAcaoDe(t.name);
+        return cuLinhaTarefa(t).replace('</div>',
+          (a?`<span class="g-ondeta">${esc(a)}</span>`:'')+'</div>')}).join('')}
+    </div>`;
+  }).filter(Boolean).join('');
+  return blocos||'<div class="g-vazio">Nada com prazo nesta semana.</div>';
+}
+
+function cuPintarAtrasado(){
+  const agora=Date.now();
+  const ts=cuVisiveis().filter(t=>!cuFeita(t)&&t.due_date&&+t.due_date<agora)
+    .sort((a,b)=>+a.due_date-+b.due_date);
+  if(!ts.length)return '<div class="g-vazio">Nada atrasado. 🎉</div>';
+  return `<div class="g-acao"><div class="g-cab"><h3>Prazo vencido e ainda não feito</h3>
+    <span class="g-frac">${ts.length} tarefa${ts.length>1?'s':''}</span></div>
+    <div class="g-lista">${ts.map(t=>{const a=cuAcaoDe(t.name);
+      return cuLinhaTarefa(t).replace('</div>',
+        (a?`<span class="g-ondeta">${esc(a)}</span>`:'')+'</div>')}).join('')}</div></div>`;
+}
+
+/* Quem está segurando o quê. Um gestor de operações precisa da carga por
+   pessoa, não só por ação — é essa a pergunta na reunião de segunda. */
+function cuPintarPessoa(){
+  const por=new Map(),agora=Date.now();
+  for(const t of cuVisiveis()){
+    const quem=(t.assignees||[]).map(a=>a.username).filter(Boolean);
+    for(const q of (quem.length?quem:['Sem responsável'])){
+      if(!por.has(q))por.set(q,[]);
+      por.get(q).push(t);
+    }
+  }
+  if(!por.size)return '<div class="g-vazio">Nenhuma tarefa para distribuir.</div>';
+  return [...por.entries()].map(([quem,ts])=>{
+    const feitas=ts.filter(cuFeita).length;
+    const atrasadas=ts.filter(t=>!cuFeita(t)&&t.due_date&&+t.due_date<agora).length;
+    const faltam=ts.filter(t=>!cuFeita(t))
+      .sort((a,b)=>(+a.due_date||9e15)-(+b.due_date||9e15));
+    return {quem,ts,feitas,atrasadas,faltam};
+  }).sort((a,b)=>(b.atrasadas-a.atrasadas)||(b.faltam.length-a.faltam.length))
+  .map(g=>{
+    const pct=Math.round(100*g.feitas/g.ts.length);
+    return `<div class="g-acao">
+      <div class="g-cab"><h3>${esc(g.quem)}</h3>
+        <span class="g-frac">${g.feitas} de ${g.ts.length} feitas</span>
+        ${g.atrasadas?`<span class="g-selo atras">${g.atrasadas} atrasada${g.atrasadas>1?'s':''}</span>`
+          :g.faltam.length?'<span class="g-selo anda">em andamento</span>'
+          :'<span class="g-selo ok">tudo feito</span>'}</div>
+      <div class="g-barra"><i style="width:${pct}%"></i></div>
+      ${g.faltam.length?`<div class="g-lista">${g.faltam.map(t=>{const a=cuAcaoDe(t.name);
+        return cuLinhaTarefa(t).replace('</div>',
+          (a?`<span class="g-ondeta">${esc(a)}</span>`:'')+'</div>')}).join('')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+/* O placar que ele abre a página pra ver: quanto já foi feito, quanto falta
+   e o que vence nesta semana. */
+function cuResumo(){
+  const ts=cuVisiveis();
+  if(!ts.length)return '';
+  const agora=Date.now();
+  const feitas=ts.filter(cuFeita).length;
+  const atrasadas=ts.filter(t=>!cuFeita(t)&&t.due_date&&+t.due_date<agora).length;
+  const gs=cuAgrupar(ts).filter(g=>!g.orfa);
+  const prontas=gs.filter(g=>g.pronta).length;
+  const hoje=new Date();hoje.setHours(0,0,0,0);
+  const seg=new Date(hoje);seg.setDate(hoje.getDate()-((hoje.getDay()+6)%7));
+  const dom=new Date(seg);dom.setDate(seg.getDate()+7);
+  const naSemana=ts.filter(t=>t.due_date&&+t.due_date>=seg.getTime()&&+t.due_date<dom.getTime());
+  const semFeitas=naSemana.filter(cuFeita).length;
+  const pct=Math.round(100*feitas/ts.length);
+  return `<div class="cartao"><div class="rot">Tarefas concluídas</div>
+      <div class="num ${pct>=100?'v':''}">${feitas} de ${ts.length}</div>
+      <div class="pe">${pct}% da execução ${cuSoMarca?'da '+esc(marcaDo(mesAtual())):'das duas marcas'}</div></div>
+    <div class="cartao"><div class="rot">Ações prontas para conferir</div>
+      <div class="num ${prontas?'v':''}">${prontas} de ${gs.length}</div>
+      <div class="pe">${gs.length-prontas} ainda em execução</div></div>
+    <div class="cartao"><div class="rot">Atrasadas</div>
+      <div class="num ${atrasadas?'a':'v'}">${atrasadas}</div>
+      <div class="pe">${atrasadas?'prazo vencido e não feito':'nenhum prazo vencido'}</div></div>
+    <div class="cartao"><div class="rot">Esta semana</div>
+      <div class="num">${semFeitas} de ${naSemana.length}</div>
+      <div class="pe">${naSemana.length-semFeitas} a entregar até domingo</div></div>`;
+}
+
+function cuPintar(){
+  const alvo=$('#g-corpo'),topo=$('#g-quando'),resumo=$('#g-resumo');if(!alvo)return;
+  document.querySelectorAll('#pg-gestao .g-abas button')
+    .forEach(b=>b.classList.toggle('on',b.dataset.ga===cuAba));
+  const bm=$('#g-marca'),ba=$('#g-atualizar');
+  /* o botão só aparece quando há o que filtrar; e volta se a capacidade
+     surgir depois — o primeiro desenho acontece antes dela resolver */
+  if(bm){bm.style.display=(MCP||CU_RETRATO)?'':'none';
+    bm.textContent=cuSoMarca?'Só '+marcaDo(mesAtual()):'As duas marcas'}
+  /* no retrato não há o que atualizar: a foto é a que veio na página */
+  if(ba)ba.style.display=MCP?'':'none';
+  if(resumo)resumo.innerHTML='';
+
+  if(!MCP&&!cuTarefas){
+    alvo.innerHTML=`<div class="g-aviso"><b>Esta cópia não trouxe as tarefas do ClickUp.</b>
+      O resto do planejador funciona normalmente — só esta aba fica sem dados.</div>`;
+    topo.textContent='';return;
+  }
+  if(cuErro){
+    const [t1,t2]=cuMsgErro(cuErro);
+    alvo.innerHTML=`<div class="g-aviso alerta"><b>${esc(t1)}</b> ${esc(t2)}</div>`;
+    topo.textContent='';return;
+  }
+  if(cuLendo&&!cuTarefas){alvo.innerHTML='<div class="g-vazio">Lendo o ClickUp…</div>';return}
+  if(!cuTarefas){alvo.innerHTML='<div class="g-vazio">Clique em atualizar para ler o ClickUp.</div>';return}
+
+  const quando=new Date(cuQuando);
+  topo.textContent=cuRetrato
+    ? 'retrato do ClickUp de '+quando.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+
+      ' às '+quando.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})
+    : (cuLendo?'atualizando… · ':'')+'lido '+
+      quando.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  if(cuTarefas.length&&!cuVisiveis().length){alvo.innerHTML=cuNadaDaMarca();return}
+  if(resumo)resumo.innerHTML=cuResumo();
+  alvo.innerHTML = cuAba==='semana'?cuPintarSemana()
+    : cuAba==='pessoa'?cuPintarPessoa()
+    : cuAba==='atrasado'?cuPintarAtrasado() : cuPintarAcoes();
+}
+
+function cuAbrirAba(a){cuAba=a;cuPintar()}
+
+/* liga a capacidade sem travar o resto da página */
+(async function(){
+  try{MCP=await window.claude?.use?.('mcp')||null}catch(e){MCP=null}
+  if(!$('#g-corpo'))return;
+  cuPintar();
+  cuLer();   /* sem esperar a aba: o Mês já abre com a execução do lado */
+})();
+
+</script>
+</body>
+</html>

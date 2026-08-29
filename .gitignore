@@ -1,3 +1,7 @@
 dist/
+# exceto o arquivo que a Vercel serve: é ele que vai pro ar, e versioná-lo
+# deixa o deploy reprodutível sem depender do build rodar lá.
+!dist/site/
+!dist/site/index.html
 node_modules/
 .DS_Store
