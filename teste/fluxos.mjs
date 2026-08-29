@@ -12,7 +12,10 @@ const b = await chromium.launch({
 const p=await b.newPage({viewport:{width:1600,height:1000}});
 const errs=[];
 p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message));
-p.on('console',m=>{if(m.type()==='error')errs.push('CONSOLE: '+m.text())});
+/* recurso que não carrega não é erro de JS: a base fica fora do ar de
+   propósito nesta suíte, e o navegador registra isso no console */
+p.on('console',m=>{if(m.type()==='error'&&!/Failed to load resource/i.test(m.text()))
+  errs.push('CONSOLE: '+m.text())});
 const R=[]; const ok=(n,c,d='')=>R.push([c?'OK ':'FALHA',n,d].join(' | '));
 let prompts=[]; // fila de respostas para prompt()
 p.on('dialog',async d=>{
@@ -24,6 +27,10 @@ p.on('dialog',async d=>{
    rodar a cada navegação, e o guarda em sessionStorage não sobrevive em
    file:// — então o reload lá embaixo apagava justamente o estado que o
    teste ia conferir, e a suíte falhava de vez em quando sem motivo. */
+/* a suíte nunca fala com a base de verdade: quem exercita esse caminho
+   é teste/base.mjs, com a API simulada */
+await p.route('**/*.supabase.co/**',
+  r=>r.fulfill({status:503,contentType:'application/json',body:'{}'}));
 await p.goto('file://'+resolve(raiz,'index.html'),{waitUntil:'networkidle'});
 await p.evaluate(()=>{try{localStorage.clear()}catch(e){}});
 await p.reload({waitUntil:'networkidle'});

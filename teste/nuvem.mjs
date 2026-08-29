@@ -31,7 +31,11 @@ async function abrir({estadoDaEquipe=null, publishFalha=null}={}){
       }
     })};
   },{falha:publishFalha});
-  await p.goto('file://'+resolve(raiz,'index.html'),{waitUntil:'networkidle'});
+  /* a suíte nunca fala com a base de verdade: quem exercita esse caminho
+   é teste/base.mjs, com a API simulada */
+await p.route('**/*.supabase.co/**',
+  r=>r.fulfill({status:503,contentType:'application/json',body:'{}'}));
+await p.goto('file://'+resolve(raiz,'index.html'),{waitUntil:'networkidle'});
   await p.waitForTimeout(500);
   return {p,erros};
 }

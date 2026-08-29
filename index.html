@@ -537,6 +537,7 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 </div>
 
 <div class="rodape">
+  <button class="forte" onclick="exportarPDF()">Exportar PDF</button>
   <button onclick="copiarTexto()">Copiar como texto</button>
   <button onclick="exportarJSON()">Exportar JSON</button>
   <button onclick="importarJSON()">Importar JSON</button>
@@ -545,8 +546,51 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 </div>
 </div>
 
+<div id="relatorio" aria-hidden="true"></div>
+
 <div id="menu"></div>
 <div id="modal"><div class="cx" id="modal-cx"></div></div>
+
+<style>
+/* ================= RELATÓRIO PARA IMPRESSÃO =================
+   Não é a tela fotografada: é um documento próprio, montado na hora a
+   partir dos mesmos dados, em papel branco e na ordem de leitura. Fica
+   escondido até a impressão começar. */
+#relatorio{display:none}
+@media print{
+  @page{size:A4;margin:14mm 12mm}
+  html,body{background:#fff !important;color:#111 !important}
+  .topo,.wrap,#menu,#modal,.rodape,#paleta,#barra{display:none !important}
+  #relatorio{display:block;font:11pt/1.45 ui-sans-serif,system-ui,-apple-system,sans-serif;
+    color:#111;background:#fff}
+  #relatorio h1{font-size:21pt;margin:0 0 2mm;font-weight:700;letter-spacing:-.01em}
+  #relatorio h2{font-size:13pt;margin:9mm 0 2.5mm;padding-bottom:1.5mm;
+    border-bottom:1.5pt solid #111;font-weight:700}
+  #relatorio h3{font-size:11.5pt;margin:5mm 0 2mm;font-weight:700}
+  #relatorio .sub{color:#555;font-size:9.5pt;margin:0 0 4mm}
+  /* zera o estilo escuro das tabelas da tela: no papel é fundo branco */
+  #relatorio table{width:100%;min-width:0;border-collapse:collapse;margin:0 0 4mm;font-size:9pt}
+  #relatorio th,#relatorio td{background:#fff !important;color:#111}
+  #relatorio th{text-align:left;border-bottom:1pt solid #111;padding:1.6mm 2mm;
+    font-size:8pt;text-transform:uppercase;letter-spacing:.05em;color:#333 !important}
+  #relatorio td{border-bottom:.4pt solid #ccc;padding:1.6mm 2mm;vertical-align:top}
+  #relatorio td.n,#relatorio th.n{text-align:right;
+    font-variant-numeric:tabular-nums;white-space:nowrap}
+  #relatorio tr{break-inside:avoid}
+  #relatorio thead{display:table-header-group}
+  #relatorio .capa{margin-bottom:8mm;padding-bottom:5mm;border-bottom:2.5pt solid #111}
+  #relatorio .metas{display:flex;gap:9mm;font-size:10pt;margin-top:3mm}
+  #relatorio .metas b{display:block;font-size:14pt}
+  #relatorio .falta{font-weight:700}
+  #relatorio .tap{break-before:page}
+  #relatorio .cal{table-layout:fixed}
+  #relatorio .cal td{height:17mm;font-size:7.5pt;border:.4pt solid #ccc}
+  #relatorio .cal .d{font-weight:700;font-size:8.5pt;color:#666}
+  #relatorio .cal .fora{color:#bbb}
+  #relatorio .pe{font-size:8.5pt;color:#666;margin:-2mm 0 5mm}
+  #relatorio .nada{color:#777;font-style:italic}
+}
+</style>
 
 <script>
 /* ================= CATÁLOGO ================= */
@@ -2217,6 +2261,124 @@ function abrirTroca(txt,msg,ed){
       catch(e){aviso('Não consegui ler esse JSON.')}}}
 }
 function fecharTroca(){$('#troca').classList.remove('on');$('#troca-txt').onblur=null}
+/* ================= EXPORTAR PDF =================
+   Monta o relatório do mês inteiro e manda imprimir: no diálogo de
+   impressão, "Salvar como PDF". Sai um documento em papel branco, na
+   ordem de leitura, e não uma captura da tela escura. */
+function montarRelatorio(){
+  const {m,cps,meta,soma,inv,resto,pct,ticket,pedidos}=contas();
+  const marca=marcaDo(m), hoje=new Date();
+  const tab=(cabs,linhas,cls='')=>linhas.length
+    ? `<table class="${cls}"><thead><tr>${cabs.map(c=>
+        `<th class="${/^R\$|%|n:/.test(c)?'n':''}">${esc(c.replace(/^n:/,''))}</th>`).join('')}</tr></thead>
+       <tbody>${linhas.map(l=>`<tr>${l.map((v,i)=>
+        `<td class="${/^n:/.test(cabs[i])?'n':''}">${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`
+    : '<p class="nada">Nada preenchido ainda.</p>';
+
+  let h=`<div class="capa">
+    <h1>${MESES[m.mes-1].replace(/^./,x=>x.toUpperCase())} de ${m.ano} · ${esc(marca)}</h1>
+    <p class="sub">Planejamento do mês${m.ref?' · '+esc(m.ref):''} ·
+      emitido em ${hoje.toLocaleDateString('pt-BR')}</p>
+    <div class="metas">
+      <span>Meta 1<b>${meta?brl(meta):'a definir'}</b></span>
+      <span>Meta 2<b>${brl(m.metas[1])}</b></span>
+      <span>Meta 3<b>${brl(m.metas[2])}</b></span>
+      ${ticket?`<span>Ticket médio<b>${brl(ticket)}</b></span>
+        <span>Pedidos<b>${pedidos.toLocaleString('pt-BR')}</b></span>`:''}
+    </div></div>`;
+
+  /* 1. a engenharia reversa */
+  h+='<h2>Engenharia reversa — da meta até a ação</h2>';
+  if(!meta)h+='<p class="nada">A meta do mês ainda não foi definida.</p>';
+  else{
+    const linhas=cps.map(c=>[esc(c.nome),TIPOS[c.tipo]?.nome||c.tipo,
+      c.meta?Math.round(100*c.meta/meta)+'%':'—',
+      c.meta?brl(c.meta):'contínuo',
+      ticket&&c.meta?pedidosDe(c.meta,ticket).toLocaleString('pt-BR'):'—']);
+    if(resto>0)linhas.push([`<span class="falta">Falta atribuir a alguma ação</span>`,'',
+      Math.round(100*resto/meta)+'%',`<span class="falta">${brl(resto)}</span>`,
+      ticket?pedidosDe(resto,ticket).toLocaleString('pt-BR'):'—']);
+    h+=tab(['Ação','Formato','n:%','n:R$ meta','n:Pedidos'],linhas);
+    h+=`<p class="pe">${pct}% da Meta 1 já está numa ação.
+      ${resto>0?brl(resto)+' ainda sem ação.':resto<0?'As ações passam da Meta 1 em '+brl(-resto)+'.'
+        :'Meta inteira dividida.'}</p>`;
+
+    /* 2. de onde vem o faturamento */
+    const fz=cps.map(c=>fontesValidas(c.meta||0,c.fontes||fontesPadrao(c.meta||0,c.investimento||0)));
+    const pf=FONTES.map(({k,n})=>({n,
+      meta:fz.reduce((t,f)=>t+(f[k]?.meta||0),0),
+      inv:fz.reduce((t,f)=>t+(f[k]?.inv||0),0)}));
+    const comprado=pf.reduce((t,x)=>t+x.meta,0);
+    h+='<h2>De onde vem o faturamento</h2>';
+    h+=tab(['Fonte','n:%','n:Fatura','n:Verba','n:ROAS'],
+      pf.map(x=>[x.n,soma?Math.round(100*x.meta/soma)+'%':'—',brl(x.meta),brl(x.inv),roas(x.meta,x.inv)])
+      .concat([['Não se compra — influencer, base, atendimento, orgânico',
+        soma?Math.round(100*(soma-comprado)/soma)+'%':'—',
+        brl(Math.max(0,soma-comprado)),'—','—']]));
+    h+=`<p class="pe">Verba total ${brl(inv)} · ROAS alvo do que já está atribuído ${roas(soma,inv)}.</p>`;
+  }
+
+  /* 3. calendário do mês */
+  const S=semanasDoMes();
+  h+='<h2>Calendário</h2>';
+  h+=`<table class="cal"><thead><tr>${DOW.map(d=>`<th>${d}</th>`).join('')}</tr></thead><tbody>`+
+    S.map(sm=>'<tr>'+[...Array(7)].map((_,i)=>{
+      const d=new Date(sm.a);d.setDate(sm.a.getDate()+i);
+      const fora=d.getMonth()!==m.mes-1;
+      const at=fora?[]:campsMes().filter(c=>dISO(c.inicio)<=d&&dISO(c.fim)>=d);
+      return `<td><span class="d ${fora?'fora':''}">${d.getDate()}</span>`+
+        at.map(c=>`<div>${esc(c.nome)}</div>`).join('')+'</td>';
+    }).join('')+'</tr>').join('')+'</tbody></table>';
+
+  /* 4. execução no ClickUp, quando a página trouxe os dados */
+  if(cuTarefas&&cuTarefas.length){
+    const gs=cuAgrupar(cuVisiveis()).filter(g=>!g.orfa);
+    if(gs.length){
+      h+='<h2>Execução no ClickUp</h2>';
+      h+=tab(['Ação','n:Feitas','n:Total','n:Atrasadas','Situação'],
+        gs.map(g=>[esc(g.nome),String(g.feitas),String(g.total),String(g.atrasadas),
+          g.pronta?'pronta para conferir':g.atrasadas?'atrasada':'em andamento']));
+      h+=`<p class="pe">${cuRetrato?'Retrato de ':'Lido em '}${
+        new Date(cuQuando).toLocaleString('pt-BR')}.</p>`;
+    }
+  }
+
+  /* 5. um TAP por campanha, cada um começando em página nova */
+  cps.forEach(c=>{
+    const f=fontesValidas(c.meta||0,c.fontes||fontesPadrao(c.meta||0,c.investimento||0));
+    h+=`<div class="tap"><h2>${esc(c.nome)}</h2>
+      <p class="sub">${TIPOS[c.tipo]?.nome||c.tipo}${c.tema?' · '+esc(c.tema):''} ·
+        ${dBR(dISO(c.inicio))} a ${dBR(dISO(c.fim))} ·
+        meta ${c.meta?brl(c.meta):'contínuo'}${meta&&c.meta?` (${Math.round(100*c.meta/meta)}% do mês)`:''} ·
+        verba ${brl(c.investimento||0)} · ROAS ${roas(c.meta||0,c.investimento||0)}</p>`;
+    h+=tab(['Fonte','n:Fatura','n:Verba','n:ROAS'],
+      FONTES.map(({k,n})=>[n,brl(f[k]?.meta||0),brl(f[k]?.inv||0),roas(f[k]?.meta||0,f[k]?.inv||0)])
+      .concat([['Não se compra',brl(restoOrganico(c.meta||0,f)),'—','—']]));
+    (c.secoes||[]).forEach(sec=>{
+      h+=`<h3>${esc(sec.t)}</h3>`;
+      h+=tab(sec.c.map(String),(sec.l||[]).map(l=>l.map(v=>esc(v==null?'':v))));
+    });
+    h+='</div>';
+  });
+  return h;
+}
+
+function exportarPDF(){
+  const alvo=$('#relatorio');
+  alvo.innerHTML=montarRelatorio();
+  const antes=document.title;
+  document.title=`Planejamento ${MESES[mesAtual().mes-1]} ${mesAtual().ano} - ${marcaDo(mesAtual())}`;
+  const limpa=()=>{document.title=antes};
+  try{
+    window.print();
+    setTimeout(limpa,1500);
+    aviso('No diálogo de impressão, escolha "Salvar como PDF".');
+  }catch(e){
+    limpa();
+    aviso('Seu navegador bloqueou a impressão daqui — use Ctrl+P (ou Cmd+P).');
+  }
+}
+
 function copiarTexto(){
   const m=mesAtual(),L=[`BOTANIKA — ${MESES[m.mes-1]} ${m.ano}`,
     m.metas.map((v,i)=>`Meta ${i+1} ${brl(v)}`).join(' · '),'','MAPA MENTAL — '+(M().nome||'')];
@@ -2312,6 +2474,95 @@ setInterval(salvar,1500);
 addEventListener('beforeunload',salvar);
 addEventListener('visibilitychange',()=>{if(document.hidden)salvar()});
 
+/* ================= BASE DE DADOS =================
+   O planejamento deixa de morar só no navegador: vai para uma tabela no
+   Supabase da Botanika, com histórico — cada gravação vira uma versão, e
+   nada se perde por sobrescrita.
+
+   A chave abaixo é a publicável (anon), feita para ficar em página aberta;
+   ela só alcança as duas tabelas do planejador, pelas políticas de acesso.
+   A chave de serviço nunca entra aqui.
+
+   Onde a página não puder sair para a internet — dentro do visualizador de
+   Artifacts o navegador bloqueia qualquer chamada externa — nada quebra:
+   a base fica marcada como indisponível e valem as camadas de baixo, o
+   arquivo compartilhado e o navegador. */
+const SB={
+  url:'https://sjkuysdmixfzeerxuudn.supabase.co',
+  chave:'sb_publishable_PmR8gIHBTlrnHnQTTn39mA_puv-TlGH',
+  tabela:'planejamento_tap'
+};
+let sbOk=null;          // null = ainda não sei, true/false = respondeu ou não
+let sbVersao=0, sbRemoto='', sbEnviando=false, sbUltimo=0, sbMudouEm=0, sbSujo=false;
+const SB_ESPERA=2500, SB_MIN_ENTRE=5000;
+
+/* Identifica a aba no histórico sem pedir nada a ninguém: só para dar
+   para saber que duas gravações vieram de pessoas diferentes. */
+function sbQuem(){
+  try{
+    let q=localStorage.getItem('tap-quem');
+    if(!q){q='aba-'+Math.random().toString(36).slice(2,7);localStorage.setItem('tap-quem',q)}
+    return q;
+  }catch(e){return null}
+}
+const sbCab=extra=>Object.assign({apikey:SB.chave,Authorization:'Bearer '+SB.chave,
+  'Content-Type':'application/json'},extra||{});
+
+/* Rede com prazo: sem isso uma conexão pendurada deixa a página esperando
+   para sempre por uma resposta que não vem. */
+async function sbFetch(u,o){
+  const ct=new AbortController(),t=setTimeout(()=>ct.abort(),8000);
+  try{return await fetch(u,Object.assign({signal:ct.signal},o||{}))}
+  finally{clearTimeout(t)}
+}
+
+async function sbBaixar(){
+  const r=await sbFetch(`${SB.url}/rest/v1/${SB.tabela}`+
+    `?chave=eq.${encodeURIComponent(CHAVE)}&select=estado,versao`,{headers:sbCab()});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const l=await r.json();
+  return l[0]||null;
+}
+async function sbGravar(){
+  const txt=JSON.stringify(D);
+  if(txt===sbRemoto)return false;
+  const r=await sbFetch(`${SB.url}/rest/v1/${SB.tabela}`,{method:'POST',
+    headers:sbCab({Prefer:'resolution=merge-duplicates,return=representation'}),
+    body:JSON.stringify([{chave:CHAVE,estado:D,atualizado_por:sbQuem()}])});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  const l=await r.json();
+  if(l[0])sbVersao=l[0].versao;
+  sbRemoto=txt;sbUltimo=Date.now();
+  return true;
+}
+async function sbEnviar(){
+  if(sbEnviando||!sbOk)return;
+  if(Date.now()-sbUltimo<SB_MIN_ENTRE)return;
+  sbEnviando=true;
+  try{
+    if(await sbGravar()){sbSujo=false;marcaSalvo()}
+    else sbSujo=false;
+  }catch(e){
+    /* caiu a rede no meio: continua salvo no navegador e tenta de novo */
+    sbOk=false;marcaSalvo();
+  }
+  sbEnviando=false;
+}
+
+/* Puxa o que a equipe gravou. Só adota quando esta aba não tem mudança
+   pendente — senão o que a pessoa está digitando sumiria embaixo dela. */
+async function sbPuxar(){
+  if(!sbOk||sbSujo||sbEnviando)return;
+  try{
+    const linha=await sbBaixar();
+    if(!linha||linha.versao<=sbVersao)return;
+    sbVersao=linha.versao;sbRemoto=JSON.stringify(linha.estado);
+    D=linha.estado;garantirCiclo();
+    ultimoSalvo='';salvar();tudo();
+    aviso('Atualizado com o que a equipe gravou.');
+  }catch(e){sbOk=false;marcaSalvo()}
+}
+
 /* ================= COMPARTILHADO ENTRE A EQUIPE =================
    O estado vive num arquivo de dados ao lado da página. Publicar só esse
    arquivo mantém esta aba rodando (a página não recarrega) e faz as outras
@@ -2338,6 +2589,7 @@ function faixa(html,alerta){
 }
 
 function estadoRodape(){
+  if(sbOk)return 'na base da Botanika'+(sbSujo?' · gravando':'');
   if(modo==='leitura')return 'somente leitura — suas mudanças ficam só nesta aba';
   if(modo==='nuvem')return 'compartilhado com a equipe';
   return 'salvo só neste navegador';
@@ -2396,10 +2648,15 @@ async function mandarPorCima(){
 
 /* laço único: cópia local sempre, nuvem quando parar de mexer */
 let mudouEm=0, ultimoTxt='';
+let sbPuxouEm=0;
 setInterval(()=>{
   const txt=JSON.stringify(D);
-  if(txt!==ultimoTxt){ultimoTxt=txt;mudouEm=Date.now();sujo=true}
+  if(txt!==ultimoTxt){ultimoTxt=txt;mudouEm=Date.now();sujo=true;
+    if(sbOk&&txt!==sbRemoto){sbSujo=true;sbMudouEm=Date.now()}}
   if(sujo&&mudouEm&&Date.now()-mudouEm>=ESPERA)enviar();
+  if(sbSujo&&sbMudouEm&&Date.now()-sbMudouEm>=SB_ESPERA)sbEnviar();
+  /* e de tempos em tempos, o que a equipe gravou do outro lado */
+  if(sbOk&&!sbSujo&&Date.now()-sbPuxouEm>15000){sbPuxouEm=Date.now();sbPuxar()}
 },1500);
 
 /* ================= INÍCIO ================= */
@@ -2418,7 +2675,28 @@ setInterval(()=>{
   tudo();salvar();
   ultimoTxt=JSON.stringify(D);
   marcaSalvo();
+  /* A base entra depois, sem segurar a abertura: esperar a rede para
+     desenhar deixaria a página em branco em conexão ruim. Quando ela
+     responde, o que a equipe gravou passa a valer. */
+  sbConciliar();
 })();
+
+async function sbConciliar(){
+  let linha=null;
+  try{linha=await sbBaixar();sbOk=true}
+  catch(e){sbOk=false;marcaSalvo();return}
+  if(linha){
+    sbVersao=linha.versao;sbRemoto=JSON.stringify(linha.estado);
+    /* só adota se ninguém mexeu em nada ainda nesta aba */
+    if(!sbSujo&&sbRemoto!==JSON.stringify(D)){
+      D=linha.estado;garantirCiclo();ultimoSalvo='';salvar();tudo();
+    }
+  }else{
+    /* base vazia: sobe o que existe aqui, para ela nascer com o plano */
+    sbUltimo=0;await sbEnviar();
+  }
+  marcaSalvo();
+}
 
 /* ================= GESTÃO — execução no ClickUp =================
    Lê as tarefas do ClickUp com a credencial de quem abre a página: nenhum

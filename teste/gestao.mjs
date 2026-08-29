@@ -61,7 +61,11 @@ async function abrir({temMcp=true,erro=null,arquivo='index.html'}={}){
     }};
     window.claude={ use: async n => n==='mcp' ? (temMcp?mcp:null) : null };
   },{temMcp,erro,PAGINAS});
-  await p.goto('file://'+resolve(raiz,arquivo),{waitUntil:'networkidle'});
+  /* a suíte nunca fala com a base de verdade: quem exercita esse caminho
+   é teste/base.mjs, com a API simulada */
+await p.route('**/*.supabase.co/**',
+  r=>r.fulfill({status:503,contentType:'application/json',body:'{}'}));
+await p.goto('file://'+resolve(raiz,arquivo),{waitUntil:'networkidle'});
   await p.waitForTimeout(400);
   await p.click('nav.paginas button[data-pg="gestao"]');
   await p.waitForTimeout(600);

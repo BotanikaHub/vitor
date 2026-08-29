@@ -16,6 +16,10 @@ const p = await b.newPage({viewport:{width:1500,height:1000}});
 const erros=[]; p.on('pageerror',e=>erros.push(e.message));
 await p.route('**/dados/*.json*', r=>r.fulfill({status:404,body:''}));
 await p.addInitScript(()=>{try{localStorage.clear()}catch(e){}});
+/* a suíte nunca fala com a base de verdade: quem exercita esse caminho
+   é teste/base.mjs, com a API simulada */
+await p.route('**/*.supabase.co/**',
+  r=>r.fulfill({status:503,contentType:'application/json',body:'{}'}));
 await p.goto('file://'+resolve(raiz,'index.html'),{waitUntil:'networkidle'});
 await p.waitForTimeout(400);
 const G=f=>p.evaluate(f);
