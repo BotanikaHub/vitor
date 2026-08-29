@@ -2489,7 +2489,10 @@ addEventListener('visibilitychange',()=>{if(document.hidden)salvar()});
    arquivo compartilhado e o navegador. */
 const SB={
   url:'https://sjkuysdmixfzeerxuudn.supabase.co',
-  chave:'sb_publishable_PmR8gIHBTlrnHnQTTn39mA_puv-TlGH',
+  /* Chave anônima (JWT). Vale a mesma coisa que a publicável nova, mas
+     funciona igual nos dois cabeçalhos que o PostgREST aceita — e daqui
+     não dá pra exercitar o HTTP real pra confirmar a outra. */
+  chave:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqa3V5c2RtaXhmemVlcnh1dWRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMTMxNDQsImV4cCI6MjA5NjY4OTE0NH0.oMbvy25V6-W7YvF70zNb1xVfRwH_tGBWp3NPHGtpOtM',
   tabela:'planejamento_tap'
 };
 let sbOk=null;          // null = ainda não sei, true/false = respondeu ou não
