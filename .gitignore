@@ -3,5 +3,7 @@ dist/
 # deixa o deploy reprodutível sem depender do build rodar lá.
 !dist/site/
 !dist/site/index.html
+!dist/site/api/
+!dist/site/api/tarefas.mjs
 node_modules/
 .DS_Store
