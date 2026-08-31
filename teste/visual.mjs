@@ -80,6 +80,30 @@ async function colisoes(){
   ok('e com todos os galhos abertos também', c.n===0, `${c.nos} nós · ${c.ex.join(' / ')}`);
   ok('o mapa cresceu de verdade', c.nos>60, c.nos+' nós na tela');
 
+  await G(()=>{M().nos.filter(n=>n.deTap).forEach(n=>n.fech=true);organizar()});
+  await p.waitForTimeout(900);
+
+  /* o caso que o Vitor mostrou: abrir um galho pelo botão do próprio nó.
+     Isso chamava só render(), e os filhos apareciam nas posições velhas —
+     em cima do pai. */
+  const galho=await G(()=>M().nos.find(n=>n.deTap&&filhos(n.id).length>=4)?.id);
+  await p.click(`#mundo .no[data-id="${galho}"] .fecho`); await p.waitForTimeout(900);
+  c=await colisoes();
+  ok('abrir galho pelo botão do nó não empilha nada', c.n===0,
+     `${c.nos} nós · ${c.ex.join(' / ')}`);
+  ok('e os filhos daquele galho saíram pra fora do pai', await G(()=>{
+    const abertos=M().nos.filter(n=>n.deTap&&!n.fech&&filhos(n.id).length);
+    return abertos.length>0 && abertos.every(g=>filhos(g.id).every(f=>{
+      const meia=((medidas[g.id]?.w||190)+(medidas[f.id]?.w||190))/2;
+      return f.x-g.x>=meia*.9;
+    }));
+  }));
+  /* fechar de novo devolve o arranjo, sem mexer no zoom */
+  const zoomAntes=await G(()=>Z);
+  await p.click(`#mundo .no[data-id="${galho}"] .fecho`); await p.waitForTimeout(700);
+  ok('fechar um galho não dá pulo de zoom na tela',
+     Math.abs(await G(()=>Z)-zoomAntes)<0.001, 'Z='+await G(()=>Z));
+
   await G(()=>{M().nos=M().nos.filter(n=>!n.deTap);organizar()});
   await p.waitForTimeout(600);
 }

@@ -1703,12 +1703,15 @@ function calcularPosicoes(){
    segunda refaz depois que o navegador mediu os nós de verdade. Sem ela,
    um nó recém-criado entra no cálculo com a altura padrão e desencontra
    tudo à volta. */
-function organizar(){
+/* enquadrar:false reposiciona sem mexer no zoom — é o que se quer ao
+   abrir e fechar um galho, senão a tela dá um pulo a cada clique. */
+function organizar(op){
+  const enquadrar=!op||op.enquadrar!==false;
   if(!calcularPosicoes())return;
   render();
   requestAnimationFrame(()=>{
     medir();
-    if(calcularPosicoes()){reposicionar();fios();ajustar();posPaleta()}
+    if(calcularPosicoes()){reposicionar();fios();if(enquadrar)ajustar();posPaleta()}
   });
 }
 /* Só move o que já está na tela — recriar os elementos piscaria o mapa. */
@@ -1806,7 +1809,10 @@ function render(){
       const f=document.createElement('button');f.className='fecho '+s;
       f.textContent=n.fech?String(descendentes(n.id)):'–';
       f.onpointerdown=e=>e.stopPropagation();
-      f.onclick=e=>{e.stopPropagation();guardar();n.fech=!n.fech;render()};
+      /* render() só redesenhava: os filhos apareciam nas posições velhas,
+         em cima do pai. Abrir um galho tem que recalcular o arranjo. */
+      f.onclick=e=>{e.stopPropagation();guardar();n.fech=!n.fech;
+        organizar({enquadrar:false})};
       d.appendChild(f)}
     const mais=document.createElement('button');mais.className='mais '+s;
     mais.textContent='+';mais.title=n.raizMes?'nova campanha':'novo filho';
@@ -1934,7 +1940,7 @@ function editar(novo){
   const fim=()=>{if(!editando)return;editando=false;
     obj.t=c.textContent.trim()||(sel.t==='no'?'sem título':'');
     const camp=campDoNo(obj);if(camp){camp.nome=obj.t;pintarMes();pintarSemana();pintarAbas()}
-    c.removeAttribute('contenteditable');render()};
+    c.removeAttribute('contenteditable');organizar({enquadrar:false})};
   c.onblur=fim;
   c.onkeydown=e=>{e.stopPropagation();
     if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();c.blur()}
@@ -1997,12 +2003,13 @@ function addFilho(){
   const s=p.pai?lado(p):1;
   const n={id:M().prox++,pai:p.id,t:'novo',x:(p.x??4500)+s*330,
     y:(p.y??3000)+filhos(p.id).length*56};
-  M().nos.push(n);sel={t:'no',id:n.id};render();setTimeout(editar,20);
+  M().nos.push(n);sel={t:'no',id:n.id};organizar({enquadrar:false});setTimeout(editar,20);
 }
 function addIrmao(){
   if(sel.t!=='no')return;const a=acharNo(sel.id);if(!a||!a.pai)return addFilho();
   guardar();const n={id:M().prox++,pai:a.pai,t:'novo',x:a.x,y:a.y+60};
-  M().nos.splice(M().nos.indexOf(a)+1,0,n);sel={t:'no',id:n.id};render();setTimeout(editar,20);
+  M().nos.splice(M().nos.indexOf(a)+1,0,n);sel={t:'no',id:n.id};
+  organizar({enquadrar:false});setTimeout(editar,20);
 }
 function delNo(){
   if(sel.t!=='no')return;const a=acharNo(sel.id);if(!a)return;
@@ -2012,14 +2019,14 @@ function delNo(){
   if(!c&&d&&!confirm(`Excluir "${a.t}" e mais ${d} ${d>1?'nós':'nó'} abaixo?`))return;
   guardar();
   const rem=id=>{filhos(id).forEach(f=>rem(f.id));M().nos=M().nos.filter(x=>x.id!==id)};
-  rem(sel.id);sel={t:'no',id:a.pai};render();
+  rem(sel.id);sel={t:'no',id:a.pai};organizar({enquadrar:false});
 }
 function duplicarRamo(){
   if(sel.t!=='no')return;const a=acharNo(sel.id);if(!a||!a.pai)return;
   guardar();
   const cop=(o,np,dy)=>{const n={...JSON.parse(JSON.stringify(o)),id:M().prox++,pai:np,y:(o.y??3000)+dy};
     delete n.campId;M().nos.push(n);filhos(o.id).forEach(f=>cop(f,n.id,dy));return n};
-  sel={t:'no',id:cop(a,a.pai,64).id};render();
+  sel={t:'no',id:cop(a,a.pai,64).id};organizar({enquadrar:false});
 }
 function marcarFeito(){const n=alvoSel();if(!n||sel.t!=='no')return;guardar();n.feito=!n.feito;render()}
 function moverIrmao(dir){
@@ -2038,10 +2045,12 @@ function abrirNota(){
   $('#modal').classList.add('on');setTimeout(()=>$('#nt').focus(),50);
 }
 function salvarNota(){const n=acharNo(noNota);
-  if(n){guardar();const v=$('#nt').value.trim();if(v)n.nota=v;else delete n.nota;render()}
+  if(n){guardar();const v=$('#nt').value.trim();if(v)n.nota=v;else delete n.nota;
+    organizar({enquadrar:false})}
   fecharModal()}
 function fecharModal(){$('#modal').classList.remove('on')}
-function fecharTudo(a){guardar();M().nos.forEach(n=>{if(filhos(n.id).length&&n.pai)n.fech=!a});render()}
+function fecharTudo(a){guardar();M().nos.forEach(n=>{if(filhos(n.id).length&&n.pai)n.fech=!a});
+  organizar()}
 function trocarLayout(){M().layout=M().layout==='radial'?'direita':'radial';organizar()}
 function buscar(v){termo=v.trim().toLowerCase();render();
   if(termo){const a=M().nos.find(n=>visivel(n)&&n.t.toLowerCase().includes(termo));
@@ -2050,7 +2059,8 @@ function navegar(dir){
   if(sel.t!=='no')return;const a=acharNo(sel.id);if(!a)return;
   let al=null;
   if(dir==='pai')al=a.pai;
-  else if(dir==='filho'){if(a.fech){guardar();a.fech=false;render()}al=filhos(a.id)[0]?.id}
+  else if(dir==='filho'){if(a.fech){guardar();a.fech=false;organizar({enquadrar:false})}
+    al=filhos(a.id)[0]?.id}
   else{const irm=a.pai?filhos(a.pai):[a];const i=irm.indexOf(a);
     al=irm[i+(dir==='cima'?-1:1)]?.id}
   if(al){sel={t:'no',id:al};marcarSel();centrar()}
@@ -2108,7 +2118,7 @@ document.addEventListener('keydown',e=>{
   else if(e.key==='F2'){e.preventDefault();editar()}
   else if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();apagar()}
   else if(e.key===' '){e.preventDefault();if(sel.t==='no'){const n=acharNo(sel.id);
-    if(n&&filhos(n.id).length){guardar();n.fech=!n.fech;render()}}}
+    if(n&&filhos(n.id).length){guardar();n.fech=!n.fech;organizar({enquadrar:false})}}}
   else if(e.key==='Escape'){const q=$('#quadro');
     if(q.classList.contains('cheio'))telaCheia();
     else if(q.classList.contains('larga'))larguraTotal();
