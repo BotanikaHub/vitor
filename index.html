@@ -347,44 +347,104 @@ table.oferta .tp{font-size:10px;background:var(--painel2);border-radius:20px;pad
   .cal-dia .pecas{display:none}#modal .dupla{grid-template-columns:1fr}
 }
 /* ===== Gestão (execução no ClickUp) ===== */
-#pg-gestao .g-topo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-#pg-gestao .g-abas{display:flex;gap:2px}
-#pg-gestao .g-abas button{padding:7px 13px;font-size:12.5px;color:var(--txt2);background:transparent;
+#pg-gestao .g-topo,#pg-tarefas .g-topo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+#pg-gestao .g-abas,#pg-tarefas .g-abas{display:flex;gap:2px}
+#pg-gestao .g-abas button,#pg-tarefas .g-abas button{padding:7px 13px;font-size:12.5px;color:var(--txt2);background:transparent;
   border:1px solid var(--linha2);border-radius:8px;cursor:pointer}
-#pg-gestao .g-abas button.on{color:var(--verde);border-color:var(--verde-esc);background:var(--painel2)}
-#pg-gestao .g-quando{margin-left:auto;font-size:11.5px;color:var(--txt2)}
-#pg-gestao .g-aviso{padding:13px 15px;border:1px solid var(--linha2);border-radius:11px;
+#pg-gestao .g-abas button.on,#pg-tarefas .g-abas button.on{color:var(--verde);border-color:var(--verde-esc);background:var(--painel2)}
+#pg-gestao .g-quando,#pg-tarefas .g-quando{margin-left:auto;font-size:11.5px;color:var(--txt2)}
+#pg-gestao .g-aviso,#pg-tarefas .g-aviso{padding:13px 15px;border:1px solid var(--linha2);border-radius:11px;
   background:var(--painel2);font-size:13px;line-height:1.55;color:var(--txt2);margin-bottom:14px}
-#pg-gestao .g-aviso b{color:var(--txt)}
-#pg-gestao .g-aviso.alerta{border-color:#5a3a1e;background:#241a10;color:var(--amar)}
-#pg-gestao .g-acao{border:1px solid var(--linha);border-radius:13px;background:var(--painel);
+#pg-gestao .g-aviso b,#pg-tarefas .g-aviso b{color:var(--txt)}
+#pg-gestao .g-aviso.alerta,#pg-tarefas .g-aviso.alerta{border-color:#5a3a1e;background:#241a10;color:var(--amar)}
+#pg-gestao .g-acao,#pg-tarefas .g-acao{border:1px solid var(--linha);border-radius:13px;background:var(--painel);
   padding:15px 17px;margin-bottom:11px}
-#pg-gestao .g-cab{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
-#pg-gestao .g-cab h3{margin:0;font-size:15px;font-weight:600;flex:1 1 220px;min-width:0}
-#pg-gestao .g-frac{font-size:12.5px;color:var(--txt2);font-variant-numeric:tabular-nums}
-#pg-gestao .g-selo{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+#pg-gestao .g-cab,#pg-tarefas .g-cab{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap}
+#pg-gestao .g-cab h3,#pg-tarefas .g-cab h3{margin:0;font-size:15px;font-weight:600;flex:1 1 220px;min-width:0}
+#pg-gestao .g-frac,#pg-tarefas .g-frac{font-size:12.5px;color:var(--txt2);font-variant-numeric:tabular-nums}
+#pg-gestao .g-selo,#pg-tarefas .g-selo{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
   padding:3px 8px;border-radius:999px;font-weight:600}
-#pg-gestao .g-selo.ok{background:#12331f;color:var(--verde)}
-#pg-gestao .g-selo.atras{background:#3a1a1b;color:var(--verm)}
-#pg-gestao .g-selo.anda{background:#2a2412;color:var(--amar)}
-#pg-gestao .g-barra{height:6px;border-radius:99px;background:var(--linha);margin:11px 0 0;overflow:hidden}
-#pg-gestao .g-barra i{display:block;height:100%;background:var(--verde);border-radius:99px}
-#pg-gestao .g-lista{margin:12px 0 0;display:grid;gap:5px}
-#pg-gestao .g-tar{display:flex;align-items:baseline;gap:9px;font-size:12.5px;padding:5px 0;
+#pg-gestao .g-selo.ok,#pg-tarefas .g-selo.ok{background:#12331f;color:var(--verde)}
+#pg-gestao .g-selo.atras,#pg-tarefas .g-selo.atras{background:#3a1a1b;color:var(--verm)}
+#pg-gestao .g-selo.anda,#pg-tarefas .g-selo.anda{background:#2a2412;color:var(--amar)}
+#pg-gestao .g-barra,#pg-tarefas .g-barra{height:6px;border-radius:99px;background:var(--linha);margin:11px 0 0;overflow:hidden}
+#pg-gestao .g-barra i,#pg-tarefas .g-barra i{display:block;height:100%;background:var(--verde);border-radius:99px}
+#pg-gestao .g-lista,#pg-tarefas .g-lista{margin:12px 0 0;display:grid;gap:5px}
+#pg-gestao .g-tar,#pg-tarefas .g-tar{display:flex;align-items:baseline;gap:9px;font-size:12.5px;padding:5px 0;
   border-top:1px solid var(--linha)}
-#pg-gestao .g-tar a{color:var(--txt);text-decoration:none;flex:1 1 auto;min-width:0}
-#pg-gestao .g-tar a:hover{color:var(--verde)}
-#pg-gestao .g-tar.feita a{color:var(--txt2);text-decoration:line-through}
-#pg-gestao .g-quem{font-size:11px;color:var(--txt2);white-space:nowrap}
-#pg-gestao .g-prazo{font-size:11px;color:var(--txt2);white-space:nowrap;font-variant-numeric:tabular-nums}
-#pg-gestao .g-prazo.vencido{color:var(--verm)}
-#pg-gestao .g-dia{margin-bottom:13px}
-#pg-gestao .g-dia h4{margin:0 0 7px;font-size:12.5px;font-weight:600;color:var(--txt2);
+#pg-gestao .g-tar a,#pg-tarefas .g-tar a{color:var(--txt);text-decoration:none;flex:1 1 auto;min-width:0}
+#pg-gestao .g-tar a:hover,#pg-tarefas .g-tar a:hover{color:var(--verde)}
+#pg-gestao .g-tar.feita a,#pg-tarefas .g-tar.feita a{color:var(--txt2);text-decoration:line-through}
+#pg-gestao .g-quem,#pg-tarefas .g-quem{font-size:11px;color:var(--txt2);white-space:nowrap}
+#pg-gestao .g-prazo,#pg-tarefas .g-prazo{font-size:11px;color:var(--txt2);white-space:nowrap;font-variant-numeric:tabular-nums}
+#pg-gestao .g-prazo.vencido,#pg-tarefas .g-prazo.vencido{color:var(--verm)}
+#pg-gestao .g-dia,#pg-tarefas .g-dia{margin-bottom:13px}
+#pg-gestao .g-dia h4,#pg-tarefas .g-dia h4{margin:0 0 7px;font-size:12.5px;font-weight:600;color:var(--txt2);
   text-transform:capitalize;border-bottom:1px solid var(--linha);padding-bottom:5px}
-#pg-gestao .g-dia.hoje h4{color:var(--verde);border-color:var(--verde-esc)}
-#pg-gestao .g-vazio{padding:22px;text-align:center;border:1px dashed var(--linha2);
+#pg-gestao .g-dia.hoje h4,#pg-tarefas .g-dia.hoje h4{color:var(--verde);border-color:var(--verde-esc)}
+#pg-gestao .g-vazio,#pg-tarefas .g-vazio{padding:22px;text-align:center;border:1px dashed var(--linha2);
   border-radius:11px;color:var(--txt2);font-size:13px}
-#pg-gestao .g-ondeta{font-size:11px;color:var(--txt2);white-space:nowrap}
+#pg-gestao .g-ondeta,#pg-tarefas .g-ondeta{font-size:11px;color:var(--txt2);white-space:nowrap}
+/* ===== Tarefas (o ClickUp aqui dentro) ===== */
+#pg-tarefas .tf-topo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+#pg-tarefas .tf-topo select{background:var(--painel2);border:1px solid var(--linha2);
+  border-radius:8px;padding:6px 9px;font-size:12.5px}
+#pg-tarefas .mini.forte{color:var(--verde);border-color:var(--verde-esc);background:var(--painel2)}
+#pg-tarefas .tf-quadro{display:grid;gap:11px;align-items:start;
+  grid-template-columns:repeat(5,minmax(190px,1fr));overflow-x:auto;padding-bottom:6px}
+#pg-tarefas .tf-col{background:var(--painel);border:1px solid var(--linha);
+  border-radius:12px;padding:10px;min-width:190px}
+#pg-tarefas .tf-col-cab{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;
+  letter-spacing:.07em;text-transform:uppercase;color:var(--c);margin-bottom:9px;
+  padding-bottom:7px;border-bottom:2px solid var(--c)}
+#pg-tarefas .tf-col-cab span{flex:1 1 auto;min-width:0}
+#pg-tarefas .tf-col-cab b{color:var(--txt2);font-weight:600}
+#pg-tarefas .tf-col-corpo{display:grid;gap:7px}
+#pg-tarefas .tf-card{background:var(--painel2);border:1px solid var(--linha);
+  border-left:3px solid var(--linha2);border-radius:9px;padding:9px 11px;cursor:pointer}
+#pg-tarefas .tf-card:hover{border-color:var(--linha2)}
+#pg-tarefas .tf-card.atrasada{border-left-color:var(--verm)}
+#pg-tarefas .tf-nome{font-size:12.5px;line-height:1.4}
+#pg-tarefas .tf-pe{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:7px;
+  font-size:10.5px;color:var(--txt2)}
+#pg-tarefas .tf-prio{color:var(--c);border:1px solid currentColor;border-radius:999px;
+  padding:1px 6px;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase}
+#pg-tarefas .tf-prazo{font-variant-numeric:tabular-nums;white-space:nowrap}
+#pg-tarefas .tf-prazo.vencido{color:var(--verm)}
+#pg-tarefas .tf-check,#pg-tarefas .tf-sub{background:var(--linha);border-radius:5px;padding:1px 5px}
+#pg-tarefas .tf-quem{margin-left:auto;white-space:nowrap;color:var(--txt3)}
+#pg-tarefas .tf-vazio{font-size:11.5px;color:var(--txt3);padding:9px 2px;text-align:center}
+#pg-tarefas .tf-linha{display:flex;align-items:center;gap:9px;font-size:12.5px;padding:7px 0;
+  border-top:1px solid var(--linha);cursor:pointer}
+#pg-tarefas .tf-linha:hover .nm{color:var(--verde)}
+#pg-tarefas .tf-linha .nm{flex:1 1 auto;min-width:0}
+#pg-tarefas .tf-linha.feita .nm{color:var(--txt2);text-decoration:line-through}
+#pg-tarefas .tf-bola{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+#pg-tarefas .tf-selo{font-size:10px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;
+  color:var(--c);border:1px solid currentColor;border-radius:999px;padding:2px 8px}
+/* painel de detalhe */
+#tf-painel{position:fixed;inset:0;z-index:60;display:none}
+#tf-painel.on{display:block}
+#tf-painel .fundo{position:absolute;inset:0;background:#000a;backdrop-filter:blur(2px)}
+#tf-painel .folha{position:absolute;top:0;right:0;bottom:0;width:min(560px,100%);
+  background:var(--painel);border-left:1px solid var(--linha2);overflow-y:auto;padding:22px 24px 60px}
+#tf-painel h3{margin:0 0 4px;font-size:18px;font-weight:600;line-height:1.35}
+#tf-painel .campo{margin-top:15px}
+#tf-painel .campo>label:not(.item){display:block;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--txt3);margin-bottom:5px}
+#tf-painel select,#tf-painel input[type=date],#tf-painel input[type=text],#tf-painel textarea{
+  width:100%;background:var(--painel2);border:1px solid var(--linha2);border-radius:8px;
+  padding:8px 10px;font-size:13px}
+#tf-painel textarea{min-height:80px;resize:vertical;line-height:1.5}
+#tf-painel .dupla2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+#tf-painel .item{display:flex;gap:9px;align-items:flex-start;font-size:13px;padding:7px 0;
+  border-top:1px solid var(--linha);cursor:pointer;line-height:1.45}
+#tf-painel .item input{margin:3px 0 0;accent-color:var(--verde);flex:none}
+#tf-painel .item.ok span{color:var(--txt2);text-decoration:line-through}
+#tf-painel .fechar{position:absolute;top:14px;right:18px;font-size:22px;color:var(--txt2);
+  line-height:1;padding:4px 8px}
+#tf-painel .meta{font-size:12px;color:var(--txt2);margin-top:2px}
+@media(max-width:900px){#pg-tarefas .tf-quadro{grid-template-columns:repeat(5,minmax(180px,1fr))}}
 /* Tráfego e API lado a lado no passo 2: o que cada um fatura e o que
    cada um consome, com o resto da meta calculado embaixo. */
 .fontes{border:1px solid var(--linha2);border-radius:11px;padding:4px 13px 10px;margin:14px 0 4px}
@@ -470,13 +530,13 @@ input.inline{background:var(--painel2);border:1px solid var(--verde);border-radi
 .ta-rodape{margin-top:14px;padding:12px 14px;border:1px dashed var(--linha2);border-radius:11px;
   font-size:12.5px;color:var(--txt2)}
 .ta-rodape b{color:var(--verde)}
-#pg-gestao #g-resumo{margin-bottom:18px}
-#pg-gestao #g-resumo:empty{display:none}
-#pg-gestao .g-tap{font-size:11px;color:var(--txt2);border:1px solid var(--linha2);
+#pg-gestao #g-resumo,#pg-tarefas #g-resumo{margin-bottom:18px}
+#pg-gestao #g-resumo:empty,#pg-tarefas #g-resumo:empty{display:none}
+#pg-gestao .g-tap,#pg-tarefas .g-tap{font-size:11px;color:var(--txt2);border:1px solid var(--linha2);
   border-radius:20px;padding:3px 10px;background:var(--painel2)}
-#pg-gestao .g-tap:hover{color:var(--verde);border-color:var(--verde-esc)}
-#pg-gestao .g-cab h3{cursor:default}
-#pg-gestao .g-pes{font-size:12.5px;color:var(--txt3);margin:-4px 0 9px}
+#pg-gestao .g-tap:hover,#pg-tarefas .g-tap:hover{color:var(--verde);border-color:var(--verde-esc)}
+#pg-gestao .g-cab h3,#pg-tarefas .g-cab h3{cursor:default}
+#pg-gestao .g-pes,#pg-tarefas .g-pes{font-size:12.5px;color:var(--txt3);margin:-4px 0 9px}
 /* selo de execução que a página do Mês e da Semana herdam da Gestão */
 .faixa-camp .exec{font-size:11px;padding:2px 9px;border-radius:20px;white-space:nowrap;
   background:var(--painel2);color:var(--txt2)}
@@ -502,6 +562,7 @@ input.inline{background:var(--painel2);border:1px solid var(--verde);border-radi
     <button data-pg="semana">Semana</button>
     <button data-pg="camp">Campanhas</button>
     <button data-pg="gestao">Gestão</button>
+    <button data-pg="tarefas">Tarefas</button>
   </nav>
 </div></div>
 
@@ -612,6 +673,23 @@ input.inline{background:var(--painel2);border:1px solid var(--verde);border-radi
   <div style="margin-top:16px"><button class="mini" onclick="novaSecao()">+ Seção em branco</button></div>
 </div>
 
+<div class="pagina" id="pg-tarefas">
+  <div class="tf-topo">
+    <div class="g-abas" id="tf-abas">
+      <button data-tv="quadro" class="on" onclick="tfVer('quadro')">Quadro</button>
+      <button data-tv="lista" onclick="tfVer('lista')">Por ação</button>
+      <button data-tv="pessoa" onclick="tfVer('pessoa')">Por pessoa</button>
+    </div>
+    <select id="tf-quem" onchange="tfQuem=this.value;tfPintar()"></select>
+    <button class="mini" id="tf-marca" onclick="tfSoMarca=!tfSoMarca;tfPintar()"></button>
+    <button class="mini forte" onclick="tfNova()">+ nova tarefa</button>
+    <button class="mini" onclick="tfCarregar({forcar:true})">Atualizar</button>
+    <span class="g-quando" id="tf-quando"></span>
+  </div>
+  <div class="cartoes" id="tf-resumo"></div>
+  <div id="tf-corpo"></div>
+</div>
+
 <div class="pagina" id="pg-gestao">
   <div class="g-topo">
     <div class="g-abas">
@@ -642,6 +720,10 @@ input.inline{background:var(--painel2);border:1px solid var(--verde);border-radi
 <div id="relatorio" aria-hidden="true"></div>
 
 <div id="menu"></div>
+<div id="tf-painel">
+  <div class="fundo" onclick="tfFechar()"></div>
+  <div class="folha" id="tf-folha"></div>
+</div>
 <div id="modal"><div class="cx" id="modal-cx"></div></div>
 
 <style>
@@ -2129,6 +2211,7 @@ document.addEventListener('pointerdown',e=>{if(!e.target.closest('#menu'))fechar
 
 document.addEventListener('keydown',e=>{
   if($('#modal').classList.contains('on')){if(e.key==='Escape')fecharModal();return}
+  if($('#tf-painel')?.classList.contains('on')){if(e.key==='Escape')tfFechar();return}
   if(!$('#pg-mapa').classList.contains('on')||editando)return;
   const a=document.activeElement;
   if(a&&(a.isContentEditable||a.tagName==='INPUT'||a.tagName==='TEXTAREA'))return;
@@ -2997,6 +3080,7 @@ document.querySelectorAll('nav.paginas button').forEach(b=>{
       alturaLarga();organizar();posPaleta();
     },40);
     if(b.dataset.pg==='gestao')cuLer();
+    if(b.dataset.pg==='tarefas')tfCarregar();
   };
 });
 
@@ -3008,6 +3092,7 @@ function tudo(){
   pintarTAP();
   /* trocou o mês, trocou a marca: a Gestão segue o seletor */
   if(typeof cuPintar==='function'&&$('#g-corpo'))cuPintar();
+  if(typeof tfPintar==='function'&&$('#tf-corpo'))tfPintar();
 }
 /* ================= SALVAR ================= */
 /* Chave nova a cada ciclo: setembro começa do zero, e o que já foi
@@ -3648,6 +3733,355 @@ function cuResumo(){
       <div class="pe">${naSemana.length-semFeitas} a entregar até domingo</div></div>`;
 }
 
+/* ================= TAREFAS =================
+   As tarefas passam a viver aqui, não só no ClickUp. Mesma tabela da
+   fila de aprovação, com duas colunas a mais: `status`, no andamento do
+   trabalho, e o checklist do que já foi feito. Os nomes de status são os
+   mesmos de lá, para a migração não pedir tradução de ninguém. */
+const TF_STATUS=['a fazer','fazendo','revisar','ajustes necessários','feito'];
+const TF_COR={'a fazer':'#87909e','fazendo':'#b660e0','revisar':'#f8ae00',
+  'ajustes necessários':'#e16b16','feito':'#008844'};
+const TF_PRIO={urgent:['urgente','#f2777a'],high:['alta','#f5c451'],
+  normal:['normal','#5eb3f0'],low:['baixa','#5f7a6d']};
+
+let TF=[], tfVista='quadro', tfQuem='', tfSoMarca=true, tfLendo=false,
+    tfQuando=0, tfAberta=null, tfErro='';
+
+const tfOrdenar=a=>a.sort((x,y)=>
+  (x.dia||'9999').localeCompare(y.dia||'9999')||(x.ordem-y.ordem)||x.nome.localeCompare(y.nome));
+
+function tfVisiveis(){
+  const alvo=cuNorm(marcaDo(mesAtual()));
+  return TF.filter(t=>{
+    if(t.situacao==='recusada')return false;
+    if(tfSoMarca&&cuNorm(t.marca||'')!==alvo)return false;
+    if(tfQuem&&String(t.responsavel||'')!==tfQuem)return false;
+    return true;
+  });
+}
+const tfEhMae=t=>!t.mae_de;
+const tfFilhas=t=>TF.filter(x=>x.mae_de===t.assinatura);
+
+async function tfCarregar(op){
+  if(tfLendo)return;
+  /* já li faz pouco: não vale bater no banco a cada troca de aba */
+  if(!op?.forcar&&tfQuando&&Date.now()-tfQuando<60000){tfPintar();return}
+  tfLendo=true;tfErro='';tfPintar();
+  try{
+    const r=await sbFetch(`${SB.url}/rest/v1/tarefas_planejadas`+
+      `?select=*&situacao=neq.recusada&order=dia.asc,ordem.asc`,{headers:sbCab()});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    TF=await r.json();tfQuando=Date.now();
+  }catch(e){tfErro=e.message;TF=[]}
+  tfLendo=false;tfPintar();
+}
+
+/* Grava uma mudança na tarefa e devolve o que o banco guardou, para a
+   tela nunca mostrar algo que não foi salvo. */
+async function tfSalvar(t,mudanca){
+  const antes={...t};
+  Object.assign(t,mudanca);tfPintar();
+  try{
+    const r=await sbFetch(`${SB.url}/rest/v1/tarefas_planejadas`+
+      `?assinatura=eq.${encodeURIComponent(t.assinatura)}`,{method:'PATCH',
+      headers:sbCab({Prefer:'return=representation'}),body:JSON.stringify(mudanca)});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const [novo]=await r.json();
+    if(novo)Object.assign(t,novo);
+    tfPintar();
+  }catch(e){
+    Object.assign(t,antes);tfPintar();
+    aviso('Não consegui salvar essa mudança: '+e.message);
+  }
+}
+
+const tfAtrasada=t=>t.status!=='feito'&&t.dia&&t.dia<iso(new Date());
+const tfProgresso=t=>{
+  const n=(t.checklist||[]).length;
+  return n?{feitos:(t.checklist_feito||[]).length,total:n}:null;
+};
+
+/* ---- desenho ---- */
+function tfCartao(t){
+  const p=tfProgresso(t), prio=TF_PRIO[t.prioridade]||null;
+  const filhas=tfEhMae(t)?tfFilhas(t):[];
+  return `<div class="tf-card${tfAtrasada(t)?' atrasada':''}" onclick="tfAbrir('${esc(t.assinatura)}')">
+    <div class="tf-nome">${esc(t.nome)}</div>
+    <div class="tf-pe">
+      ${prio?`<span class="tf-prio" style="--c:${prio[1]}">${prio[0]}</span>`:''}
+      ${t.dia?`<span class="tf-prazo${tfAtrasada(t)?' vencido':''}">${dBR(dISO(t.dia))}</span>`:''}
+      ${p?`<span class="tf-check">${p.feitos}/${p.total}</span>`:''}
+      ${filhas.length?`<span class="tf-sub">${filhas.filter(f=>f.status==='feito').length}/${filhas.length} subtarefas</span>`:''}
+      <span class="tf-quem">${esc(String(t.responsavel||'—').split('|')[0].trim())}</span>
+    </div></div>`;
+}
+
+function tfQuadro(){
+  const ts=tfVisiveis().filter(t=>!tfEhMae(t)||!tfFilhas(t).length);
+  return `<div class="tf-quadro">${TF_STATUS.map(st=>{
+    const doStatus=tfOrdenar(ts.filter(t=>t.status===st));
+    return `<div class="tf-col">
+      <div class="tf-col-cab" style="--c:${TF_COR[st]}">
+        <span>${st}</span><b>${doStatus.length}</b></div>
+      <div class="tf-col-corpo">${doStatus.map(tfCartao).join('')||
+        '<div class="tf-vazio">nada aqui</div>'}</div></div>`;
+  }).join('')}</div>`;
+}
+
+function tfLista(){
+  const ts=tfVisiveis();
+  const maes=ts.filter(t=>tfEhMae(t)&&ts.some(x=>x.mae_de===t.assinatura));
+  const soltas=ts.filter(t=>!maes.some(m=>m.assinatura===(t.mae_de||t.assinatura)));
+  const blocos=maes.map(m=>{
+    const f=tfOrdenar(ts.filter(x=>x.mae_de===m.assinatura));
+    const feitas=f.filter(x=>x.status==='feito').length;
+    return `<div class="g-acao"><div class="g-cab">
+        <h3>${esc(m.nome)}</h3>
+        <span class="g-frac">${feitas} de ${f.length} feitas</span>
+        <span class="tf-selo" style="--c:${TF_COR[m.status]}">${m.status}</span></div>
+      <div class="g-barra"><i style="width:${f.length?Math.round(100*feitas/f.length):0}%"></i></div>
+      ${f.map(tfLinha).join('')||'<div class="tf-vazio">sem subtarefas</div>'}</div>`;
+  }).join('');
+  const avulsas=tfOrdenar(soltas.slice());
+  return (blocos||'')+(avulsas.length?`<div class="g-acao">
+    <div class="g-cab"><h3>Sem ação ligada</h3>
+      <span class="g-frac">${avulsas.length}</span></div>
+    ${avulsas.map(tfLinha).join('')}</div>`:'')
+    ||'<div class="g-vazio">Nenhuma tarefa ainda. Gere pela aba Gestão ou crie uma aqui.</div>';
+}
+
+function tfLinha(t){
+  const p=tfProgresso(t);
+  return `<div class="tf-linha${t.status==='feito'?' feita':''}" onclick="tfAbrir('${esc(t.assinatura)}')">
+    <span class="tf-bola" style="--c:${TF_COR[t.status]}"></span>
+    <span class="nm">${esc(t.nome)}</span>
+    ${p?`<span class="tf-check">${p.feitos}/${p.total}</span>`:''}
+    ${t.dia?`<span class="tf-prazo${tfAtrasada(t)?' vencido':''}">${dBR(dISO(t.dia))}</span>`:''}
+    <span class="tf-quem">${esc(String(t.responsavel||'—').split('|')[0].trim())}</span></div>`;
+}
+
+function tfPessoa(){
+  const ts=tfVisiveis().filter(t=>!tfEhMae(t)||!tfFilhas(t).length);
+  const por=new Map();
+  ts.forEach(t=>{
+    const q=String(t.responsavel||'Sem responsável').split('|')[0].trim();
+    if(!por.has(q))por.set(q,[]);por.get(q).push(t);
+  });
+  if(!por.size)return '<div class="g-vazio">Nenhuma tarefa para distribuir.</div>';
+  return [...por.entries()].map(([q,l])=>{
+    const feitas=l.filter(x=>x.status==='feito').length;
+    const atras=l.filter(tfAtrasada).length;
+    return {q,l,feitas,atras};
+  }).sort((a,b)=>(b.atras-a.atras)||(b.l.length-a.l.length)).map(g=>
+    `<div class="g-acao"><div class="g-cab"><h3>${esc(g.q)}</h3>
+      <span class="g-frac">${g.feitas} de ${g.l.length} feitas</span>
+      ${g.atras?`<span class="g-selo atras">${g.atras} atrasada${g.atras>1?'s':''}</span>`:''}</div>
+      <div class="g-barra"><i style="width:${Math.round(100*g.feitas/g.l.length)}%"></i></div>
+      ${tfOrdenar(g.l.filter(x=>x.status!=='feito')).map(tfLinha).join('')||
+        '<div class="tf-vazio">tudo feito</div>'}</div>`).join('');
+}
+
+function tfResumo(){
+  const ts=tfVisiveis().filter(t=>!tfEhMae(t)||!tfFilhas(t).length);
+  if(!ts.length)return '';
+  const feitas=ts.filter(t=>t.status==='feito').length;
+  const atras=ts.filter(tfAtrasada).length;
+  const hoje=iso(new Date());
+  const doDia=ts.filter(t=>t.dia===hoje&&t.status!=='feito').length;
+  const pct=Math.round(100*feitas/ts.length);
+  return `<div class="cartao"><div class="rot">Concluídas</div>
+      <div class="num ${pct>=100?'v':''}">${feitas} de ${ts.length}</div>
+      <div class="pe">${pct}% das tarefas ${tfSoMarca?'da '+esc(marcaDo(mesAtual())):''}</div></div>
+    <div class="cartao"><div class="rot">Para hoje</div><div class="num">${doDia}</div>
+      <div class="pe">vencem hoje e não foram feitas</div></div>
+    <div class="cartao"><div class="rot">Atrasadas</div>
+      <div class="num ${atras?'a':'v'}">${atras}</div>
+      <div class="pe">${atras?'prazo vencido':'nenhum prazo vencido'}</div></div>
+    <div class="cartao"><div class="rot">Em andamento</div>
+      <div class="num">${ts.filter(t=>t.status==='fazendo'||t.status==='revisar').length}</div>
+      <div class="pe">fazendo ou em revisão</div></div>`;
+}
+
+function tfPintar(){
+  const alvo=$('#tf-corpo');if(!alvo)return;
+  document.querySelectorAll('#tf-abas button')
+    .forEach(b=>b.classList.toggle('on',b.dataset.tv===tfVista));
+  const bm=$('#tf-marca');
+  if(bm)bm.textContent=tfSoMarca?'Só '+marcaDo(mesAtual()):'As duas marcas';
+  const sel=$('#tf-quem');
+  if(sel){
+    const quens=[...new Set(TF.map(t=>String(t.responsavel||'').split('|')[0].trim())
+      .filter(Boolean))].sort();
+    sel.innerHTML='<option value="">todo mundo</option>'+quens.map(q=>
+      `<option value="${esc(TF.find(t=>String(t.responsavel||'').startsWith(q))?.responsavel||q)}"
+        ${tfQuem&&tfQuem.startsWith(q)?'selected':''}>${esc(q)}</option>`).join('');
+  }
+  $('#tf-quando').textContent=tfLendo?'lendo…':
+    tfQuando?'lido '+new Date(tfQuando).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'';
+  $('#tf-resumo').innerHTML=tfErro?'':tfResumo();
+  if(tfErro){alvo.innerHTML=`<div class="g-aviso alerta"><b>Não consegui ler as tarefas.</b>
+    ${esc(tfErro)} — o resto do planejador continua funcionando.</div>`;return}
+  if(tfLendo&&!TF.length){alvo.innerHTML='<div class="g-vazio">Lendo as tarefas…</div>';return}
+  alvo.innerHTML = tfVista==='lista'?tfLista() : tfVista==='pessoa'?tfPessoa() : tfQuadro();
+}
+function tfVer(v){tfVista=v;tfPintar()}
+
+/* ---- o painel de uma tarefa ----
+   Tudo que dá pra mexer numa tarefa do ClickUp e que a equipe usa de
+   verdade: status, responsável, prioridade, prazo, checklist e descrição.
+   Cada mudança grava na hora; se o banco recusar, a tela volta ao que era. */
+function tfAchar(a){return TF.find(t=>t.assinatura===a)}
+
+function tfAbrir(a){
+  const t=tfAchar(a);if(!t)return;
+  tfAberta=a;$('#tf-painel').classList.add('on');tfFolha();
+}
+function tfFechar(){tfAberta=null;$('#tf-painel').classList.remove('on')}
+
+function tfFolha(){
+  const alvo=$('#tf-folha');if(!alvo)return;
+  const t=tfAberta&&tfAchar(tfAberta);
+  if(!t){tfFechar();return}
+  const feitos=new Set(t.checklist_feito||[]);
+  const itens=(t.checklist||[]);
+  const mae=t.mae_de?tfAchar(t.mae_de):null;
+  const filhas=tfEhMae(t)?tfOrdenar(tfFilhas(t)):[];
+  const quens=[...new Set(TF.map(x=>x.responsavel).filter(Boolean))].sort();
+  if(t.responsavel&&!quens.includes(t.responsavel))quens.push(t.responsavel);
+
+  alvo.innerHTML=`<button class="fechar" onclick="tfFechar()" title="Fechar">×</button>
+    <h3>${esc(t.nome)}</h3>
+    <div class="meta">${esc(t.marca||'')}${t.campanha?' · '+esc(t.campanha):''}
+      ${mae?` · dentro de <b>${esc(mae.nome)}</b>`:''}
+      ${t.clickup_url?` · <a href="${esc(t.clickup_url)}" target="_blank" rel="noopener">abrir no ClickUp</a>`:''}
+      ${t.situacao&&t.situacao!=='criada'?` · fila: ${esc(t.situacao)}`:''}</div>
+
+    <div class="campo"><label>Status</label>
+      <select onchange="tfMudar('status',this.value)">${TF_STATUS.map(st=>
+        `<option ${t.status===st?'selected':''}>${st}</option>`).join('')}</select></div>
+
+    <div class="dupla2">
+      <div class="campo"><label>Responsável</label>
+        <input type="text" list="tf-quens" value="${esc(t.responsavel||'')}"
+          onchange="tfMudar('responsavel',this.value.trim()||null)">
+        <datalist id="tf-quens">${quens.map(q=>`<option value="${esc(q)}">`).join('')}</datalist></div>
+      <div class="campo"><label>Prioridade</label>
+        <select onchange="tfMudar('prioridade',this.value||null)">
+          <option value="">sem prioridade</option>
+          ${Object.entries(TF_PRIO).map(([k,v])=>
+            `<option value="${k}" ${t.prioridade===k?'selected':''}>${v[0]}</option>`).join('')}
+        </select></div>
+    </div>
+
+    <div class="dupla2">
+      <div class="campo"><label>Começa</label>
+        <input type="date" value="${t.inicio||''}" onchange="tfMudar('inicio',this.value||null)"></div>
+      <div class="campo"><label>Prazo</label>
+        <input type="date" value="${t.dia||''}" onchange="tfMudar('dia',this.value||null)"></div>
+    </div>
+
+    ${itens.length?`<div class="campo"><label>Checklist —
+      ${feitos.size} de ${itens.length}</label>
+      ${itens.map(it=>`<label class="item${feitos.has(it)?' ok':''}">
+        <input type="checkbox" ${feitos.has(it)?'checked':''}
+          onchange="tfItem(${JSON.stringify(it).replace(/"/g,'&quot;')},this.checked)">
+        <span>${esc(it)}</span></label>`).join('')}</div>`:''}
+
+    ${filhas.length?`<div class="campo"><label>Subtarefas —
+      ${filhas.filter(f=>f.status==='feito').length} de ${filhas.length}</label>
+      ${filhas.map(f=>`<div class="tf-linha${f.status==='feito'?' feita':''}"
+        onclick="tfAbrir('${esc(f.assinatura)}')">
+        <span class="tf-bola" style="--c:${TF_COR[f.status]}"></span>
+        <span class="nm">${esc(f.nome)}</span>
+        <span class="tf-quem">${esc(String(f.responsavel||'—').split('|')[0].trim())}</span>
+      </div>`).join('')}</div>`:''}
+
+    <div class="campo"><label>Descrição</label>
+      <textarea onchange="tfMudar('descricao',this.value||null)"
+        placeholder="o que precisa acontecer">${esc(t.descricao||'')}</textarea></div>
+
+    <div class="campo" style="color:var(--txt3);font-size:11.5px">
+      ${t.atualizada_em?'mexida pela última vez em '+
+        new Date(t.atualizada_em).toLocaleString('pt-BR'):''}
+      ${t.feita_em?' · feita em '+new Date(t.feita_em).toLocaleString('pt-BR'):''}</div>`;
+}
+
+async function tfMudar(campo,valor){
+  const t=tfAberta&&tfAchar(tfAberta);if(!t)return;
+  if(t[campo]===valor)return;
+  await tfSalvar(t,{[campo]:valor});
+  tfFolha();
+}
+async function tfItem(item,marcado){
+  const t=tfAberta&&tfAchar(tfAberta);if(!t)return;
+  const feitos=new Set(t.checklist_feito||[]);
+  marcado?feitos.add(item):feitos.delete(item);
+  const lista=(t.checklist||[]).filter(i=>feitos.has(i));
+  const mudanca={checklist_feito:lista};
+  /* fechou tudo: a tarefa já está pronta pra revisão, então adianta o
+     status em vez de deixar a pessoa mudar duas coisas */
+  if(lista.length===(t.checklist||[]).length&&lista.length&&t.status==='a fazer')
+    mudanca.status='fazendo';
+  await tfSalvar(t,mudanca);
+  tfFolha();
+}
+
+/* ---- criar uma tarefa na mão ---- */
+function tfNova(){
+  const marca=marcaDo(mesAtual()).toUpperCase();
+  const camps=campsMes().slice().sort((a,b)=>
+    String(a.inicio||'').localeCompare(String(b.inicio||'')));
+  $('#modal-cx').className='cx';
+  $('#modal-cx').innerHTML=`<h3>Nova tarefa</h3>
+    <p class="sub">Ela nasce aqui, na marca ${esc(marca)}. Se quiser levar pro
+      ClickUp depois, é a mesma fila das outras.</p>
+    <label><b>O que precisa ser feito</b>
+      <input id="tn-nome" type="text" placeholder="ex.: Criar as artes do Dia D"></label>
+    <div class="dupla">
+      <label><b>Responsável</b>
+        <input id="tn-quem" type="text" list="tf-quens2" placeholder="quem faz">
+        <datalist id="tf-quens2">${[...new Set(TF.map(x=>x.responsavel).filter(Boolean))]
+          .sort().map(q=>`<option value="${esc(q)}">`).join('')}</datalist></label>
+      <label><b>Prazo</b>
+        <input id="tn-dia" type="date" value="${iso(new Date())}"></label>
+    </div>
+    <div class="dupla">
+      <label><b>Prioridade</b>
+        <select id="tn-prio">${Object.entries(TF_PRIO).map(([k,v])=>
+          `<option value="${k}" ${k==='normal'?'selected':''}>${v[0]}</option>`).join('')}</select></label>
+      <label><b>Campanha</b>
+        <select id="tn-camp"><option value="">sem campanha</option>
+          ${camps.map(c=>`<option value="${esc(c.nome)}">${esc(c.nome)}</option>`).join('')}
+        </select></label>
+    </div>
+    <div class="bts"><button onclick="fecharModal()">Cancelar</button>
+      <button class="ok" onclick="tfCriar()">Criar tarefa</button></div>`;
+  $('#modal').classList.add('on');setTimeout(()=>$('#tn-nome')?.focus(),50);
+}
+
+async function tfCriar(){
+  const nome=$('#tn-nome').value.trim();
+  if(!nome){aviso('Escreve o que precisa ser feito.');return}
+  const marca=marcaDo(mesAtual()).toUpperCase();
+  const linha={
+    assinatura:`MAO§${Date.now()}§${Math.random().toString(36).slice(2,7)}`,
+    marca, campanha:$('#tn-camp').value||'Avulsa', nome,
+    responsavel:$('#tn-quem').value.trim()||null,
+    prioridade:$('#tn-prio').value||null,
+    dia:$('#tn-dia').value||null,
+    situacao:'aprovada', status:'a fazer', quem:sbQuem(),
+    decidida_em:new Date().toISOString()
+  };
+  fecharModal();
+  try{
+    const r=await sbFetch(`${SB.url}/rest/v1/tarefas_planejadas`,{method:'POST',
+      headers:sbCab({Prefer:'return=representation'}),body:JSON.stringify([linha])});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const [nova]=await r.json();
+    if(nova){TF.push(nova);tfPintar()}
+  }catch(e){aviso('Não consegui criar a tarefa: '+e.message)}
+}
+
 /* ================= GERAR TAREFAS =================
    A tarefa da equipe não é uma linha do cronograma. A descrição da
    tarefa-mãe do Dia D Kids diz o padrão com todas as letras:
@@ -3917,8 +4351,10 @@ async function taAprovar(){
     if(!r.ok)throw new Error('HTTP '+r.status);
     taMarcadas=new Set();taFila=null;
     aviso(`${escolhidas.length} tarefa${escolhidas.length===1?'':'s'} na fila. `+
-      `Peça pra eu criar no ClickUp.`);
+      `Já dá pra tocar por elas na aba Tarefas; a criação no ClickUp é quando você pedir.`);
     taCarregar();
+    /* elas já viram trabalho de verdade aqui dentro */
+    if(typeof tfCarregar==='function')tfCarregar({forcar:true});
   }catch(e){aviso('Não consegui guardar a aprovação: '+e.message)}
 }
 
