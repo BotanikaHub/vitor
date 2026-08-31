@@ -425,8 +425,11 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 
 <div id="troca">
   <div class="barra2"><span id="troca-msg"></span>
-    <button class="mini" onclick="fecharTroca()" style="margin-left:auto">fechar</button></div>
+    <span id="troca-bts" style="margin-left:auto;display:flex;gap:8px"></span>
+    <button class="mini" onclick="fecharTroca()">fechar</button></div>
   <textarea id="troca-txt" spellcheck="false"></textarea>
+  <input type="file" id="troca-arq" accept=".json,application/json,text/plain"
+         style="display:none" onchange="lerArquivo(this)">
 </div>
 
 <div class="pagina" id="pg-mapa">
@@ -2249,18 +2252,77 @@ function excluirTAP(){
 }
 
 /* ================= I/O ================= */
-function abrirTroca(txt,msg,ed){
+/* A caixa de troca tinha um contrato ruim: abria calada lá em cima, e a
+   importação só acontecia quando a caixa perdia o foco. Quem clicava
+   achava que não tinha funcionado — e às vezes tinha, sem avisar. Agora
+   cada saída é um botão com nome, e nada acontece sem alguém mandar. */
+function abrirTroca(txt,msg,ed,nomeArq){
   $('#troca').classList.add('on');$('#troca-msg').textContent=msg;
-  const t=$('#troca-txt');t.readOnly=!ed;
+  const t=$('#troca-txt');t.readOnly=!ed;t.onblur=null;
+  $('#troca-bts').innerHTML = ed
+    ? `<button class="mini" onclick="$('#troca-arq').click()">Abrir arquivo…</button>
+       <button class="mini forte" onclick="importarTexto()">Importar</button>`
+    : `<button class="mini forte" onclick="copiarTroca()">Copiar</button>
+       ${nomeArq?`<button class="mini" onclick="baixarArquivo('${nomeArq}',$('#troca-txt').value)">Baixar arquivo</button>`:''}`;
+  if(!ed){t.value=txt;t.placeholder='';
+    setTimeout(()=>{try{t.focus();t.select()}catch(e){}},250)}
+  else{t.value='';t.placeholder='Cole aqui o JSON e clique em Importar.';
+    setTimeout(()=>{try{t.focus()}catch(e){}},250)}
   t.scrollIntoView({behavior:'smooth',block:'center'});
-  if(!ed){t.value=txt;t.onblur=null;setTimeout(()=>{t.focus();t.select()},250)}
-  else{t.value='';t.placeholder='Cole o JSON e clique fora da caixa.';t.focus();
-    t.onblur=()=>{try{const n=JSON.parse(t.value);if(!n.campanhas||!n.meses)throw 0;
-      D=n;ativa=0;pilha=[];pilhaR=[];sel={t:'no',id:M().nos.find(x=>!x.pai)?.id||1};
-      tudo();fecharTroca();aviso('Importado.')}
-      catch(e){aviso('Não consegui ler esse JSON.')}}}
 }
 function fecharTroca(){$('#troca').classList.remove('on');$('#troca-txt').onblur=null}
+
+async function copiarTroca(){
+  const txt=$('#troca-txt').value;
+  try{await navigator.clipboard.writeText(txt);return aviso('Copiado.')}catch(e){}
+  const t=$('#troca-txt');
+  try{t.focus();t.select();
+    if(document.execCommand('copy'))return aviso('Copiado.')}catch(e){}
+  aviso('Está tudo selecionado — use Ctrl+C (ou Cmd+C).');
+}
+
+/* Baixar de dentro do visualizador de Artifacts só funciona pela
+   capacidade de downloads; fora dele, o caminho normal do navegador. */
+async function baixarArquivo(nome,txt){
+  try{
+    const dl=await window.claude?.use?.('downloads');
+    if(dl){await dl.save({filename:nome,data:txt});return aviso('Arquivo salvo.')}
+  }catch(e){
+    if(e&&e.code==='declined')return aviso('Download cancelado.');
+  }
+  try{
+    const a=document.createElement('a');
+    const u=URL.createObjectURL(new Blob([txt],{type:'application/json'}));
+    a.href=u;a.download=nome;document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},400);
+    aviso('Se o download não aparecer, use o Copiar.');
+  }catch(e){aviso('Não deu pra baixar aqui — use o Copiar.')}
+}
+
+function lerArquivo(inp){
+  const f=inp.files&&inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{$('#troca-txt').value=String(r.result||'');importarTexto()};
+  r.onerror=()=>aviso('Não consegui ler esse arquivo.');
+  r.readAsText(f);
+  inp.value='';
+}
+
+function importarTexto(){
+  const txt=$('#troca-txt').value.trim();
+  if(!txt)return aviso('Cole o JSON na caixa antes de importar.');
+  let n;
+  try{n=JSON.parse(txt)}catch(e){return aviso('Isso não é um JSON válido.')}
+  if(!n||!Array.isArray(n.meses)||!Array.isArray(n.campanhas))
+    return aviso('JSON lido, mas não é um planejamento — falta meses/campanhas.');
+  const quantos=`${n.campanhas.length} campanha${n.campanhas.length===1?'':'s'} e ${
+    (n.mapas||[]).length} mapa${(n.mapas||[]).length===1?'':'s'}`;
+  if(!confirm(`Isso substitui o planejamento atual por ${quantos}. Continuar?`))return;
+  D=n;garantirCiclo();ativa=0;pilha=[];pilhaR=[];
+  sel={t:'no',id:M().nos.find(x=>!x.pai)?.id||1};
+  ultimoSalvo='';tudo();salvar();fecharTroca();
+  aviso(`Importado: ${quantos}.`);
+}
 /* ================= EXPORTAR PDF =================
    Monta o relatório do mês inteiro e manda imprimir: no diálogo de
    impressão, "Salvar como PDF". Sai um documento em papel branco, na
@@ -2392,10 +2454,16 @@ function copiarTexto(){
     c.secoes.forEach(s=>{L.push(s.t,s.c.join(' | '),'-'.repeat(40));
       s.l.forEach(l=>L.push(l.join(' | ')));L.push('')});
   });
-  abrirTroca(L.join('\n'),'Está tudo selecionado — só dar Cmd+C.',false);
+  abrirTroca(L.join('\n'),'Resumo do mês em texto — use Copiar.',false,
+    `planejamento-${MESES[mesAtual().mes-1]}-${mesAtual().ano}.txt`);
 }
-function exportarJSON(){abrirTroca(JSON.stringify(D,null,2),'JSON selecionado — Cmd+C para guardar.',false)}
-function importarJSON(){abrirTroca('','Cole o JSON e clique fora da caixa.',true)}
+function exportarJSON(){
+  const txt=JSON.stringify(D,null,2);
+  abrirTroca(txt,`Planejamento inteiro em JSON · ${Math.round(txt.length/1024)} KB — `+
+    `use Copiar ou Baixar arquivo.`,false,
+    `planejamento-${MESES[mesAtual().mes-1]}-${mesAtual().ano}-${marcaDo(mesAtual()).toLowerCase()}.json`);
+}
+function importarJSON(){abrirTroca('','Cole o JSON aqui, ou abra o arquivo.',true)}
 function zerar(){
   if(!confirm('Isso apaga tudo. Você exportou antes?'))return;
   D={prox:{mes:1,camp:1,mapa:1},mesAtivo:0,temas:[],
@@ -2405,8 +2473,14 @@ function zerar(){
   try{localStorage.removeItem(CHAVE)}catch(e){}
   ultimoSalvo='';tudo();salvar();aviso('Zerado.')
 }
-function aviso(m){$('#msg').textContent=m;$('#msg').style.color='';
-  setTimeout(marcaSalvo,4000)}
+/* Cada aviso cancela o relógio do anterior: sem isso, o timer de uma
+   mensagem antiga apagava a que acabou de aparecer, e a pessoa via o
+   rodapé voltar pra "salvo" no meio da explicação. */
+function aviso(m){
+  $('#msg').textContent=m;$('#msg').style.color='';
+  clearTimeout(aviso.t);
+  aviso.t=setTimeout(()=>{aviso.t=0;marcaSalvo()},4000);
+}
 
 document.querySelectorAll('nav.paginas button').forEach(b=>{
   b.onclick=()=>{
@@ -2451,6 +2525,10 @@ function salvar(){
 }
 function marcaSalvo(){
   const m=$('#msg');if(!m)return;
+  /* Um aviso na tela tem prioridade. O autosave roda a cada segundo e meio
+     e vinha apagando a mensagem que a pessoa acabou de provocar — clicava
+     em algo, lia meia palavra e o rodapé já tinha voltado pra "salvo". */
+  if(aviso.t)return;
   const h=new Date();
   m.style.color='';
   m.textContent='salvo '+String(h.getHours()).padStart(2,'0')+':'+

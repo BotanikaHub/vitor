@@ -197,7 +197,12 @@ ok('Livre grava o que foi escrito', await G(()=>M().nos.some(n=>n.t==='anotaçã
 await p.click('nav.paginas button[data-pg="mapa"]'); await p.waitForTimeout(300);
 const antes=await G(()=>({camps:D.campanhas.length,nos:M().nos.length,
   nomes:D.campanhas.map(c=>c.nome).join('|')}));
-ok('rodapé diz que salvou', /salvo/.test(await G(()=>document.querySelector('#msg').textContent)),
+/* O rodapé agora segura o aviso da última ação por alguns segundos antes
+   de voltar pra "salvo" — antes o autosave apagava a mensagem na hora. */
+await p.waitForFunction(()=>/salvo/.test(document.querySelector('#msg').textContent),
+  null,{timeout:9000}).catch(()=>{});
+ok('rodapé volta a dizer que salvou depois do aviso',
+   /salvo/.test(await G(()=>document.querySelector('#msg').textContent)),
    await G(()=>document.querySelector('#msg').textContent));
 /* Espera o autosave de verdade, não um relógio: com espera cega o reload
    às vezes chegava antes da gravação e o teste acusava perda de dados. */
