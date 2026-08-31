@@ -56,19 +56,44 @@ await p.click('nav.paginas button[data-pg="gestao"]'); await p.waitForTimeout(40
 await p.click('#pg-gestao .g-abas button[data-ga="gerar"]'); await p.waitForTimeout(700);
 const corpo=()=>G(()=>document.querySelector('#g-corpo').innerText);
 
-// ---- 1. propõe a partir do cronograma ----
+// ---- 1. uma tarefa por tipo de trabalho, não por linha do cronograma ----
 {
   const t=await corpo();
-  ok('a aba propõe as peças do período', /peças no período/.test(t), t.split('\n')[0]);
-  const linhas=await G(()=>document.querySelectorAll('#g-corpo .ta-linha').length);
-  ok('e lista uma linha por peça', linhas>0, 'linhas='+linhas);
-  ok('agrupa por ação, com tarefa-mãe',
-     /SEMANA IMUNIDADE — \d{2}\/\d{2} \|/.test(t) && /tarefa-mãe/.test(t), 
-     t.split('\n').find(l=>/SEMANA IMUNIDADE/.test(l)));
-  ok('o nome sai no padrão do ClickUp',
-     /SEMANA IMUNIDADE — .+ · (SEG|TER|QUA|QUI|SEX|SÁB|DOM) \d{2}\/\d{2} \| BOTANIKA/.test(t),
-     t.split('\n').find(l=>/· (SEG|TER|QUA|QUI|SEX)/.test(l)));
-  ok('cada peça mostra quem faz', /Pedro|Sarah|Italo|Gestor/.test(t));
+  ok('a aba conta ações e tarefas, não peças',
+     /1 ação com data no período, \d+ tarefas/.test(t), t.split('\n').find(l=>/ação/.test(l))||t.split('\n')[0]);
+  const nomes=await G(()=>[...document.querySelectorAll('#g-corpo .ta-linha .nm')]
+    .map(e=>e.firstChild.textContent.trim()));
+  ok('gera poucas tarefas, no tamanho do que a equipe usa',
+     nomes.length>=6 && nomes.length<=12, nomes.length+' tarefas');
+  ok('cada uma é um trabalho, com verbo',
+     nomes.some(n=>/— Criar toda a copy ·/.test(n)) &&
+     nomes.some(n=>/— Criar todas as artes ·/.test(n)) &&
+     nomes.some(n=>/— Programar todos os disparos ·/.test(n)),
+     nomes.slice(0,3).join(' / '));
+  ok('nenhuma tarefa é uma linha de cronograma solta',
+     !nomes.some(n=>/E-mails base antiga \(|WhatsApp grupos antigos \(/.test(n)),
+     nomes.find(n=>/\(\d/.test(n))||'nenhuma');
+  ok('tem o fecho da ação: conferir, acompanhar e reverter',
+     nomes.some(n=>/Conferir que tudo entrou no ar/.test(n)) &&
+     nomes.some(n=>/Acompanhar a campanha durante o dia/.test(n)) &&
+     nomes.some(n=>/Reverter site, pausar campanha/.test(n)));
+  ok('o nome traz dia e hora, no padrão do ClickUp',
+     nomes.some(n=>/· (SEG|TER|QUA|QUI|SEX|SÁB|DOM) \d{2}\/\d{2} até \d{2}h \| BOTANIKA$/.test(n)),
+     nomes.find(n=>/até/.test(n)));
+  ok('a preparação toda vence numa quinta',
+     await G(()=>taAcoes(taDe,taAte)[0].filhas.filter(f=>f.momento==='prep')
+       .every(f=>new Date(f.dia+'T12:00:00').getDay()===4)));
+  ok('e a reversão fica no dia seguinte ao fim',
+     await G(()=>{const a=taAcoes(taDe,taAte)[0];
+       const r=a.filhas.find(f=>f.momento==='depois');
+       return r && new Date(r.dia+'T12:00:00')-a.fim===86400000}));
+  ok('o cronograma virou checklist dentro da tarefa',
+     /no checklist:/.test(t) && await G(()=>taAcoes(taDe,taAte)[0].filhas
+       .some(f=>f.checklist.length>1)));
+  ok('cada trabalho tem seu dono',
+     await G(()=>{const f=taAcoes(taDe,taAte)[0].filhas;
+       return f.find(x=>x.momento==='prep'&&/artes/.test(x.nome))?.responsavel==='Ítalo Neves'
+         && f.find(x=>/disparos/.test(x.nome))?.responsavel.startsWith('Sarah')}));
   ok('nada nasce marcado', await G(()=>taMarcadas.size)===0);
 }
 
@@ -77,8 +102,7 @@ const corpo=()=>G(()=>document.querySelector('#g-corpo').innerText);
   perguntou='';
   await p.click('#g-corpo .ta-topo button.forte'); await p.waitForTimeout(300);
   ok('aprovar sem marcar nada não faz nada',
-     fila.length===0 && /Marque ao menos uma/.test(await G(()=>document.querySelector('#msg').textContent)),
-     await G(()=>document.querySelector('#msg').textContent));
+     fila.length===0 && /Marque ao menos uma/.test(await G(()=>document.querySelector('#msg').textContent)));
   ok('e nem chega a perguntar', perguntou==='');
 }
 
@@ -86,35 +110,59 @@ const corpo=()=>G(()=>document.querySelector('#g-corpo').innerText);
 {
   await p.click('#g-corpo .ta-topo button:has-text("marcar todas")'); await p.waitForTimeout(400);
   const n=await G(()=>taMarcadas.size);
-  ok('marcar todas marca as peças', n>0, 'n='+n);
+  ok('marcar todas marca as tarefas', n>0, 'n='+n);
   perguntou='';
   await p.click('#g-corpo .ta-topo button.forte'); await p.waitForTimeout(700);
   ok('avisa quantas vão, e que não cria nada ainda',
-     /Aprovar \d+ tarefa/.test(perguntou) && /fila/.test(perguntou),
-     perguntou.slice(0,80));
-  ok('a fila recebeu as peças', fila.length>=n, `fila=${fila.length} peças=${n}`);
-  ok('e a tarefa-mãe junto', fila.some(t=>/§mae$/.test(t.assinatura)));
-  ok('tudo entra como aprovada, nunca como criada',
-     fila.every(t=>t.situacao==='aprovada'));
-  ok('a filha aponta pra mãe',
-     fila.filter(t=>t.dia).every(t=>/§mae$/.test(t.mae_de||'')));
+     /Aprovar \d+ tarefa/.test(perguntou) && /fila/.test(perguntou), perguntou.slice(0,70));
+  ok('a fila recebeu as tarefas e a mãe', fila.length===n+1, `fila=${fila.length} marcadas=${n}`);
+  const mae=fila.find(t=>!t.mae_de);
+  /* no ClickUp a mãe é "DIA D KIDS — 31/08 | VERMEFREE": só a data */
+  ok('a mãe tem o nome da ação com a data, sem dia da semana',
+     /^[A-ZÀ-Ÿ ]+ — \d{2}\/\d{2} \| BOTANIKA$/.test(mae.nome), mae.nome);
+  ok('e uma descrição de verdade, com oferta e fases',
+     /## A oferta/.test(mae.descricao) && /## O objetivo/.test(mae.descricao) &&
+     /Cortada por pessoa e por momento/.test(mae.descricao),
+     mae.descricao.split('\n')[0]);
+  ok('a descrição diz quantas tarefas cada um levou',
+     /\*\*Pedro\*\* \d+/.test(mae.descricao),
+     mae.descricao.split('\n').at(-1));
+  ok('tudo entra como aprovada, nunca como criada', fila.every(t=>t.situacao==='aprovada'));
+  ok('as filhas apontam pra mãe', fila.filter(t=>t.mae_de).every(t=>t.mae_de===mae.assinatura));
+  ok('o checklist vai junto',
+     fila.some(t=>Array.isArray(t.checklist)&&t.checklist.length>0));
+  ok('cada tarefa leva prioridade', fila.every(t=>/^(urgent|high)$/.test(t.prioridade||'')));
   ok('registra quem aprovou e quando',
      fila.every(t=>/^aba-/.test(t.quem||'')&&t.decidida_em));
-  ok('o rodapé confirma e diz o próximo passo',
-     /na fila. Peça pra eu criar no ClickUp/.test(await G(()=>document.querySelector('#msg').textContent)),
-     await G(()=>document.querySelector('#msg').textContent));
 }
 
 // ---- 4. o que já foi pra fila não volta a ser proposto ----
 {
   await p.waitForTimeout(600);
-  const t=await corpo();
-  ok('quem já está na fila aparece marcado como tal', /aguardando/i.test(t));
+  ok('quem já está na fila aparece marcado como tal', /aguardando/i.test(await corpo()));
   ok('e não dá mais pra marcar',
      await G(()=>[...document.querySelectorAll('#g-corpo .ta-linha input')].every(i=>i.disabled)));
   await p.click('#g-corpo .ta-topo button:has-text("marcar todas")'); await p.waitForTimeout(300);
-  ok('marcar todas ignora o que já foi', await G(()=>taMarcadas.size)===0,
-     'n='+await G(()=>taMarcadas.size));
+  ok('marcar todas ignora o que já foi', await G(()=>taMarcadas.size)===0);
+}
+
+// ---- 5. o que roda o mês inteiro não vira tarefa ----
+{
+  await G(()=>{
+    const m=mesAtual();
+    AS={noId:null,tipo:'perpetuo',tema:null,inicio:iso(new Date(m.ano,m.mes-1,1)),
+      fim:iso(new Date(m.ano,m.mes,0)),meta:30000,
+      fontes:{traf:{meta:8000,inv:2000},api:{meta:8000,inv:1000}},nome:'Orgânico — E-mail',
+      produtos:[],modoDesc:'todos',descGeral:0,descPorSku:{},extras:[],
+      canais:CANAIS.map(c=>c[0]),receita:null};
+    AS.inv=invTotal(AS.fontes);criarCampanha();
+    document.querySelector('nav.paginas button[data-pg="gestao"]').click();
+  });
+  await p.waitForTimeout(500);
+  await p.click('#pg-gestao .g-abas button[data-ga="gerar"]'); await p.waitForTimeout(500);
+  ok('perpétuo fica de fora: não tem preparação nem dia D',
+     !/ORGÂNICO — E-MAIL/.test(await corpo()),
+     (await corpo()).split('\n').find(l=>/ORGÂNICO/.test(l))||'ficou de fora');
 }
 
 ok('sem erro de JS', erros.length===0, erros.join(' | '));

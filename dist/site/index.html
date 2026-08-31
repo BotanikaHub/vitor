@@ -456,7 +456,10 @@ input.inline{background:var(--painel2);border:1px solid var(--verde);border-radi
 .ta-mae{font-size:11px;color:var(--txt3);margin:-6px 0 9px;letter-spacing:.03em}
 .ta-linha{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:12.5px;
   border-top:1px dashed var(--linha)}
+.ta-linha{align-items:flex-start}
 .ta-linha .nm{flex:1;min-width:0}
+.ta-linha .nm small{display:block;font-size:11px;color:var(--txt3);margin-top:3px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ta-linha .quem{font-size:11px;color:var(--txt3);white-space:nowrap}
 .ta-linha.ja .nm{color:var(--txt2)}
 .ta-selo{font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;
@@ -3724,14 +3727,156 @@ function cuResumo(){
 }
 
 /* ================= GERAR TAREFAS =================
-   O cronograma do TAP já diz o que sai, em que dia, por qual canal e
-   quem faz. Isso é uma tarefa. Faltava o caminho até o ClickUp — e ele
-   passa por uma aprovação: a tela propõe, alguém lê, marca o que vale,
-   e só o que foi marcado vira tarefa. Nada nasce no ClickUp sozinho.
+   A tarefa da equipe não é uma linha do cronograma. A descrição da
+   tarefa-mãe do Dia D Kids diz o padrão com todas as letras:
 
-   O nome sai no padrão que a equipe já usa lá:
-     DIA D — E-mails base antiga (2 vendas) · QUA 09/09 | BOTANIKA */
+     "cortada por pessoa e por momento em vez de por canal. Cada pessoa
+      tem uma tarefa por tipo de trabalho, com o detalhe de canal, dia e
+      horário no checklist da própria tarefa."
+
+   Então: uma tarefa por tipo de trabalho, o cronograma vira checklist
+   dentro dela, e as datas seguem os momentos da ação — preparação,
+   aquecimento, o dia, e a reversão no dia seguinte.
+
+     DIA D KIDS — Criar toda a copy · QUI 27/08 até 18h | VERMEFREE  */
 const TA_DOW=['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+
+/* Os tipos de trabalho, na ordem em que acontecem. `canais` diz quais
+   linhas do cronograma alimentam o checklist daquela tarefa; sem
+   nenhuma, a tarefa não é criada. */
+const TRABALHOS=[
+  {k:'copy',    nome:'Criar toda a copy',
+   quando:'prep', hora:'18h', quem:'Pedro Lage', prio:'urgent',
+   canais:/e-?mail|whatsapp|sms|push|copy/i},
+  {k:'artes',   nome:'Criar todas as artes',
+   quando:'prep', hora:'18h', quem:'Ítalo Neves', prio:'urgent',
+   canais:/criativo|instagram|arte|banner|est[áa]tico/i},
+  {k:'disparos',nome:'Programar todos os disparos',
+   quando:'prep', hora:'18h', quem:'Sarah | Gestora de Automações', prio:'urgent',
+   canais:/e-?mail|whatsapp|api|sms|push/i},
+  {k:'site',    nome:'Preparar todas as alterações do site',
+   quando:'prep', hora:'18h', quem:'Pedro Lage', prio:'urgent',
+   canais:/site|p[áa]gina|lp|captura|pdp|carrinho/i},
+  {k:'trafego', nome:'Subir criativos e preparar o tráfego',
+   quando:'prep', hora:'18h', quem:'Pedro Lage', prio:'urgent',
+   canais:/criativo|tr[áa]fego|ads|an[úu]ncio/i},
+  {k:'insta',   nome:'Publicar no Instagram',
+   quando:'janela', quem:'Ítalo Neves', prio:'high',
+   canais:/instagram|stories|feed/i},
+  {k:'conferir',nome:'Conferir que tudo entrou no ar',
+   quando:'dia', hora:'08h', quem:'Pedro Lage', prio:'urgent', sempre:true},
+  {k:'acompanhar',nome:'Acompanhar a campanha durante o dia',
+   quando:'dia', quem:'Pedro Lage', prio:'high', sempre:true},
+  {k:'reverter',nome:'Reverter site, pausar campanha e registrar resultado',
+   quando:'depois', hora:'09h', quem:'Pedro Lage', prio:'high', sempre:true}
+];
+
+const taData=d=>`${TA_DOW[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${
+  String(d.getMonth()+1).padStart(2,'0')}`;
+
+/* "Toda a preparação vence quinta; sexta fica livre para recuperar
+   atraso." A quinta anterior ao início da ação, nunca no mesmo dia. */
+function taQuintaAntes(ini){
+  const d=new Date(ini);
+  d.setDate(d.getDate()-1);
+  while(d.getDay()!==4)d.setDate(d.getDate()-1);
+  return d;
+}
+
+/* As linhas do cronograma daquela ação, achatadas: canal, dia, o que sai. */
+function taLinhas(c){
+  const sec=(c.secoes||[]).find(x=>/CANAIS/i.test(x.t));
+  if(!sec)return [];
+  const ano=mesAtual().ano, fora=[];
+  sec.c.forEach((col,i)=>{
+    const mm=String(col).match(/(\d{2})\/(\d{2})/);if(!mm)return;
+    sec.l.forEach(l=>{
+      const v=String(l[i]??'').trim();
+      if(!v||v==='—'||v==='0'||v==='-')return;
+      fora.push({canal:String(l[0]||''),dia:`${ano}-${mm[2]}-${mm[1]}`,
+        oque:v,base:String(l[1]||''),quem:String(l[sec.c.length-1]||'')});
+    });
+  });
+  return fora.sort((a,b)=>a.dia.localeCompare(b.dia));
+}
+
+const taAcao=nome=>String(nome||'').replace(/\s*[—-]\s*\d{2}\/\d{2}\s*$/,'').trim().toUpperCase();
+
+/* Uma ação vira a tarefa-mãe e as tarefas de trabalho. */
+function taDaAcao(c){
+  const marca=marcaDo(mesAtual()).toUpperCase();
+  const acao=taAcao(c.nome);
+  const ini=dISO(c.inicio), fim=dISO(c.fim);
+  const linhas=taLinhas(c);
+  const prep=taQuintaAntes(ini);
+  const depois=new Date(fim);depois.setDate(fim.getDate()+1);
+
+  const quandoData={prep,janela:null,dia:ini,depois};
+  const filhas=TRABALHOS.map(t=>{
+    const itens=t.canais?linhas.filter(l=>t.canais.test(l.canal)):[];
+    if(!t.sempre&&!itens.length)return null;
+    const per=t.quando==='janela'
+      ? (iso(ini)===iso(fim)?taData(ini):`${taData(ini)} a ${taData(fim)}`)
+      : taData(quandoData[t.quando])+(t.hora?` até ${t.hora}`:'');
+    const quandoISO=t.quando==='janela'?iso(fim):iso(quandoData[t.quando]);
+    return {
+      assinatura:`${marca}§${c.id}§${t.k}`,
+      nome:`${acao} — ${t.nome} · ${per} | ${marca}`,
+      responsavel:t.quem, prioridade:t.prio,
+      inicio:t.quando==='janela'?iso(ini):(t.quando==='prep'?iso(prep):quandoISO),
+      dia:quandoISO,
+      checklist:itens.map(l=>`${l.canal} · ${taData(dISO(l.dia))} · ${l.oque}`),
+      momento:t.quando
+    };
+  }).filter(Boolean);
+
+  return {campanha:c.nome, campId:c.id, marca, ini, fim, prep,
+    maeAss:`${marca}§${c.id}§mae`,
+    /* a mãe leva só a data, sem o dia da semana — é assim no ClickUp:
+       "DIA D KIDS — 31/08 | VERMEFREE" */
+    maeNome:`${acao} — ${dBR(fim)} | ${marca}`,
+    maeDesc:taDescricaoMae(c,filhas,ini,fim,prep),
+    filhas};
+}
+
+/* A descrição da mãe, no formato que a equipe já usa: a oferta, as
+   fases, o objetivo, e como o trabalho foi repartido. */
+function taDescricaoMae(c,filhas,ini,fim,prep){
+  const O=ofertaDe(c), T=TIPOS[c.tipo]||TIPOS.outro;
+  const L=[];
+  const per=iso(ini)===iso(fim)?`${taData(ini).toLowerCase()}`
+    :`${taData(ini).toLowerCase()} a ${taData(fim).toLowerCase()}`;
+  L.push(`# ${c.nome} — ${per}`,'');
+  L.push(`${T.desc}${c.tema?` · tema ${c.tema}`:''}.`,'');
+  L.push('## A oferta','','| Item | O que é |','| ---| --- |');
+  L.push(`| Desconto | ${O.modoDesc==='cada'?'por produto — ver o TAP':`${O.descGeral}% OFF`} |`);
+  if(O.frete)L.push(`| Frete | ${O.frete} |`);
+  if(O.brinde)L.push(`| Brinde | ${O.brinde} |`);
+  if(O.bonusUniversal)L.push(`| Bônus | ${O.bonusUniversal} |`);
+  if(O.bonusInfluencer)L.push(`| Bônus via influencer | ${O.bonusInfluencer} |`);
+  L.push('');
+  const sec=(c.secoes||[]).find(x=>/FASES/i.test(x.t));
+  if(sec&&sec.l.length){
+    L.push('## As fases','','| Fase | Data |','| ---| --- |');
+    sec.l.filter(l=>!/^n[ãa]o/i.test(String(l[1]||''))).forEach(l=>
+      L.push(`| ${l[0]} | ${l[2]||l[1]||'—'} |`));
+    L.push('');
+  }
+  L.push('## O objetivo','');
+  L.push(`Meta de ${brl(c.meta||0)} com ${brl(c.investimento||0)} de verba`+
+    `${c.investimento?` — ROAS alvo ${roas(c.meta,c.investimento)}`:''}.`,'');
+  L.push('## Como esta campanha está organizada','');
+  L.push('Cortada por pessoa e por momento, não por canal. Cada pessoa tem uma '+
+    'tarefa por tipo de trabalho, com o detalhe de canal, dia e horário no '+
+    'checklist da própria tarefa.','');
+  L.push(`**Toda a preparação vence ${taData(prep).toLowerCase()}.** `+
+    'O dia seguinte fica livre para recuperar atraso.','');
+  const porQuem=new Map();
+  filhas.forEach(f=>porQuem.set(f.responsavel,(porQuem.get(f.responsavel)||0)+1));
+  L.push([...porQuem].map(([q,n])=>`**${q.split(' ')[0].split('|')[0].trim()}** ${n}`).join(' · '));
+  return L.join('\n');
+}
+
 let taDe=null, taAte=null, taFila=null, taLendo=false, taMarcadas=new Set();
 
 function taSemanaQueVem(){
@@ -3741,51 +3886,11 @@ function taSemanaQueVem(){
   return [iso(seg),iso(dom)];
 }
 
-/* Uma peça = uma linha do cronograma num dia com conteúdo. */
-function taPecas(de,ate){
-  const fora=[];
-  campsMes().forEach(c=>{
-    const sec=(c.secoes||[]).find(x=>/CANAIS/i.test(x.t));if(!sec)return;
-    const marca=marcaDo(mesAtual()), ano=mesAtual().ano;
-    sec.c.forEach((col,i)=>{
-      const mm=String(col).match(/(\d{2})\/(\d{2})/);if(!mm)return;
-      const dia=`${ano}-${mm[2]}-${mm[1]}`;
-      if(dia<de||dia>ate)return;
-      sec.l.forEach(l=>{
-        const v=String(l[i]??'').trim();
-        if(!v||v==='—'||v==='0'||v==='-')return;
-        fora.push({marca,campanha:c.nome,dia,canal:String(l[0]||''),
-          detalhe:v,base:String(l[1]||''),quem:String(l[sec.c.length-1]||''),
-          campId:c.id});
-      });
-    });
-  });
-  return fora.sort((a,b)=>a.dia.localeCompare(b.dia)||a.campanha.localeCompare(b.campanha));
-}
-
-const taAcao=nome=>String(nome||'').replace(/\s*[—-]\s*\d{2}\/\d{2}\s*$/,'').trim().toUpperCase();
-function taNome(p){
-  const d=dISO(p.dia);
-  const quando=`${TA_DOW[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${
-    String(d.getMonth()+1).padStart(2,'0')}`;
-  const det=p.detalhe&&p.detalhe!=='1'?` (${p.detalhe})`:'';
-  return `${taAcao(p.campanha)} — ${p.canal}${det} · ${quando} | ${p.marca.toUpperCase()}`;
-}
-/* A tarefa-mãe da ação, que agrupa as filhas no ClickUp. */
-const taNomeMae=(p,fim)=>`${taAcao(p.campanha)} — ${dBR(dISO(fim))} | ${p.marca.toUpperCase()}`;
-const taAssinatura=p=>[p.marca,p.campanha,p.dia,p.canal,p.detalhe].join('§');
-
-function taAgrupar(pecas){
-  const por=new Map();
-  pecas.forEach(p=>{
-    const k=p.marca+'§'+p.campanha;
-    if(!por.has(k))por.set(k,{marca:p.marca,campanha:p.campanha,pecas:[]});
-    por.get(k).pecas.push(p);
-  });
-  return [...por.values()].map(g=>{
-    const fim=g.pecas.map(p=>p.dia).sort().at(-1);
-    return {...g,mae:taNomeMae(g.pecas[0],fim),maeAss:g.marca+'§'+g.campanha+'§mae'};
-  });
+/* As ações que acontecem no período. Contínuas ficam de fora: perpétuo
+   não tem preparação nem dia D, e viraria tarefa repetida todo mês. */
+function taAcoes(de,ate){
+  return campsMes().filter(c=>!ehContinua(c)&&iso(dISO(c.fim))>=de&&iso(dISO(c.inicio))<=ate)
+    .map(taDaAcao);
 }
 
 async function taCarregar(){
@@ -3793,8 +3898,7 @@ async function taCarregar(){
   taLendo=true;cuPintar();
   try{
     const r=await sbFetch(`${SB.url}/rest/v1/tarefas_planejadas`+
-      `?select=assinatura,situacao,clickup_url&dia=gte.${taDe}&dia=lte.${taAte}`,
-      {headers:sbCab()});
+      `?select=assinatura,situacao,clickup_url`,{headers:sbCab()});
     taFila=r.ok?await r.json():[];
   }catch(e){taFila=[]}
   taLendo=false;cuPintar();
@@ -3802,47 +3906,52 @@ async function taCarregar(){
 
 function cuPintarGerar(){
   if(!taDe){[taDe,taAte]=taSemanaQueVem();taCarregar()}
-  const pecas=taPecas(taDe,taAte);
+  const acoes=taAcoes(taDe,taAte);
   const jaFeito=new Map((taFila||[]).map(t=>[t.assinatura,t]));
-  const grupos=taAgrupar(pecas);
+  const total=acoes.reduce((n,a)=>n+a.filhas.length,0);
 
   const cab=`<div class="ta-topo">
-    <label>De <input type="date" value="${taDe}" onchange="taDe=this.value;taFila=null;taCarregar()"></label>
-    <label>Até <input type="date" value="${taAte}" onchange="taAte=this.value;taFila=null;taCarregar()"></label>
-    <span class="ta-conta">${pecas.length} peça${pecas.length===1?'':'s'} no período,
-      em ${grupos.length} ${grupos.length===1?'ação':'ações'}</span>
+    <label>De <input type="date" value="${taDe}" onchange="taDe=this.value;taMarcadas=new Set();cuPintar()"></label>
+    <label>Até <input type="date" value="${taAte}" onchange="taAte=this.value;taMarcadas=new Set();cuPintar()"></label>
+    <span class="ta-conta">${acoes.length} ${acoes.length===1?'ação':'ações'} com data no período,
+      ${total} ${total===1?'tarefa':'tarefas'}</span>
     <button class="mini" onclick="taMarcarTudo(true)">marcar todas</button>
     <button class="mini" onclick="taMarcarTudo(false)">desmarcar</button>
     <button class="mini forte" onclick="taAprovar()">Aprovar as marcadas</button>
   </div>`;
 
-  if(!pecas.length)return cab+`<div class="g-vazio">Nada com data neste período.
-    Ajuste as datas, ou preencha o cronograma da ação no TAP.</div>`;
+  if(!acoes.length)return cab+`<div class="g-vazio">Nenhuma ação com data neste período.
+    O que roda o mês inteiro não vira tarefa aqui — só as ações com começo e fim.</div>`;
 
-  const corpo=grupos.map(g=>{
-    const linhas=g.pecas.map(p=>{
-      const a=taAssinatura(p), j=jaFeito.get(a);
-      const marcada=taMarcadas.has(a);
+  const corpo=acoes.map(a=>{
+    const jm=jaFeito.get(a.maeAss);
+    const linhas=a.filhas.map(f=>{
+      const j=jaFeito.get(f.assinatura);
       const selo=j?.situacao==='criada'
           ?`<a class="ta-selo ok" href="${esc(j.clickup_url||'#')}" target="_blank" rel="noopener">no ClickUp</a>`
         :j?.situacao==='aprovada'?'<span class="ta-selo esperando">aprovada, aguardando</span>'
         :j?.situacao==='recusada'?'<span class="ta-selo nao">recusada</span>':'';
       return `<div class="ta-linha${j?' ja':''}">
-        <input type="checkbox" ${marcada?'checked':''} ${j?'disabled':''}
-          onchange="taMarcar('${esc(a).replace(/'/g,"\\'")}',this.checked)">
-        <span class="nm">${esc(taNome(p))}</span>
-        <span class="quem">${esc(p.quem||'—')}</span>${selo}</div>`;
+        <input type="checkbox" ${taMarcadas.has(f.assinatura)?'checked':''} ${j?'disabled':''}
+          onchange="taMarcar('${esc(f.assinatura)}',this.checked)">
+        <span class="nm">${esc(f.nome)}
+          ${f.checklist.length?`<small>${f.checklist.length} ${
+            f.checklist.length===1?'item':'itens'} no checklist: ${
+            esc(f.checklist.slice(0,3).join(' · '))}${f.checklist.length>3?' …':''}</small>`:''}</span>
+        <span class="quem">${esc(String(f.responsavel).split('|')[0].trim())}</span>${selo}</div>`;
     }).join('');
     return `<div class="g-acao"><div class="g-cab">
-        <h3>${esc(g.mae)}</h3>
-        <span class="g-frac">${g.pecas.length} peça${g.pecas.length===1?'':'s'}</span></div>
-      <div class="ta-mae">tarefa-mãe · as de baixo entram como subtarefas</div>
+        <h3>${esc(a.maeNome)}</h3>
+        <span class="g-frac">${a.filhas.length} tarefas</span>
+        ${jm?'<span class="ta-selo esperando">mãe na fila</span>':''}</div>
+      <div class="ta-mae">tarefa-mãe · preparação toda em ${taData(a.prep).toLowerCase()} ·
+        as de baixo entram como subtarefas</div>
       ${linhas}</div>`;
   }).join('');
 
-  const marcadas=taMarcadas.size;
+  const m=taMarcadas.size;
   return cab+corpo+`<div class="ta-rodape">
-    ${marcadas?`<b>${marcadas}</b> marcada${marcadas===1?'':'s'} para aprovar.`
+    ${m?`<b>${m}</b> marcada${m===1?'':'s'} para aprovar.`
       :'Marque o que deve virar tarefa e clique em aprovar.'}
     Aprovar não cria nada no ClickUp ainda: põe na fila, e eu crio quando você pedir.</div>`;
 }
@@ -3851,35 +3960,42 @@ function taMarcar(a,on){on?taMarcadas.add(a):taMarcadas.delete(a);cuPintar()}
 function taMarcarTudo(on){
   const jaFeito=new Set((taFila||[]).map(t=>t.assinatura));
   taMarcadas=new Set();
-  if(on)taPecas(taDe,taAte).forEach(p=>{
-    const a=taAssinatura(p);if(!jaFeito.has(a))taMarcadas.add(a)});
+  if(on)taAcoes(taDe,taAte).forEach(a=>a.filhas.forEach(f=>{
+    if(!jaFeito.has(f.assinatura))taMarcadas.add(f.assinatura)}));
   cuPintar();
 }
 
 async function taAprovar(){
   if(!taMarcadas.size)return aviso('Marque ao menos uma tarefa antes de aprovar.');
   if(!sbOk)return aviso('Sem a base não dá pra guardar a aprovação — recarregue a página.');
-  const pecas=taPecas(taDe,taAte).filter(p=>taMarcadas.has(taAssinatura(p)));
-  if(!confirm(`Aprovar ${pecas.length} tarefa${pecas.length===1?'':'s'}? `+
+  const acoes=taAcoes(taDe,taAte);
+  const escolhidas=[];
+  acoes.forEach(a=>a.filhas.forEach(f=>{if(taMarcadas.has(f.assinatura))escolhidas.push({a,f})}));
+  if(!escolhidas.length)return;
+  if(!confirm(`Aprovar ${escolhidas.length} tarefa${escolhidas.length===1?'':'s'}? `+
     `Elas entram na fila; a criação no ClickUp acontece depois, quando você pedir.`))return;
-  const grupos=taAgrupar(pecas);
-  const linhas=[];
-  grupos.forEach(g=>{
-    linhas.push({assinatura:g.maeAss,marca:g.marca,campanha:g.campanha,dia:null,
-      canal:null,nome:g.mae,responsavel:null,base:null,situacao:'aprovada',
-      quem:sbQuem(),decidida_em:new Date().toISOString()});
-    g.pecas.forEach(p=>linhas.push({assinatura:taAssinatura(p),marca:p.marca,
-      campanha:p.campanha,dia:p.dia,canal:p.canal,nome:taNome(p),
-      responsavel:p.quem,base:p.base,situacao:'aprovada',mae_de:g.maeAss,
-      quem:sbQuem(),decidida_em:new Date().toISOString()}));
+
+  const agora=new Date().toISOString(), quem=sbQuem(), linhas=[];
+  const maesJa=new Set((taFila||[]).map(t=>t.assinatura));
+  new Set(escolhidas.map(x=>x.a)).forEach(a=>{
+    if(maesJa.has(a.maeAss))return;
+    linhas.push({assinatura:a.maeAss,marca:a.marca,campanha:a.campanha,
+      nome:a.maeNome,descricao:a.maeDesc,responsavel:'Pedro Lage',prioridade:'urgent',
+      inicio:iso(a.prep),dia:iso(a.fim),situacao:'aprovada',quem,decidida_em:agora});
   });
+  escolhidas.forEach(({a,f})=>linhas.push({assinatura:f.assinatura,marca:a.marca,
+    campanha:a.campanha,nome:f.nome,responsavel:f.responsavel,prioridade:f.prioridade,
+    inicio:f.inicio,dia:f.dia,checklist:f.checklist,mae_de:a.maeAss,
+    situacao:'aprovada',quem,decidida_em:agora}));
+
   try{
     const r=await sbFetch(`${SB.url}/rest/v1/tarefas_planejadas`,{method:'POST',
       headers:sbCab({Prefer:'resolution=merge-duplicates,return=minimal'}),
       body:JSON.stringify(linhas)});
     if(!r.ok)throw new Error('HTTP '+r.status);
     taMarcadas=new Set();taFila=null;
-    aviso(`${pecas.length} tarefa${pecas.length===1?'':'s'} na fila. Peça pra eu criar no ClickUp.`);
+    aviso(`${escolhidas.length} tarefa${escolhidas.length===1?'':'s'} na fila. `+
+      `Peça pra eu criar no ClickUp.`);
     taCarregar();
   }catch(e){aviso('Não consegui guardar a aprovação: '+e.message)}
 }
