@@ -354,6 +354,12 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 .fontes input{width:100%;min-width:0;background:var(--painel2);border:1px solid var(--linha2);
   border-radius:8px;padding:6px 9px;text-align:right;font-variant-numeric:tabular-nums}
 .fontes .rs{text-align:right;font-size:12.5px;color:var(--txt2);font-variant-numeric:tabular-nums}
+.eco{display:block;font-size:11.5px;color:var(--verde);margin-top:3px;
+  font-variant-numeric:tabular-nums;min-height:14px}
+.eco.alerta{color:var(--amar)}
+/* nas fontes o eco seria repetido: o resumo logo abaixo já diz, em
+   palavras, quanto cada uma fatura e consome */
+.fontes input{text-align:right}
 .fontes .linf.resto{border-top:1px dashed var(--linha2);color:var(--txt2);font-size:13px}
 .fontes .linf.resto .nm{font-size:13px}
 .fontes .linf.resto .vl{text-align:right;font-variant-numeric:tabular-nums;color:var(--txt)}
@@ -729,6 +735,47 @@ let W={};
 const $=s=>document.querySelector(s);
 const esc=t=>String(t??'').replace(/[<>&]/g,m=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[m]));
 const brl=n=>'R$ '+Number(n||0).toLocaleString('pt-BR',{maximumFractionDigits:0});
+
+/* ================= DINHEIRO DIGITADO =================
+   Campo <input type="number"> lê "480.000" como quatrocentos e oitenta —
+   o ponto vira separador decimal. Quem digita meta em reais escreve
+   480.000, ou 480 mil, e o planejador silenciosamente guardava 480. Meta
+   errada por mil vezes não pode depender de a pessoa perceber.
+
+   Regra, na ordem: tira R$ e espaços; "mil"/"k" multiplica por mil e
+   "mi"/"milhão" por um milhão; se tem vírgula, a vírgula é o decimal e
+   os pontos são milhar; se só tem ponto, ponto é milhar. */
+function numeroBR(txt){
+  let t=String(txt??'').trim().toLowerCase()
+    .replace(/^r\$\s*/,'').replace(/\s/g,'');
+  if(!t)return 0;
+  let mult=1;
+  const mil=t.match(/^(.*?)(mil|k)$/);
+  const mi=t.match(/^(.*?)(mi|mm|milhao|milhão|milhões|milhoes|m)$/);
+  if(mil){t=mil[1];mult=1e3}
+  else if(mi){t=mi[1];mult=1e6}
+  if(t.includes(',')){t=t.replace(/\./g,'').replace(',','.')}
+  else{t=t.replace(/\./g,'')}
+  const n=parseFloat(t);
+  return isFinite(n)?Math.round(n*mult):0;
+}
+/* Campo de dinheiro: aceita como se escreve, e mostra embaixo o que
+   entendeu — assim ninguém descobre o engano três telas depois. */
+function campoMoeda(id,valor,extra=''){
+  return `<input type="text" inputmode="numeric" id="${id}" ${extra}
+    value="${valor?Number(valor).toLocaleString('pt-BR'):''}"
+    oninput="ecoMoeda('${id}')" onblur="ecoMoeda('${id}')">
+    <span class="eco" id="eco-${id}"></span>`;
+}
+function ecoMoeda(id){
+  const e=document.getElementById('eco-'+id),i=document.getElementById(id);
+  if(!e||!i)return;
+  const v=numeroBR(i.value);
+  e.textContent=i.value.trim()?brl(v):'';
+  e.classList.toggle('alerta',!!i.value.trim()&&v===0);
+  if(typeof resumoW==='function'&&document.getElementById('w-resumo'))resumoW();
+}
+const lerMoeda=id=>numeroBR(document.getElementById(id)?.value);
 const brl2=n=>'R$ '+Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
 const dISO=s=>new Date(s+'T12:00:00');
 const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -1076,14 +1123,16 @@ function passo2(){
       <label><b>Fim</b><input type="date" id="w-fim" value="${AS.fim}"></label>
     </div>
     <label><b>Meta de faturamento da ação</b>
-      <input type="number" id="w-meta" value="${AS.meta}" step="1000"></label>
+      ${campoMoeda('w-meta',AS.meta,'placeholder="120.000 — ou 120 mil"')}</label>
     <div class="fontes" id="w-fontes">
       <div class="cabf"><span class="nm">De onde vem esse faturamento</span>
         <span class="col">fatura</span><span class="col">investe</span><span class="rs">ROAS</span></div>
       ${FONTES.map(({k,n})=>`<div class="linf">
         <span class="nm">${n}</span>
-        <input type="number" id="w-m-${k}" step="500" value="${AS.fontes[k].meta}">
-        <input type="number" id="w-i-${k}" step="100" value="${AS.fontes[k].inv}">
+        <input type="text" inputmode="numeric" id="w-m-${k}"
+          value="${Number(AS.fontes[k].meta||0).toLocaleString('pt-BR')}">
+        <input type="text" inputmode="numeric" id="w-i-${k}"
+          value="${Number(AS.fontes[k].inv||0).toLocaleString('pt-BR')}">
         <span class="rs" id="w-r-${k}">—</span></div>`).join('')}
       <div class="linf resto"><span class="nm">Resto — influencer, base, atendimento, orgânico</span>
         <span class="vl" id="w-resto">—</span><span class="col"></span><span class="rs"></span></div>
@@ -1097,14 +1146,14 @@ function passo2(){
 }
 function lerFontesW(){
   const f={};
-  FONTES.forEach(({k})=>f[k]={meta:+$('#w-m-'+k)?.value||0,inv:+$('#w-i-'+k)?.value||0});
+  FONTES.forEach(({k})=>f[k]={meta:lerMoeda('w-m-'+k),inv:lerMoeda('w-i-'+k)});
   return f;
 }
 function guardaPasso2(){
   AS.nome=$('#w-nome').value.trim()||AS.nome;
   AS.inicio=$('#w-ini').value;AS.fim=$('#w-fim').value;
   const metaAnt=AS.meta,fAnt=JSON.stringify(AS.fontes);
-  AS.meta=+$('#w-meta').value||0;
+  AS.meta=lerMoeda('w-meta');
   AS.fontes=lerFontesW();
   AS.inv=invTotal(AS.fontes);
   /* mexeu nos números? a divisão por canal do passo 4 tem que nascer de novo */
@@ -1200,8 +1249,10 @@ function passo4(){
       <div class="lin ${c.on?'':'off'}" data-i="${i}">
         <input type="checkbox" ${c.on?'checked':''} onchange="ligarReceita(${i},this.checked)">
         <span class="nm">${esc(c.n)}<small>${esc(c.r)}</small></span>
-        <input type="number" step="100" value="${c.inv}" onchange="AS.receita[${i}].inv=+this.value||0;somaW()">
-        <input type="number" step="500" value="${c.meta}" onchange="AS.receita[${i}].meta=+this.value||0;somaW()">
+        <input type="text" inputmode="numeric" value="${Number(c.inv||0).toLocaleString('pt-BR')}"
+          onchange="AS.receita[${i}].inv=numeroBR(this.value);somaW()">
+        <input type="text" inputmode="numeric" value="${Number(c.meta||0).toLocaleString('pt-BR')}"
+          onchange="AS.receita[${i}].meta=numeroBR(this.value);somaW()">
       </div>`).join('')}</div>
     <div class="resumo" id="w-soma"></div>
     <h3 style="font-size:15px;margin:18px 0 4px">Canais de execução</h3>
@@ -1235,7 +1286,7 @@ function somaW(){
 }
 function resumoW(){
   const ini=dISO($('#w-ini').value),fim=dISO($('#w-fim').value);
-  const meta=+$('#w-meta').value||0;
+  const meta=lerMoeda('w-meta');
   const f=lerFontesW(),inv=invTotal(f);
   /* o ROAS de cada fonte e o resto aparecem enquanto ele digita */
   FONTES.forEach(({k})=>{const e=$('#w-r-'+k);if(e)e.textContent=roas(f[k].meta,f[k].inv)});
@@ -1302,7 +1353,7 @@ function novoMes(){
   /* o mesmo mês pode existir uma vez por marca — o que não pode é repetir a dupla */
   if(D.meses.some(x=>x.mes===mm&&x.ano===aa&&marcaDo(x).toLowerCase()===marca.toLowerCase()))
     return aviso('Esse mês já existe para '+marca+'.');
-  const m1=+prompt('Meta 1 (só números):','300000')||300000;
+  const m1=numeroBR(prompt('Meta 1 (ex: 480.000, ou 480 mil):','480.000'))||300000;
   const novo={id:D.prox.mes++,ano:aa,mes:mm,marca,
     metas:[m1,Math.round(m1*1.17),Math.round(m1*1.33)],ref:''};
   D.meses.push(novo);
@@ -1935,13 +1986,13 @@ function editarMetasMes(){
     <p class="sub">Passo 1 da engenharia reversa. Meta 1 é a que o mês precisa
       entregar; as outras duas são os cenários bom e ótimo.</p>
     <label><b>Meta 1 — a que vale</b>
-      <input type="number" id="m-1" value="${m.metas[0]||''}" step="1000" placeholder="300000"></label>
+      ${campoMoeda('m-1',m.metas[0],'placeholder="480.000 — ou 480 mil"')}</label>
     <div class="dupla">
-      <label><b>Meta 2</b><input type="number" id="m-2" value="${m.metas[1]||''}" step="1000"></label>
-      <label><b>Meta 3</b><input type="number" id="m-3" value="${m.metas[2]||''}" step="1000"></label></div>
+      <label><b>Meta 2</b>${campoMoeda('m-2',m.metas[1])}</label>
+      <label><b>Meta 3</b>${campoMoeda('m-3',m.metas[2])}</label></div>
     <p class="sub">Deixe 2 e 3 em branco e eu calculo em cima da Meta 1 (+17% e +33%).</p>
     <label><b>Ticket médio</b>
-      <input type="number" id="m-tk" value="${m.ticket||''}" step="10" placeholder="200"></label>
+      ${campoMoeda('m-tk',m.ticket,'placeholder="200"')}</label>
     <p class="sub">Com o ticket, a escada mostra quantos pedidos cada ação
       precisa trazer. Em branco, ela só trabalha em reais.</p>
     <label><b>Referência</b>
@@ -1949,11 +2000,12 @@ function editarMetasMes(){
     <div class="bts"><button onclick="fecharModal()">Cancelar</button>
       <button class="ok" onclick="salvarMetasMes()">Salvar</button></div>`;
   $('#modal').classList.add('on');
+  ['m-1','m-2','m-3','m-tk'].forEach(ecoMoeda);
 }
 function salvarMetasMes(){
-  const m=mesAtual(),m1=+$('#m-1').value||0;
-  m.metas=[m1,+$('#m-2').value||Math.round(m1*1.17),+$('#m-3').value||Math.round(m1*1.33)];
-  m.ticket=+$('#m-tk').value||0;
+  const m=mesAtual(),m1=lerMoeda('m-1');
+  m.metas=[m1,lerMoeda('m-2')||Math.round(m1*1.17),lerMoeda('m-3')||Math.round(m1*1.33)];
+  m.ticket=lerMoeda('m-tk');
   m.ref=$('#m-ref').value.trim();
   fecharModal();guardar();pintarMes();pintarSemana();render();
   aviso(m1?`Meta de ${brl(m1)} definida. Agora divida por ação.`:'Metas atualizadas.');
@@ -2202,13 +2254,15 @@ function editarPeriodo(){
       <label><b>Início</b><input type="date" id="e-ini" value="${c.inicio}"></label>
       <label><b>Fim</b><input type="date" id="e-fim" value="${c.fim}"></label></div>
     <label><b>Meta de faturamento da ação</b>
-      <input type="number" id="e-meta" value="${c.meta}" step="1000"></label>
+      ${campoMoeda('e-meta',c.meta)}</label>
     <div class="fontes">
       <div class="cabf"><span class="nm">De onde vem esse faturamento</span>
         <span class="col">fatura</span><span class="col">investe</span><span class="rs"></span></div>
       ${FONTES.map(({k,n})=>`<div class="linf"><span class="nm">${n}</span>
-        <input type="number" id="e-m-${k}" step="500" value="${f[k].meta}">
-        <input type="number" id="e-i-${k}" step="100" value="${f[k].inv}">
+        <input type="text" inputmode="numeric" id="e-m-${k}"
+          value="${Number(f[k].meta||0).toLocaleString('pt-BR')}">
+        <input type="text" inputmode="numeric" id="e-i-${k}"
+          value="${Number(f[k].inv||0).toLocaleString('pt-BR')}">
         <span class="rs"></span></div>`).join('')}
     </div>
     <p class="sub">O que sobrar da meta fica com influencer, base, atendimento e orgânico.</p>
@@ -2223,8 +2277,8 @@ function salvarPeriodo(){
   const c=D.campanhas[ativa];
   c.nome=$('#e-nome').value.trim()||c.nome;
   c.inicio=$('#e-ini').value;c.fim=$('#e-fim').value;
-  c.meta=+$('#e-meta').value||0;
-  const f={};FONTES.forEach(({k})=>f[k]={meta:+$('#e-m-'+k).value||0,inv:+$('#e-i-'+k).value||0});
+  c.meta=lerMoeda('e-meta');
+  const f={};FONTES.forEach(({k})=>f[k]={meta:lerMoeda('e-m-'+k),inv:lerMoeda('e-i-'+k)});
   if(FONTES.reduce((t,{k})=>t+f[k].meta,0)>c.meta)
     return aviso('Tráfego e API somados passam da meta da ação — não salvei.');
   const mudou=JSON.stringify(f)!==JSON.stringify(c.fontes);

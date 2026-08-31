@@ -38,6 +38,30 @@ const escada=()=>G(()=>document.querySelector('#escada').innerText);
   }));
 }
 
+// ---- 1b. dinheiro se escreve como se escreve ----
+{
+  /* "480.000" num <input type=number> virava 480 — meta errada por mil
+     vezes, sem ninguém perceber. */
+  const casos=[['480.000',480000],['480000',480000],['480 mil',480000],['480k',480000],
+    ['R$ 480.000',480000],['1.234.567',1234567],['480.000,50',480001],
+    ['1 mi',1000000],['2,5 mi',2500000],['',0],['abc',0]];
+  const lidos=await p.evaluate(cs=>cs.map(([t])=>numeroBR(t)),casos);
+  casos.forEach(([t,esperado],i)=>
+    ok(`lê "${t}"`, lidos[i]===esperado, `${lidos[i]} (esperava ${esperado})`));
+
+  await G(()=>editarMetasMes()); await p.waitForTimeout(200);
+  await p.fill('#m-1','480.000'); await p.waitForTimeout(250);
+  ok('o campo mostra o que entendeu, antes de salvar',
+     /R\$ 480\.000/.test(await G(()=>document.querySelector('#eco-m-1').textContent)),
+     await G(()=>document.querySelector('#eco-m-1').textContent));
+  await p.click('#modal-cx button.ok'); await p.waitForTimeout(350);
+  ok('e guarda 480 mil, não 480', await G(()=>mesAtual().metas[0])===480000,
+     'meta='+await G(()=>mesAtual().metas[0]));
+  /* volta pra 300.000, que é o que o resto deste teste espera */
+  await G(()=>{const m=mesAtual();m.metas=[300000,351000,399000];m.ticket=200;pintarMes();render()});
+  await p.waitForTimeout(200);
+}
+
 // ---- 2. definir a meta abre a divisão ----
 {
   await p.click('nav.paginas button[data-pg="mes"]');
@@ -61,8 +85,10 @@ const escada=()=>G(()=>document.querySelector('#escada').innerText);
   await bt.click(); await p.waitForTimeout(250);
   await p.click('#modal-cx .cartao-tipo, #modal-cx button');   // escolhe o 1º formato
   await p.waitForTimeout(250);
+  /* o campo agora mostra dinheiro como se escreve: 300.000, não 300000 */
   const v=await G(()=>document.querySelector('#w-meta')?.value);
-  ok('a ação já nasce com o resto como meta', String(v)==='300000', 'w-meta='+v);
+  ok('a ação já nasce com o resto como meta',
+     await G(()=>numeroBR(document.querySelector('#w-meta').value))===300000, 'w-meta='+v);
   await p.fill('#w-meta','120000');
   await p.fill('#w-nome, #w-nome-camp, input[id^=w-nome]','Dia D Setembro').catch(()=>{});
   await G(()=>{ // fecha o assistente indo até o fim pelo caminho curto
