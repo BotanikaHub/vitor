@@ -34,7 +34,7 @@ await G(()=>{
   const m=mesAtual(); m.metas=[300000,351000,399000]; m.ticket=200; m.ref='trabalho do time';
   AS={noId:null,tipo:'diaD',tema:null,inicio:'2026-09-07',fim:'2026-09-07',meta:120000,
     fontes:{traf:{meta:40000,inv:10000},api:{meta:32000,inv:4000}},nome:'Dia D Kids',
-    produtos:CATALOGO.map(x=>x.sku),modoDesc:'todos',descGeral:8,descPorSku:{},extras:[],
+    produtos:catalogo().map(x=>x.sku),modoDesc:'todos',descGeral:8,descPorSku:{},extras:[],
     canais:CANAIS.map(c=>c[0]),receita:null};
   AS.inv=invTotal(AS.fontes); criarCampanha();
 });

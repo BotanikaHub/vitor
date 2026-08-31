@@ -35,7 +35,7 @@ await G(()=>{
       fim:tipo==='diaD'?'2026-09-09':tipo==='semana'?'2026-09-18':'2026-09-30',meta,
       fontes:{traf:{meta:Math.round(meta*.267),inv:Math.round(meta*.06)},
               api:{meta:Math.round(meta*.267),inv:Math.round(meta*.03)}},
-      nome,produtos:CATALOGO.map(x=>x.sku),modoDesc:'todos',descGeral:12,descPorSku:{},
+      nome,produtos:catalogo().map(x=>x.sku),modoDesc:'todos',descGeral:12,descPorSku:{},
       extras:['Combo Fitness'],canais:CANAIS.map(c=>c[0]),receita:null};
     AS.inv=invTotal(AS.fontes);criarCampanha();
   });
@@ -127,14 +127,14 @@ async function colisoes(){
   /* o <img> se remove sozinho quando a imagem não carrega — e aqui a rede
      está fechada — então a URL se confere no HTML que a função gera */
   ok('a miniatura aponta para a foto da Shopify',
-     /cdn\.shopify\.com/.test(await G(()=>miniatura(CATALOGO[0]))),
-     (await G(()=>miniatura(CATALOGO[0]))).replace(/\s+/g,' ').slice(0,70));
+     /cdn\.shopify\.com/.test(await G(()=>miniatura(catalogo()[0]))),
+     (await G(()=>miniatura(catalogo()[0]))).replace(/\s+/g,' ').slice(0,70));
   ok('e com a inicial embaixo, pra não virar ícone quebrado',
      fotos.every(f=>f.ini&&f.ini.length<=2), fotos.slice(0,3).map(f=>f.ini).join(','));
   ok('o produto leva para a página dele na loja',
      await G(()=>!!document.querySelector('#oferta-semana td.prod a[href*="botanikabrasil"]')));
   ok('todo produto do catálogo tem foto e página cadastradas',
-     await G(()=>CATALOGO.every(p=>/^https:\/\/cdn\.shopify\.com/.test(p.foto||'')&&p.pag)));
+     await G(()=>catalogo().every(p=>/^https:\/\/cdn\.shopify\.com/.test(p.foto||'')&&p.pag)));
 
   /* e na hora de montar a oferta, no assistente */
   await p.click('nav.paginas button[data-pg="mes"]'); await p.waitForTimeout(250);
@@ -142,9 +142,29 @@ async function colisoes(){
   await p.click('#modal-cx .opcoes button'); await p.waitForTimeout(250);
   await p.click('#modal-cx button.ok'); await p.waitForTimeout(400);
   ok('o passo da oferta também mostra os produtos com foto',
-     await G(()=>document.querySelectorAll('#lista-prod .mini-foto').length)===9,
+     await G(()=>document.querySelectorAll('#lista-prod .mini-foto').length)
+       ===await G(()=>catalogo().length),
      'n='+await G(()=>document.querySelectorAll('#lista-prod .mini-foto').length));
   await G(()=>fecharModal());
+
+  /* cada marca vende o que é dela: a VermeFree não pode oferecer o
+     catálogo da Botanika */
+  ok('a Botanika tem catálogo', await G(()=>catalogo().length)>=9);
+  await G(()=>{const vf=D.meses.find(x=>(x.marca||'')==='VermeFree');trocarMes(vf.id)});
+  await p.waitForTimeout(400);
+  ok('no mês da VermeFree o catálogo da Botanika não aparece',
+     await G(()=>catalogo().length)===0, 'n='+await G(()=>catalogo().length));
+  await G(()=>{assistente(null)}); await p.waitForTimeout(250);
+  await p.click('#modal-cx .opcoes button'); await p.waitForTimeout(250);
+  await p.click('#modal-cx button.ok'); await p.waitForTimeout(400);
+  ok('e a tela da oferta explica o que fazer em vez de listar produto alheio',
+     await G(()=>document.querySelectorAll('#lista-prod .lin').length)===0
+     && /catálogo da .*VermeFree.* ainda não está cadastrado/i
+        .test(await G(()=>document.querySelector('#modal-cx').innerText)),
+     await G(()=>document.querySelector('#modal-cx').innerText.replace(/\n/g,' ').slice(0,80)));
+  await G(()=>fecharModal());
+  await G(()=>{const bt=D.meses.find(x=>(x.marca||'Botanika')==='Botanika');trocarMes(bt.id)});
+  await p.waitForTimeout(400);
   await p.click('nav.paginas button[data-pg="semana"]'); await p.waitForTimeout(300);
 
   await G(()=>{semanaSel=0;pintarSemana()}); await p.waitForTimeout(400);

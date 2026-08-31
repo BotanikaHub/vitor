@@ -83,9 +83,12 @@ ok('faturamento das fontes não pode passar da meta',
 await p.fill('#w-m-traf','16020'); await p.waitForTimeout(200);
 await p.click('button.ok'); await p.waitForTimeout(350);
 ok('passo 3 é a oferta', await G(()=>document.querySelector('#modal-cx h3')?.textContent)==='Produtos e desconto');
+/* preso ao tamanho do catálogo, não a um número: produto novo na loja
+   não pode derrubar a suíte */
+const nCat=await G(()=>catalogo().length);
 ok('catálogo real da Shopify no passo 3',
-   await G(()=>document.querySelectorAll('#lista-prod .lin').length)===9,
-   'linhas='+await G(()=>document.querySelectorAll('#lista-prod .lin').length));
+   await G(()=>document.querySelectorAll('#lista-prod .lin').length)===nCat,
+   'linhas='+await G(()=>document.querySelectorAll('#lista-prod .lin').length)+' de '+nCat);
 ok('produto traz SKU e preço',
    await G(()=>/SKU 80\.1\.1/.test(document.querySelector('#lista-prod').textContent)&&
               /87,50/.test(document.querySelector('#lista-prod').textContent)));
@@ -114,9 +117,11 @@ const of=await G(()=>{
           canais:por['CANAIS · CRONOGRAMA'].l.map(r=>r[0]),
           metas:por['METAS'].l.map(r=>r.join(' | '))};
 });
-ok('produto desmarcado sai da oferta', !of.oferta.some(l=>/^Whey/.test(l)),
+ok('produto desmarcado sai da oferta', !of.oferta.some(l=>/SKU 80\.1\.8/.test(l)),
    of.oferta.map(l=>l.split(' | ')[0]).join(', '));
-ok('8 produtos restantes na oferta', of.oferta.filter(l=>/SKU/.test(l)).length===8);
+ok('sobra o catálogo menos o que saiu',
+   of.oferta.filter(l=>/SKU/.test(l)).length===nCat-1,
+   of.oferta.filter(l=>/SKU/.test(l)).length+' de '+(nCat-1));
 ok('produto de fora do catálogo entra', of.oferta.some(l=>/Combo Fitness/.test(l)));
 ok('brinde entra no evento e na oferta',
    /Coqueteleira/.test(of.evento['Brinde']||'') && of.oferta.some(l=>/Coqueteleira/.test(l)));
@@ -167,7 +172,7 @@ ok('nenhuma célula em branco no TAP (fora as linhas de total)', tap.vazias===0,
 ok('cupom já preenchido', /10% OFF/.test(tap.evento['Cupom automático']||''), tap.evento['Cupom automático']);
 ok('bônus já preenchidos', /Manual da Suplementação/.test(tap.evento['Bônus universal']||''));
 ok('uma linha por produto, com SKU e preço',
-   tap.oferta.filter(l=>/SKU/.test(l)).length===9 &&
+   tap.oferta.filter(l=>/SKU/.test(l)).length===nCat &&
    tap.oferta.some(l=>/Tri\[Mg\]/.test(l)) && tap.oferta.some(l=>/Ômega 3/.test(l)),
    tap.oferta.filter(l=>/SKU/.test(l)).length+' produtos');
 ok('oferta traz kit e frete', tap.oferta.some(l=>/Kit Imunidade/.test(l))&&tap.oferta.some(l=>/Frete grátis/.test(l)));

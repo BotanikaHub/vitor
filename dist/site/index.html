@@ -690,7 +690,12 @@ const CANAIS=[
    navegador bloqueia imagem de fora, e a miniatura cai numa inicial; no
    link publicado na Vercel elas carregam normalmente. */
 const F='https://cdn.shopify.com/s/files/1/0780/7238/1672/files/';
-const CATALOGO=[
+/* Cada marca vende o que é dela. O planejador guardava um catálogo só,
+   e o mês da VermeFree acabava oferecendo produto da Botanika. Agora o
+   catálogo segue a marca do mês; o que a marca ainda não tem cadastrado
+   se escreve à mão em "fora do catálogo", no passo da oferta. */
+const CATALOGOS={
+  Botanika: [
   {curto:'Tri[Mg]',      sku:'80.1.1', preco:87.50,  nome:'Tri[Mg] Complex — Magnésio 3 em 1 de Rápida Absorção', foto:F+'hf_20260831_001724_6d9f444b-0b2a-47db-b598-0174d70f35da_300x300.png?v=1788140235', pag:'tri-mg-complex'},
   {curto:'Vit C',        sku:'80.1.2', preco:89.52,  nome:'Super Vitamina C — Vitamina C + Quercetina + Própolis', foto:F+'hf_20260831_140355_ecfcb375-7dee-46e9-8055-24a934ab890e_300x300.png?v=1788186842', pag:'super-vitamina-c'},
   {curto:'Ômega 3',      sku:'80.1.3', preco:163.12, nome:'Super Ômega 3 + CoQ10 — Concentrado', foto:F+'hf_20260831_040137_c0b4c41d-86dd-4df3-bffc-bfab6960bfa6_300x300.png?v=1788149560', pag:'super-omega-3-coq10'},
@@ -699,10 +704,20 @@ const CATALOGO=[
   {curto:'Creatina',     sku:'80.1.7', preco:128.30, nome:'Creatina Monohidratada + Magnésio Taurato', foto:F+'hf_20260830_184404_172a0541-20c1-47fe-bb80-cc2bf1d31bfa_300x300.png?v=1788117425', pag:'creatina-l-carnitina'},
   {curto:'Whey',         sku:'80.1.8', preco:147.30, nome:'Whey Balance Chocolate — Whey + Colágeno C-PURE®', foto:F+'hf_20260830_192912_8ab2f4ee-b8c0-4326-bae6-7da4552792fc_300x300.png?v=1788120748', pag:'whey-balance-chocolate'},
   {curto:'TetraVit D',   sku:'80.1.9', preco:117.12, nome:'TetraVit D — Vitaminas A, D, E e K em Gotas', foto:F+'hf_20260831_025348_50f9c075-c3b8-49ef-b998-a62a63a764ed_300x300.png?v=1788145495', pag:'tetravit-d'},
+  {curto:'Whey s/ sabor',sku:'80.1.20', preco:147.30, nome:'Whey Balance Sem Sabor — Whey Concentrado + Colágeno C-PURE®', foto:F+'hf_20260830_230810_610a30bf-6221-48a9-ac19-9616ed27abe5_300x300.png?v=1788132393', pag:'whey-balance-sem-sabor'},
   {curto:'Kit Imunidade',sku:'kitimu', preco:361.71, nome:'Kit Imunidade — TetraVit D + Ômega 3 + Vit C', kit:true, foto:F+'kitsemana_300x300.png?v=1784419178', pag:'kit-da-imunidade'}
-];
-const SKUS=CATALOGO.filter(p=>!p.kit).map(p=>p.curto);
-const KITS=CATALOGO.filter(p=>p.kit).map(p=>[p.curto,'10% OFF']);
+],
+  VermeFree: []   /* a loja da VermeFree é outra conta Shopify */
+};
+const catalogo=()=>CATALOGOS[marcaDo(mesAtual())]||[];
+/* Uma campanha carrega a marca do mês dela — que nem sempre é o mês
+   aberto, como no relatório e na página da semana. */
+const catalogoDe=c=>{
+  const m=D.meses.find(x=>x.id===c?.mesId);
+  return CATALOGOS[marcaDo(m||mesAtual())]||[];
+};
+const SKUS=()=>catalogo().filter(p=>!p.kit).map(p=>p.curto);
+const KITS=()=>catalogo().filter(p=>p.kit).map(p=>[p.curto,'10% OFF']);
 const BONUS={universal:'Manual da Suplementação (PDF)',
              influencer:'Guia da Imunidade Infantil (PDF)'};
 const EQUIPE=[
@@ -1035,7 +1050,7 @@ function ofertaDe(c){
      JSON e em campanha criada sem passar pela tela de oferta. */
   const dela=Object.fromEntries(
     Object.entries(c.oferta||{}).filter(([,v])=>v!==undefined&&v!==null));
-  return {produtos:CATALOGO.map(p=>p.sku),modoDesc:'todos',
+  return {produtos:catalogoDe(c).map(p=>p.sku),modoDesc:'todos',
     descGeral:parseInt(P.desconto)||0,descPorSku:{},extras:[],
     frete:P.frete,brinde:'',
     bonusUniversal:BONUS.universal,bonusInfluencer:BONUS.influencer, ...dela};
@@ -1058,7 +1073,7 @@ function gerarSecoes(c){
   const T=TIPOS[c.tipo]||TIPOS.outro, P=PADRAO[c.tipo]||PADRAO.outro;
   const O=ofertaDe(c);
   const canaisOn=CANAIS.filter(([n])=>!c.canais||c.canais.includes(n));
-  const escolhidos=CATALOGO.filter(p=>O.produtos.includes(p.sku));
+  const escolhidos=catalogoDe(c).filter(p=>O.produtos.includes(p.sku));
   const invTraf=Math.round(c.investimento*.67), invApi=c.investimento-invTraf;
   const metaTraf=Math.round(c.meta*.267);
   const roas=invTraf?(metaTraf/invTraf).toFixed(1).replace('.',','):'—';
@@ -1123,7 +1138,7 @@ function assistente(noId,sugerida){
     /* a verba nasce em 10% da meta — a mesma proporção do par 45.000/4.500
        que o planejador já usava, mas agora acompanhando a ação */
     inv:Math.round((sugerida>0?sugerida:45000)*.1),fontes:null,nome:'',
-    produtos:CATALOGO.map(p=>p.sku),   // todos participam até você tirar algum
+    produtos:catalogo().map(p=>p.sku),  // todos participam até você tirar algum
     modoDesc:'todos',descGeral:8,descPorSku:{},
     extras:[],                          // produto escrito na mão
     canais:CANAIS.map(c=>c[0]),         // canais de execução ligados
@@ -1263,11 +1278,14 @@ function passo3(){
   $('#modal-cx').innerHTML=`
     <div class="passos">Passo <b>3</b> de 4 · oferta</div>
     <h3>Produtos e desconto</h3>
-    <p class="sub">O catálogo vem da Shopify. Desmarque o que não entra e escreva o que não está na loja.</p>
-    ${marcaDo(mesAtual())==='Botanika'?'':
-      `<p class="sub" style="color:var(--amar)">Este mês é da <b>${esc(marcaDo(mesAtual()))}</b> e a lista
-       abaixo é o catálogo da Botanika. Use <b>Mesmo % para todos</b> e escreva os produtos
-       à mão, ou me peça pra cadastrar o catálogo da ${esc(marcaDo(mesAtual()))}.</p>`}
+    <p class="sub">${catalogo().length
+      ?'O catálogo vem da Shopify. Desmarque o que não entra e escreva o que não está na loja.'
+      :'Escreva aqui os produtos desta ação, um por linha, com o desconto de cada um.'}</p>
+    ${catalogo().length?'':
+      `<p class="sub" style="color:var(--amar)">O catálogo da
+       <b>${esc(marcaDo(mesAtual()))}</b> ainda não está cadastrado aqui — a loja dela é
+       outra conta na Shopify. Escreva os produtos desta ação em
+       <b>Fora do catálogo</b>, logo abaixo, com o desconto de cada um.</p>`}
     <div class="radio">
       <button id="r-todos" class="${AS.modoDesc==='todos'?'on':''}" onclick="modoDesc('todos')">Mesmo % para todos</button>
       <button id="r-cada" class="${AS.modoDesc==='cada'?'on':''}" onclick="modoDesc('cada')">Um % por produto</button>
@@ -1275,8 +1293,9 @@ function passo3(){
     <div id="desc-geral" style="${AS.modoDesc==='todos'?'':'display:none'}">
       <label><b>Desconto da ação</b><input type="number" id="w-desc" value="${AS.descGeral}" min="0" max="90" step="1"></label>
     </div>
-    <div class="cab"><span class="nm">Produto</span><span class="col">Preço</span><span class="col">% OFF</span></div>
-    <div class="lista" id="lista-prod">${CATALOGO.map(pr=>{
+    ${catalogo().length?
+      '<div class="cab"><span class="nm">Produto</span><span class="col">Preço</span><span class="col">% OFF</span></div>':''}
+    <div class="lista" id="lista-prod">${catalogo().map(pr=>{
       const on=AS.produtos.includes(pr.sku);
       return `<div class="lin ${on?'':'off'}" data-sku="${pr.sku}">
         <input type="checkbox" ${on?'checked':''} onchange="ligarProduto('${pr.sku}',this.checked)">
@@ -1382,7 +1401,7 @@ function resumoW(){
   $('#w-resumo').innerHTML=
     `Vai gerar <b>${nd} ${nd>1?'dias':'dia'}</b> de cronograma${nd>nv?
        ` (${nv} de venda + ${nd-nv} de preparação)`:''}, com ${CANAIS.length} canais,
-     ${fasesDe(AS.tipo,ini,fim).length} fases e ${SKUS.length} SKUs já na oferta.<br>
+     ${fasesDe(AS.tipo,ini,fim).length} fases e ${SKUS().length} SKUs já na oferta.<br>
      ${FONTES.map(({k,n})=>`${n}: ${brl(f[k].inv)} para faturar ${brl(f[k].meta)}
        (ROAS <b>${roas(f[k].meta,f[k].inv)}</b>)`).join(' · ')}.
      Verba total <b>${brl(inv)}</b>, ROAS da ação <b>${roas(meta,inv)}</b>.<br>
@@ -2538,7 +2557,7 @@ function pintarOfertaSemana(ativas){
   }
   alvo.innerHTML=acoes.map(c=>{
     const O=ofertaDe(c);
-    const itens=CATALOGO.filter(pr=>O.produtos.includes(pr.sku));
+    const itens=catalogoDe(c).filter(pr=>O.produtos.includes(pr.sku));
     const linhas=itens.map(pr=>{
       const d=descontoDe(O,pr.sku);
       const fim=pr.preco*(1-(d||0)/100);
