@@ -2263,7 +2263,7 @@ function abrirTroca(txt,msg,ed,nomeArq){
     ? `<button class="mini" onclick="$('#troca-arq').click()">Abrir arquivo…</button>
        <button class="mini forte" onclick="importarTexto()">Importar</button>`
     : `<button class="mini forte" onclick="copiarTroca()">Copiar</button>
-       ${nomeArq?`<button class="mini" onclick="baixarArquivo('${nomeArq}',$('#troca-txt').value)">Baixar arquivo</button>`:''}`;
+       ${nomeArq&&podeBaixar()?`<button class="mini" onclick="baixarArquivo('${nomeArq}',$('#troca-txt').value)">Baixar arquivo</button>`:''}`;
   if(!ed){t.value=txt;t.placeholder='';
     setTimeout(()=>{try{t.focus();t.select()}catch(e){}},250)}
   else{t.value='';t.placeholder='Cole aqui o JSON e clique em Importar.';
@@ -2282,11 +2282,17 @@ async function copiarTroca(){
 }
 
 /* Baixar de dentro do visualizador de Artifacts só funciona pela
-   capacidade de downloads; fora dele, o caminho normal do navegador. */
+   capacidade de downloads — e declarar essa capacidade impede o
+   compartilhamento por link, que aqui vale mais. Então lá dentro o botão
+   nem aparece: botão que não faz nada é pior que botão nenhum. Fora do
+   visualizador, o caminho normal do navegador resolve. */
+let DL=undefined;
+(async function(){try{DL=await window.claude?.use?.('downloads')||null}catch(e){DL=null}})();
+const podeBaixar=()=>!window.claude||!!DL;
+
 async function baixarArquivo(nome,txt){
   try{
-    const dl=await window.claude?.use?.('downloads');
-    if(dl){await dl.save({filename:nome,data:txt});return aviso('Arquivo salvo.')}
+    if(DL){await DL.save({filename:nome,data:txt});return aviso('Arquivo salvo.')}
   }catch(e){
     if(e&&e.code==='declined')return aviso('Download cancelado.');
   }
@@ -2460,7 +2466,7 @@ function copiarTexto(){
 function exportarJSON(){
   const txt=JSON.stringify(D,null,2);
   abrirTroca(txt,`Planejamento inteiro em JSON · ${Math.round(txt.length/1024)} KB — `+
-    `use Copiar ou Baixar arquivo.`,false,
+    (podeBaixar()?'use Copiar ou Baixar arquivo.':'clique em Copiar e cole onde precisar.'),false,
     `planejamento-${MESES[mesAtual().mes-1]}-${mesAtual().ano}-${marcaDo(mesAtual()).toLowerCase()}.json`);
 }
 function importarJSON(){abrirTroca('','Cole o JSON aqui, ou abra o arquivo.',true)}
