@@ -237,6 +237,79 @@ const escada=()=>G(()=>document.querySelector('#escada').innerText);
   await p.waitForTimeout(300);
 }
 
+// ---- 4f. cenários: a mesma divisão vista nas Metas 2 e 3 ----
+{
+  await p.click('nav.paginas button[data-pg="mes"]'); await p.waitForTimeout(300);
+  ok('a escada tem os três cenários',
+     await G(()=>document.querySelectorAll('#escada .cenarios button').length)===3);
+  const um=await escada();
+  ok('começa na Meta 1', /R\$ 300\.000/.test(um)&&/Meta 1 dividida pelo ticket/.test(um));
+
+  await p.click('#escada .cenarios button:nth-child(2)'); await p.waitForTimeout(400);
+  const dois=await escada();
+  ok('trocar pra Meta 2 troca o número de cima', /R\$ 351\.000/.test(dois),
+     dois.replace(/\n/g,' ').slice(0,70));
+  ok('os pedidos acompanham a meta escolhida', /Meta 2 dividida pelo ticket/.test(dois));
+  /* 120.000 escalado por 351/300 = 140.400 */
+  ok('cada ação aparece realocada', /R\$ 140\.400/.test(dois),
+     dois.replace(/\n/g,' ').match(/Dia D Setembro[^%]*%\s*\S+/)?.[0]||'');
+  ok('e diz que é projeção, não o que está gravado',
+     /Projeção para a Meta 2/.test(dois)&&/gravado é a divisão da Meta 1/.test(dois));
+  ok('no cenário projetado não se edita valor de ação',
+     await G(()=>!document.querySelector('#escada .fatia .vl .edit')));
+
+  await p.click('#escada .cenarios button:nth-child(3)'); await p.waitForTimeout(400);
+  ok('e a Meta 3 também', /R\$ 399\.000/.test(await escada()));
+
+  await p.click('#escada .cenarios button:nth-child(1)'); await p.waitForTimeout(400);
+  ok('voltando pra Meta 1, os valores gravados voltam', /R\$ 120\.000/.test(await escada()));
+  ok('a divisão gravada não mudou com o passeio pelos cenários',
+     await G(()=>campsMes()[0].meta)===120000, 'meta='+await G(()=>campsMes()[0].meta));
+}
+
+// ---- 4g. editar a meta no próprio lugar ----
+{
+  await p.click('#escada .fatia .vl .edit'); await p.waitForTimeout(300);
+  ok('clicar no valor abre um campo ali mesmo',
+     await G(()=>!!document.querySelector('#escada input.inline')));
+  await p.fill('#escada input.inline','150 mil');
+  await p.keyboard.press('Enter'); await p.waitForTimeout(500);
+  ok('e grava o que foi digitado', await G(()=>campsMes()[0].meta)===150000,
+     'meta='+await G(()=>campsMes()[0].meta));
+  ok('a escada se redesenha com o novo valor', /R\$ 150\.000/.test(await escada()));
+  ok('e o rodapé confirma qual ação mudou',
+     /meta agora R\$ 150\.000/.test(await G(()=>document.querySelector('#msg').textContent)),
+     await G(()=>document.querySelector('#msg').textContent));
+
+  /* Esc desiste sem gravar */
+  await p.click('#escada .fatia .vl .edit'); await p.waitForTimeout(250);
+  await p.fill('#escada input.inline','9');
+  await p.keyboard.press('Escape'); await p.waitForTimeout(350);
+  ok('Esc desiste sem gravar', await G(()=>campsMes()[0].meta)===150000,
+     'meta='+await G(()=>campsMes()[0].meta));
+
+  /* a meta do mês também se edita no lugar */
+  await p.click('#escada .degrau .vlr .edit'); await p.waitForTimeout(250);
+  await p.fill('#escada input.inline','400.000');
+  await p.keyboard.press('Enter'); await p.waitForTimeout(500);
+  ok('a meta do mês se edita no lugar', await G(()=>mesAtual().metas[0])===400000,
+     'meta1='+await G(()=>mesAtual().metas[0]));
+  ok('e as metas 2 e 3 calculadas acompanham',
+     await G(()=>mesAtual().metas[1])===468000, 'meta2='+await G(()=>mesAtual().metas[1]));
+
+  /* o ticket também */
+  await p.click('#escada .degrau .pe .edit'); await p.waitForTimeout(250);
+  await p.fill('#escada input.inline','250');
+  await p.keyboard.press('Enter'); await p.waitForTimeout(400);
+  ok('o ticket médio se edita no lugar', await G(()=>mesAtual().ticket)===250,
+     'ticket='+await G(()=>mesAtual().ticket));
+
+  /* devolve o mundo ao que o resto do teste espera */
+  await G(()=>{const m=mesAtual();m.metas=[300000,351000,399000];m.ticket=200;
+    campsMes()[0].meta=120000;pintarMes();render()});
+  await p.waitForTimeout(300);
+}
+
 // ---- 5. fechando a meta inteira ----
 {
   await G(()=>{const c=campsMes()[0];c.meta=300000;pintarMes();render()});

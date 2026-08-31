@@ -378,7 +378,17 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 .degrau .np{width:22px;height:22px;border-radius:50%;background:var(--painel2);
   border:1px solid var(--linha2);color:var(--txt2);font-size:11.5px;font-weight:600;
   display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
-.degrau h4{margin:0;font-size:13.5px;font-weight:600;flex:1;min-width:130px}
+.degrau h4{margin:0;font-size:13.5px;font-weight:600;flex:1;min-width:130px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cenarios{display:inline-flex;gap:2px;border:1px solid var(--linha2);border-radius:20px;padding:2px}
+.cenarios button{font-size:11px;padding:3px 10px;border-radius:20px;color:var(--txt3);font-weight:600}
+.cenarios button.on{background:var(--verde-esc);color:#fff}
+.cenarios button:disabled{opacity:.35;cursor:default}
+/* valor que se edita clicando: sublinhado pontilhado é o convite */
+.edit{cursor:text;border-bottom:1px dashed var(--linha2);padding-bottom:1px}
+.edit:hover{border-bottom-color:var(--verde);color:var(--verde)}
+input.inline{background:var(--painel2);border:1px solid var(--verde);border-radius:7px;
+  padding:2px 8px;font:inherit;text-align:right;font-variant-numeric:tabular-nums}
 .degrau .vlr{font-size:19px;font-weight:600;font-variant-numeric:tabular-nums}
 .degrau .vlr.a{color:var(--amar)}.degrau .vlr.v{color:var(--verde)}
 .degrau .pe{font-size:12.5px;color:var(--txt3);margin-top:4px}
@@ -2107,8 +2117,72 @@ function contas(){
 }
 const pedidosDe=(v,ticket)=>ticket?Math.round(v/ticket):0;
 
+/* Qual das três metas a escada está mostrando. É recorte de leitura: a
+   divisão gravada continua sendo a da Meta 1; as outras duas são
+   projeção, e a escada diz isso em vez de fingir que já foi decidido. */
+let metaSel=0;
+function verCenario(i){metaSel=i;pintarMes()}
+
+/* Editar onde se está olhando. Antes, mudar uma meta pedia abrir o modal
+   do mês ou entrar no TAP da ação — longe demais de quem está lendo a
+   divisão e quer ajustar um número. */
+function editarNoLugar(el,valor,aoSalvar){
+  if(el.querySelector('input'))return;
+  const larg=Math.max(96,el.offsetWidth+16);
+  el.innerHTML=`<input class="inline" style="width:${larg}px" value="${
+    valor?Number(valor).toLocaleString('pt-BR'):''}">`;
+  const i=el.querySelector('input');
+  i.focus();i.select();
+  let feito=false;
+  const fim=grava=>{
+    if(feito)return;feito=true;
+    if(grava)aoSalvar(numeroBR(i.value));else pintarMes();
+  };
+  i.onkeydown=e=>{
+    if(e.key==='Enter'){e.preventDefault();fim(true)}
+    if(e.key==='Escape'){e.preventDefault();fim(false)}
+  };
+  i.onblur=()=>fim(true);
+}
+
+function editaMetaDoMes(el){
+  const m=mesAtual(),antes=m.metas[0]||0;
+  editarNoLugar(el,m.metas[metaSel]||0,v=>{
+    /* Meta 2 e 3 que ainda eram as calculadas acompanham a Meta 1; as
+       que alguém escreveu à mão ficam onde estão. */
+    if(metaSel===0&&antes){
+      if(m.metas[1]===Math.round(antes*1.17))m.metas[1]=Math.round(v*1.17);
+      if(m.metas[2]===Math.round(antes*1.33))m.metas[2]=Math.round(v*1.33);
+    }
+    m.metas[metaSel]=v;
+    if(metaSel===0&&!m.metas[1])m.metas[1]=Math.round(v*1.17);
+    if(metaSel===0&&!m.metas[2])m.metas[2]=Math.round(v*1.33);
+    salvar();pintarMes();pintarSemana();render();
+    aviso(`Meta ${metaSel+1} agora é ${brl(v)}.`);
+  });
+}
+function editaMetaDaAcao(el,i){
+  const c=D.campanhas[i];if(!c)return;
+  editarNoLugar(el,c.meta||0,v=>{
+    c.meta=v;
+    /* as fontes pagas encolhem junto se passarem a não caber */
+    c.fontes=fontesValidas(v,c.fontes||fontesPadrao(v,c.investimento||0));
+    c.investimento=invTotal(c.fontes);
+    c.receita=null;
+    salvar();pintarMes();pintarSemana();pintarTAP();render();
+    aviso(`${c.nome}: meta agora ${brl(v)}.`);
+  });
+}
+function editaTicket(el){
+  const m=mesAtual();
+  editarNoLugar(el,m.ticket||0,v=>{
+    m.ticket=v;salvar();pintarMes();pintarSemana();
+    aviso(v?`Ticket médio ${brl(v)}.`:'Ticket médio removido.');
+  });
+}
+
 function pintarEscada(){
-  const {m,cps,meta,soma,inv,resto,pct,ticket,pedidos}=contas();
+  const {m,cps,meta,soma,inv,resto,pct,ticket}=contas();
   const passo=(n,titulo,valor,classe,pe,extra='')=>
     `<div class="degrau"><div class="cab"><span class="np">${n}</span>
        <h4>${titulo}</h4><span class="vlr ${classe||''}">${valor}</span></div>
@@ -2119,13 +2193,28 @@ function pintarEscada(){
       <div class="pe">O método começa aqui: sem a meta do mês não há o que dividir.
         <button class="mini forte" onclick="editarMetasMes()">definir a meta</button></div></div>`;
 
-  let h=passo(1,'Meta do mês',brl(meta),'',
-    `Meta 2 ${brl(m.metas[1])} · Meta 3 ${brl(m.metas[2])}` +
-    (m.ref?` · ${esc(m.ref)}`:'') +
-    ` <button class="mini" onclick="editarMetasMes()">ajustar</button>`);
+  /* O cenário escolhido. A divisão gravada é sempre a da Meta 1; nas
+     outras duas, cada ação aparece escalada na mesma proporção. */
+  if(metaSel>2||!m.metas[metaSel])metaSel=0;
+  const ref=m.metas[metaSel]||meta;
+  const fator=meta?ref/meta:1;
+  const proj=v=>Math.round((v||0)*fator);
+  const cenario=metaSel>0;
+  const pedidosRef=ticket?Math.round(ref/ticket):0;
 
-  if(ticket)h+=passo(2,'Pedidos necessários',pedidos.toLocaleString('pt-BR'),'',
-    `Meta 1 dividida pelo ticket médio de ${brl(ticket)}`);
+  const chips=`<span class="cenarios">${[0,1,2].map(i=>
+    `<button class="${i===metaSel?'on':''}" onclick="verCenario(${i})"
+       ${m.metas[i]?'':'disabled'}>Meta ${i+1}</button>`).join('')}</span>`;
+
+  let h=passo(1,'Meta do mês'+chips,
+    `<span class="edit" onclick="editaMetaDoMes(this)" title="Clique para editar">${brl(ref)}</span>`,'',
+    [0,1,2].filter(i=>i!==metaSel&&m.metas[i]).map(i=>`Meta ${i+1} ${brl(m.metas[i])}`).join(' · ')+
+    (m.ref?` · ${esc(m.ref)}`:'') +
+    ` <button class="mini" onclick="editarMetasMes()">ajustar todas</button>`);
+
+  if(ticket)h+=passo(2,'Pedidos necessários',pedidosRef.toLocaleString('pt-BR'),'',
+    `Meta ${metaSel+1} dividida pelo ticket médio de
+     <span class="edit" onclick="editaTicket(this)" title="Clique para editar">${brl(ticket)}</span>`);
 
   /* a barra: cada ação com sua fatia, e o buraco no fim */
   const trilho=`<div class="trilho">${cps.map(c=>
@@ -2133,30 +2222,42 @@ function pintarEscada(){
         title="${esc(c.nome)}"></i>`).join('')}</div>`;
 
   const linhas=cps.map(c=>{
-    const p=meta?Math.round(100*(c.meta||0)/meta):0;
+    const pc=meta?Math.round(100*(c.meta||0)/meta):0;
+    const v=proj(c.meta);
+    const i=D.campanhas.indexOf(c);
     return `<div class="fatia"><span class="bolinha" style="background:${corCamp(c)}"></span>
       <span class="nm">${esc(c.nome)}</span>
-      <span class="pc">${c.meta?p+'%':'—'}</span>
-      <span class="vl">${c.meta?brl(c.meta):'contínuo'}</span>
-      ${ticket?`<span class="ped">${c.meta?pedidosDe(c.meta,ticket).toLocaleString('pt-BR')+' pedidos':''}</span>`:''}
-      <button class="mini" onclick="irCampanha(${D.campanhas.indexOf(c)})">abrir TAP</button></div>`;
+      <span class="pc">${c.meta?pc+'%':'—'}</span>
+      <span class="vl">${c.meta
+        ? (cenario?brl(v)
+                  :`<span class="edit" onclick="editaMetaDaAcao(this,${i})"
+                       title="Clique para editar a meta desta ação">${brl(c.meta)}</span>`)
+        : 'contínuo'}</span>
+      ${ticket?`<span class="ped">${c.meta?pedidosDe(v,ticket).toLocaleString('pt-BR')+' pedidos':''}</span>`:''}
+      <button class="mini" onclick="irCampanha(${i})">abrir TAP</button></div>`;
   }).join('');
 
+  const restoRef=ref-proj(soma);
   const fecho = resto>0
     ? `<div class="fatia resto"><span class="nm">Falta atribuir a alguma ação</span>
         <span class="pc">${Math.round(100*resto/meta)}%</span>
-        <span class="vl">${brl(resto)}</span>
-        ${ticket?`<span class="ped">${pedidosDe(resto,ticket).toLocaleString('pt-BR')} pedidos</span>`:''}
-        <button class="mini forte" onclick="assistente(null,${resto})">criar ação para o resto</button></div>`
+        <span class="vl">${brl(proj(resto))}</span>
+        ${ticket?`<span class="ped">${pedidosDe(proj(resto),ticket).toLocaleString('pt-BR')} pedidos</span>`:''}
+        ${cenario?'':`<button class="mini forte" onclick="assistente(null,${resto})">criar ação para o resto</button>`}</div>`
     : resto<0
-    ? `<div class="fatia sobra"><span class="nm">As ações já passam da Meta 1</span>
+    ? `<div class="fatia sobra"><span class="nm">As ações já passam da Meta ${metaSel+1}</span>
         <span class="pc">+${Math.round(100*(-resto)/meta)}%</span>
-        <span class="vl">${brl(-resto)}</span></div>`
+        <span class="vl">${brl(proj(-resto))}</span></div>`
     : `<div class="fatia sobra"><span class="nm">Meta inteira dividida em ações</span>
-        <span class="pc">100%</span><span class="vl">${brl(soma)}</span></div>`;
+        <span class="pc">100%</span><span class="vl">${brl(proj(soma))}</span></div>`;
 
-  h+=passo(ticket?3:2,'Dividido por ação',brl(soma),resto>0?'a':'v',
-    `${pct}% da Meta 1 já está numa ação` + (cps.length?'':' — nenhuma campanha ainda'),
+  h+=passo(ticket?3:2,'Dividido por ação',brl(proj(soma)),resto>0?'a':'v',
+    (cenario
+      ? `Projeção para a Meta ${metaSel+1}: mesma divisão, cada ação
+         <b>${((fator-1)*100).toFixed(1).replace('.',',')}%</b> maior.
+         O que está gravado é a divisão da Meta 1.`
+      : `${pct}% da Meta 1 já está numa ação${cps.length?'':' — nenhuma campanha ainda'}.
+         Clique num valor para editar.`),
     trilho+linhas+fecho);
 
   /* último degrau: quanto do faturamento é comprado e quanto não é */
@@ -2168,16 +2269,17 @@ function pintarEscada(){
   const linhasF=porFonte.map(x=>
     `<div class="fatia"><span class="nm">${x.n}</span>
       <span class="pc">${soma?Math.round(100*x.meta/soma)+'%':'—'}</span>
-      <span class="vl">${brl(x.meta)}</span>
-      <span class="ped">${brl(x.inv)} de verba</span>
+      <span class="vl">${brl(proj(x.meta))}</span>
+      <span class="ped">${brl(proj(x.inv))} de verba</span>
       <span class="pc">ROAS ${roas(x.meta,x.inv)}</span></div>`).join('') +
     `<div class="fatia"><span class="nm">Não se compra — influencer, base, atendimento, orgânico</span>
       <span class="pc">${soma?Math.round(100*(soma-compradoM)/soma)+'%':'—'}</span>
-      <span class="vl">${brl(Math.max(0,soma-compradoM))}</span>
+      <span class="vl">${brl(proj(Math.max(0,soma-compradoM)))}</span>
       <span class="ped">—</span><span class="pc"></span></div>`;
 
-  h+=passo(ticket?4:3,'De onde vem o faturamento das ações',brl(inv)+' de verba','',
-    inv?`ROAS alvo do que já está atribuído: <b>${roas(soma,inv)}</b>`
+  h+=passo(ticket?4:3,'De onde vem o faturamento das ações',brl(proj(inv))+' de verba','',
+    inv?`ROAS alvo do que já está atribuído: <b>${roas(soma,inv)}</b>`+
+        (cenario?` · verba e faturamento projetados para a Meta ${metaSel+1}`:'')
        :'Nenhum investimento previsto nas ações ainda',
     cps.length?linhasF:'');
   return h;
