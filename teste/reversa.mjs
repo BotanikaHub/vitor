@@ -182,6 +182,61 @@ const escada=()=>G(()=>document.querySelector('#escada').innerText);
   await G(()=>fecharModal());
 }
 
+// ---- 4e. o nó da ação abre o TAP como mapa ----
+{
+  await p.click('nav.paginas button[data-pg="mapa"]'); await p.waitForTimeout(500);
+  const antes=await G(()=>M().nos.length);
+  ok('o nó da ação oferece ver os ramos',
+     await G(()=>[...document.querySelectorAll('#mundo .no')]
+       .some(e=>/ver ramos/.test(e.textContent))));
+  ok('e o selo de abrir o TAP continua lá',
+     await G(()=>[...document.querySelectorAll('#mundo .no .selo')]
+       .some(e=>/R\$/.test(e.textContent))));
+
+  await p.click('#mundo .no .ramos'); await p.waitForTimeout(700);
+  const galhos=await G(()=>M().nos.filter(n=>n.deTap&&acharNo(n.pai)?.campId).map(n=>n.t));
+  ok('abriu um galho por seção do TAP', galhos.length>=5, galhos.join(' | '));
+  ok('os galhos são as seções mesmo',
+     galhos.includes('METAS')&&galhos.some(t=>/CANAIS/.test(t)), galhos.join(' | '));
+  ok('nasceram fechados, pra não explodir a tela',
+     await G(()=>M().nos.filter(n=>n.deTap&&acharNo(n.pai)?.campId).every(n=>n.fech)));
+  ok('e o mapa cresceu de verdade', await G(()=>M().nos.length)>antes+20,
+     `${antes} -> `+await G(()=>M().nos.length));
+
+  /* abrindo um galho aparecem as linhas daquela seção do TAP */
+  await G(()=>{const g=M().nos.find(n=>n.deTap&&n.t==='METAS');g.fech=false;organizar()});
+  await p.waitForTimeout(400);
+  const linhas=await G(()=>{const g=M().nos.find(n=>n.deTap&&n.t==='METAS');
+    return filhos(g.id).map(x=>x.t)});
+  ok('o galho METAS traz as linhas do TAP',
+     linhas.some(t=>/Meta faturamento/.test(t))&&linhas.some(t=>/Investimento/.test(t)),
+     linhas.slice(0,2).join(' | '));
+  ok('sem travessão dobrado no rótulo', !linhas.some(t=>/— .*—/.test(t)),
+     linhas.find(t=>/— .*—/.test(t))||'ok');
+
+  /* fechar devolve o mapa ao que era */
+  await p.click('#mundo .no .ramos'); await p.waitForTimeout(600);
+  ok('fechar tira os galhos gerados', await G(()=>M().nos.length)===antes,
+     'nos='+await G(()=>M().nos.length));
+  ok('e o botão volta a convidar', await G(()=>[...document.querySelectorAll('#mundo .no')]
+     .some(e=>/ver ramos/.test(e.textContent))));
+
+  /* anotação escrita à mão dentro de um galho não some sem perguntar */
+  let perguntou='';
+  await p.click('#mundo .no .ramos'); await p.waitForTimeout(600);
+  await G(()=>{const g=M().nos.find(n=>n.deTap&&n.t==='METAS');
+    M().nos.push({id:M().prox++,pai:g.id,t:'lembrete meu',x:g.x,y:g.y});render()});
+  p.once('dialog',async d=>{perguntou=d.message();await d.dismiss()});
+  await p.click('#mundo .no .ramos'); await p.waitForTimeout(600);
+  ok('pergunta antes de apagar o que foi escrito à mão',
+     /escritas à mão/i.test(perguntou), perguntou.slice(0,60));
+  ok('e ao recusar, não apagou nada',
+     await G(()=>M().nos.some(n=>n.t==='lembrete meu')));
+  /* limpa pra não atrapalhar o resto */
+  await G(()=>{M().nos=M().nos.filter(n=>!n.deTap&&n.t!=='lembrete meu');organizar()});
+  await p.waitForTimeout(300);
+}
+
 // ---- 5. fechando a meta inteira ----
 {
   await G(()=>{const c=campsMes()[0];c.meta=300000;pintarMes();render()});
