@@ -94,8 +94,34 @@ tr.total .cel{font-weight:600;color:var(--verde)}
   padding:2px 8px;border-radius:20px}
 .faixa-camp .dt{font-size:12.5px;color:var(--txt3);font-family:ui-monospace,monospace}
 .faixa-camp .mt{font-size:13px;color:var(--verde);font-weight:600}
+/* a oferta da semana: preço cheio, desconto e preço final lado a lado */
+.oferta-camp{border:1px solid var(--linha);border-radius:11px;margin-bottom:14px;overflow:hidden}
+.oferta-camp .rolagem{overflow-x:auto}
+table.oferta{min-width:520px}
+table.oferta td{padding:9px 13px;font-size:13px;border-bottom:1px solid var(--linha)}
+table.oferta td small{display:block;font-size:11px;color:var(--txt3);margin-top:2px}
+table.oferta td.n,table.oferta th.n{text-align:right;font-variant-numeric:tabular-nums;
+  white-space:nowrap}
+table.oferta td.off{color:var(--amar);font-weight:600}
+table.oferta td.forte{color:var(--verde);font-weight:600}
+table.oferta .tp{font-size:10px;background:var(--painel2);border-radius:20px;padding:1px 7px;
+  color:var(--txt3)}
+.juntos{display:flex;flex-wrap:wrap;gap:16px;padding:11px 14px;font-size:12.5px;
+  color:var(--txt2);background:var(--painel2)}
+.juntos b{color:var(--txt);font-weight:600;margin-right:4px}
 .vazio{padding:26px 15px;text-align:center;color:var(--txt3);font-size:13.5px;
   background:var(--painel);border:1px dashed var(--linha2);border-radius:10px}
+/* faixa das campanhas que rodam o mês inteiro, fora da grade */
+.continuas{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px;
+  padding:11px 13px;border:1px dashed var(--linha2);border-radius:11px;background:var(--painel)}
+.continuas .rot{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);
+  margin-right:2px}
+.pilula{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--txt);
+  background:var(--painel2);border:1px solid var(--linha2);border-radius:20px;padding:4px 12px}
+.pilula i{width:8px;height:8px;border-radius:50%;background:var(--c);flex-shrink:0}
+.pilula b{color:var(--verde);font-weight:600}
+.pilula:hover{border-color:var(--verde-esc)}
+.legenda .fora{color:var(--txt3);font-style:italic}
 .cal-cab{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px}
 .cal-cab div{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt3);
   text-align:center;padding:4px 0}
@@ -510,7 +536,9 @@ input.inline{background:var(--painel2);border:1px solid var(--verde);border-radi
   <h2 class="sec">Resumo do mês</h2>
   <div class="cartoes" id="cartoes-mes"></div>
   <h2 class="sec" id="tit-cal">Calendário</h2>
-  <p class="dica">Cada barra é uma campanha. Clique num dia para ver o que sai nele.</p>
+  <p class="dica">A grade guarda as ações com data. O que roda o mês inteiro fica na
+    faixa acima dela. Clique num dia para ver o que sai nele.</p>
+  <div id="cal-continuas"></div>
   <div class="cal-cab" id="cal-cab"></div>
   <div id="calendario"></div>
   <div class="legenda" id="legenda"></div>
@@ -526,6 +554,9 @@ input.inline{background:var(--painel2);border:1px solid var(--verde);border-radi
   <div class="cartoes" id="cartoes-semana"></div>
   <h2 class="sec">Campanhas nesta semana</h2>
   <div id="camp-semana"></div>
+  <h2 class="sec" style="margin-top:26px">A oferta das ações desta semana</h2>
+  <p class="dica">O que entra na promoção, com quanto de desconto e por qual preço final.</p>
+  <div id="oferta-semana"></div>
   <h2 class="sec" style="margin-top:26px">O que sai por dia</h2>
   <div id="canais-semana"></div>
 </div>
@@ -980,10 +1011,16 @@ function dividirReceita(meta,inv,fontes){
    formato — assim TAP antigo e novo geram igual. */
 function ofertaDe(c){
   const P=PADRAO[c.tipo]||PADRAO.outro;
+  /* Só as chaves que a campanha realmente tem entram por cima do padrão.
+     Espalhando o objeto inteiro, um campo ausente virava undefined e
+     apagava o frete e os bônus — acontecia em campanha importada de
+     JSON e em campanha criada sem passar pela tela de oferta. */
+  const dela=Object.fromEntries(
+    Object.entries(c.oferta||{}).filter(([,v])=>v!==undefined&&v!==null));
   return {produtos:CATALOGO.map(p=>p.sku),modoDesc:'todos',
     descGeral:parseInt(P.desconto)||0,descPorSku:{},extras:[],
     frete:P.frete,brinde:'',
-    bonusUniversal:BONUS.universal,bonusInfluencer:BONUS.influencer, ...(c.oferta||{})};
+    bonusUniversal:BONUS.universal,bonusInfluencer:BONUS.influencer, ...dela};
 }
 const descontoDe=(o,sku)=>o.modoDesc==='cada'?(o.descPorSku[sku]??o.descGeral):o.descGeral;
 const pct=v=>v>0?v+'% OFF':'—';
@@ -1556,28 +1593,89 @@ function abrirRamos(noId){
   aviso(`${rs.length} ramos abertos — clique no número de cada um pra ver as linhas.`);
 }
 
-function organizar(){
-  const raiz=M().nos.find(n=>!n.pai);if(!raiz)return;
-  const P=56;raiz.x=4500;raiz.y=3000;
-  const contar=id=>{const a=acharNo(id);if(a?.fech)return 1;
-    const f=filhos(id);return f.length?f.reduce((s,c)=>s+contar(c.id),0):1};
-  const esp=(pai,s,d)=>{if(pai.fech)return;const f=filhos(pai.id);if(!f.length)return;
-    const tot=f.reduce((a,n)=>a+contar(n.id),0);let y=pai.y-(tot*P)/2;
-    f.forEach(n=>{const h=contar(n.id);n.x=pai.x+s*d;n.y=y+(h*P)/2;y+=h*P;esp(n,s,330)})};
-  const n1=filhos(raiz.id);
-  if(M().layout==='radial'){
-    const dir=n1.filter((_,i)=>i%2===0),eq=n1.filter((_,i)=>i%2===1);
-    [[dir,1],[eq,-1]].forEach(([L,s])=>{const tot=L.reduce((a,n)=>a+contar(n.id),0);
-      let y=raiz.y-(tot*P)/2;
-      L.forEach(n=>{const h=contar(n.id);n.x=raiz.x+s*380;n.y=y+(h*P)/2;y+=h*P;esp(n,s,330)})});
-  }else{
-    const tot=n1.reduce((a,n)=>a+contar(n.id),0);let y=raiz.y-(tot*P)/2;
-    n1.forEach(n=>{const h=contar(n.id);n.x=raiz.x+380;n.y=y+(h*P)/2;y+=h*P;esp(n,1,330)});
-  }
-  render();ajustar();
+/* ================= ARRUMAR O MAPA =================
+   O layout antigo reservava 56px por folha e 330px por nível, fixos. Com
+   os nós que a página passou a ter — campanha com selos em duas linhas,
+   ramo do TAP com texto de três — 56px não cabia e os nós se empilhavam
+   uns sobre os outros; e 330px de distância era menos que a largura dos
+   próprios nós, então o filho voltava por cima do pai em vez de sair pra
+   fora. Agora o espaço vem da medida real de cada nó. */
+const FOLGA_V=16, FOLGA_H=64, ALT_PADRAO=44, LARG_PADRAO=190;
+/* Página escondida mede zero. Organizar com zero empilhava tudo — era
+   o que acontecia ao criar campanhas na aba Mês e só depois abrir o
+   mapa. Zero não é medida: vale o padrão. */
+const altDe=n=>(medidas[n.id]?.h||ALT_PADRAO)+FOLGA_V;
+const largDe=n=>(medidas[n.id]?.w||LARG_PADRAO);
+
+/* Altura que a subárvore ocupa: nunca menos que a do próprio nó, senão
+   um pai alto com filhos baixos come o vizinho de cima. */
+function alturaRamo(id){
+  const a=acharNo(id);if(!a)return ALT_PADRAO+FOLGA_V;
+  const f=a.fech?[]:filhos(id);
+  if(!f.length)return altDe(a);
+  return Math.max(altDe(a),f.reduce((t,c)=>t+alturaRamo(c.id),0));
 }
-function medir(){medidas={};
-  document.querySelectorAll('#mundo .no').forEach(e=>medidas[e.dataset.id]={w:e.offsetWidth,h:e.offsetHeight})}
+
+function posicionarRamo(pai,s){
+  if(pai.fech)return;
+  const f=filhos(pai.id);if(!f.length)return;
+  const tot=f.reduce((t,n)=>t+alturaRamo(n.id),0);
+  let y=pai.y-tot/2;
+  f.forEach(n=>{
+    const h=alturaRamo(n.id);
+    /* distância entre centros = metade de cada nó + folga: assim o filho
+       nasce sempre fora do pai, por mais largo que ele seja */
+    n.x=pai.x+s*(largDe(pai)/2+largDe(n)/2+FOLGA_H);
+    n.y=y+h/2;y+=h;
+    posicionarRamo(n,s);
+  });
+}
+
+function calcularPosicoes(){
+  const raiz=M().nos.find(n=>!n.pai);if(!raiz)return false;
+  raiz.x=4500;raiz.y=3000;
+  const n1=filhos(raiz.id);
+  const lado=(L,s)=>{
+    const tot=L.reduce((t,n)=>t+alturaRamo(n.id),0);
+    let y=raiz.y-tot/2;
+    L.forEach(n=>{
+      const h=alturaRamo(n.id);
+      n.x=raiz.x+s*(largDe(raiz)/2+largDe(n)/2+FOLGA_H);
+      n.y=y+h/2;y+=h;
+      posicionarRamo(n,s);
+    });
+  };
+  if(M().layout==='radial')
+    [[n1.filter((_,i)=>i%2===0),1],[n1.filter((_,i)=>i%2===1),-1]].forEach(([L,s])=>lado(L,s));
+  else lado(n1,1);
+  return true;
+}
+
+/* Duas passadas: a primeira posiciona com as medidas que houver, a
+   segunda refaz depois que o navegador mediu os nós de verdade. Sem ela,
+   um nó recém-criado entra no cálculo com a altura padrão e desencontra
+   tudo à volta. */
+function organizar(){
+  if(!calcularPosicoes())return;
+  render();
+  requestAnimationFrame(()=>{
+    medir();
+    if(calcularPosicoes()){reposicionar();fios();ajustar();posPaleta()}
+  });
+}
+/* Só move o que já está na tela — recriar os elementos piscaria o mapa. */
+function reposicionar(){
+  document.querySelectorAll('#mundo .no').forEach(e=>{
+    const n=acharNo(+e.dataset.id);if(!n)return;
+    e.style.left=n.x+'px';e.style.top=n.y+'px';
+  });
+}
+function medir(){
+  document.querySelectorAll('#mundo .no').forEach(e=>{
+    const w=e.offsetWidth,h=e.offsetHeight;
+    if(w&&h)medidas[e.dataset.id]={w,h};
+  });
+}
 function fios(){
   let s='';
   M().nos.forEach(n=>{
@@ -2000,13 +2098,37 @@ function pecasNoDia(d){
   });
   return t;
 }
+/* Perpétuo e orgânico rodam o mês inteiro. Desenhados como barra em toda
+   semana, eles enchiam o calendário e escondiam justamente o que tem data
+   marcada — o Dia D, a Semana temática. Agora ficam numa faixa própria
+   em cima, e a grade guarda o que é ação com data. */
+function ehContinua(c){
+  const m=mesAtual(),diasMes=new Date(m.ano,m.mes,0).getDate();
+  const dur=Math.round((dISO(c.fim)-dISO(c.inicio))/86400000)+1;
+  return (TIPOS[c.tipo]?.dias===0)||dur>=diasMes*.9;
+}
+let calContinuas=false;   // mostrar as contínuas dentro da grade também
+
 function calendario(){
   const m=mesAtual();
   $('#tit-cal').textContent=MESES[m.mes-1]+' de '+m.ano;
   $('#cal-cab').innerHTML=['dom','seg','ter','qua','qui','sex','sáb'].map(d=>`<div>${d}</div>`).join('');
   const S=semanasDoMes(),hoje=new Date(),cps=campsMes();
+  const continuas=cps.filter(ehContinua), sazonais=cps.filter(c=>!ehContinua(c));
+  const naGrade=calContinuas?cps:sazonais;
+
+  $('#cal-continuas').innerHTML=continuas.length?
+    `<div class="continuas">
+      <span class="rot">Rodando o mês inteiro</span>
+      ${continuas.map(c=>`<button class="pilula" style="--c:${corCamp(c)}"
+        onclick="irCampanha(${D.campanhas.indexOf(c)})">
+        <i></i>${esc(c.nome)} <b>${c.meta?brl(c.meta):'contínuo'}</b></button>`).join('')}
+      <button class="mini" onclick="calContinuas=!calContinuas;calendario()">${
+        calContinuas?'tirar do calendário':'mostrar no calendário'}</button>
+    </div>`:'';
+
   $('#calendario').innerHTML=S.map(s=>{
-    const at=cps.map(c=>({c,i:D.campanhas.indexOf(c)}))
+    const at=naGrade.map(c=>({c,i:D.campanhas.indexOf(c)}))
       .filter(o=>dISO(o.c.inicio)<=s.b&&dISO(o.c.fim)>=s.a);
     const fx=[];
     at.forEach(o=>{
@@ -2039,8 +2161,10 @@ function calendario(){
     return `<div class="cal-sem"><div class="cal-dias">${dias}</div>
       <div class="cal-barras">${barras}</div></div>`;
   }).join('');
-  $('#legenda').innerHTML=cps.map(c=>
-    `<span><i style="background:${corCamp(c)}"></i>${esc(c.nome)}</span>`).join('');
+  $('#legenda').innerHTML=naGrade.map(c=>
+    `<span><i style="background:${corCamp(c)}"></i>${esc(c.nome)}</span>`).join('')
+    +(continuas.length&&!calContinuas
+      ?`<span class="fora">${continuas.length} contínua${continuas.length>1?'s':''} na faixa acima</span>`:'');
 }
 function verDia(d0){
   diaSel=diaSel===d0?null:d0;calendario();
@@ -2370,6 +2494,58 @@ function pintarSemana(){
   }).filter(Boolean).join('');
   $('#canais-semana').innerHTML=blocos||
     '<div class="vazio">Nenhuma campanha desta semana tem cronograma preenchido.</div>';
+  pintarOfertaSemana(at);
+}
+
+/* A oferta de cada ação com data na semana. Faltava justamente na tela em
+   que se pergunta "o que a gente vende essa semana": quais produtos
+   entram, com que desconto, por quanto ficam, e o que acompanha. */
+function pintarOfertaSemana(ativas){
+  const alvo=$('#oferta-semana');if(!alvo)return;
+  const acoes=(ativas||[]).filter(c=>!ehContinua(c));
+  if(!acoes.length){
+    alvo.innerHTML=`<div class="vazio">Nenhuma ação com data nesta semana —
+      só o que roda o mês inteiro.</div>`;return;
+  }
+  alvo.innerHTML=acoes.map(c=>{
+    const O=ofertaDe(c);
+    const itens=CATALOGO.filter(pr=>O.produtos.includes(pr.sku));
+    const linhas=itens.map(pr=>{
+      const d=descontoDe(O,pr.sku);
+      const fim=pr.preco*(1-(d||0)/100);
+      return `<tr><td>${esc(pr.curto)}${pr.kit?' <span class="tp">kit</span>':''}
+          <small>${esc(pr.nome)} · SKU ${esc(pr.sku)}</small></td>
+        <td class="n">${brl2(pr.preco)}</td>
+        <td class="n ${d?'off':''}">${d?d+'% OFF':'—'}</td>
+        <td class="n forte">${brl2(fim)}</td></tr>`;
+    }).join('');
+    const extras=(O.extras||[]).map(t=>
+      `<tr><td colspan="3">${esc(t)} <small>fora do catálogo</small></td>
+        <td class="n">—</td></tr>`).join('');
+    const juntos=[
+      ['Frete', O.frete],
+      ['Brinde', O.brinde],
+      ['Bônus universal', O.bonusUniversal],
+      ['Bônus via influencer', O.bonusInfluencer]
+    ].filter(([,v])=>v&&String(v).trim());
+    return `<div class="oferta-camp">
+      <div class="faixa-camp" style="margin-bottom:0;border-radius:10px 10px 0 0">
+        <span class="bolinha" style="background:${corCamp(c)}"></span>
+        <span class="nm">${esc(c.nome)}</span>
+        <span class="tp">${TIPOS[c.tipo]?.nome||c.tipo}${c.tema?' · '+esc(c.tema):''}</span>
+        <span class="dt">${dBR(dISO(c.inicio))} – ${dBR(dISO(c.fim))}</span>
+        <span class="mt">${c.meta?brl(c.meta):'contínuo'}</span>
+        <button class="mini" onclick="irCampanha(${D.campanhas.indexOf(c)})">abrir TAP</button>
+      </div>
+      ${itens.length||extras?`<div class="rolagem"><table class="oferta">
+        <thead><tr><th>Produto</th><th class="n">De</th><th class="n">Desconto</th>
+          <th class="n">Por</th></tr></thead>
+        <tbody>${linhas}${extras}</tbody></table></div>`
+        :'<div class="vazio">Nenhum produto marcado nesta ação.</div>'}
+      ${juntos.length?`<div class="juntos">${juntos.map(([r,v])=>
+        `<span><b>${r}</b> ${esc(v)}</span>`).join('')}</div>`:''}
+    </div>`;
+  }).join('');
 }
 
 /* ================= TAP ================= */
@@ -2731,7 +2907,9 @@ document.querySelectorAll('nav.paginas button').forEach(b=>{
     document.querySelectorAll('nav.paginas button').forEach(x=>x.classList.remove('on'));
     document.querySelectorAll('.pagina').forEach(x=>x.classList.remove('on'));
     b.classList.add('on');$('#pg-'+b.dataset.pg).classList.add('on');
-    if(b.dataset.pg==='mapa')setTimeout(()=>{alturaLarga();ajustar();posPaleta()},40);
+    if(b.dataset.pg==='mapa')setTimeout(()=>{
+      alturaLarga();organizar();posPaleta();
+    },40);
     if(b.dataset.pg==='gestao')cuLer();
   };
 });
