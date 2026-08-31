@@ -70,6 +70,10 @@ tr.total .cel{font-weight:600;color:var(--verde)}
 .sec-cab{display:flex;align-items:center;gap:10px;margin:26px 0 10px}
 .sec-cab h3{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--verde);margin:0;font-weight:600;flex:1}
+/* o título da seção também se edita — a linha pontilhada no hover é o que
+   conta isso, já que campo em branco não parece campo */
+.sec-cab h3.tit-ed:hover{border-bottom:1px dotted var(--verde-esc)}
+.sec-cab h3.tit-ed:focus{outline:none;border-bottom:1px solid var(--verde)}
 .mini{font-size:11.5px;color:var(--txt3);padding:4px 9px;border-radius:5px;border:1px solid var(--linha2)}
 .mini:hover{color:var(--txt);border-color:var(--txt3)}
 .mini.perigo:hover{color:var(--verm);border-color:var(--verm)}
@@ -294,6 +298,13 @@ table.oferta .tp{font-size:10px;background:var(--painel2);border-radius:20px;pad
 #modal input,#modal select,#modal textarea{width:100%;background:var(--painel2);
   border:1px solid var(--linha2);border-radius:8px;padding:9px 11px;font-size:14px}
 #modal .dupla{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#modal .ed-abas{display:flex;gap:2px;margin:0 0 16px;flex-wrap:wrap}
+#modal .ed-abas button{padding:7px 13px;font-size:12.5px;color:var(--txt2);
+  border:1px solid var(--linha2);border-radius:8px}
+#modal .ed-abas button.on{color:var(--verde);border-color:var(--verde-esc);background:var(--painel2)}
+#modal .ed-previa{font-size:12.5px;line-height:1.5;color:var(--txt2);margin:-4px 0 14px;
+  padding:9px 12px;border:1px solid var(--linha2);border-radius:9px;background:var(--painel2)}
+#modal .ed-previa.alerta{border-color:#5a3a1e;background:#241a10;color:var(--amar)}
 #modal .opcoes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 #modal .op{padding:9px 14px;border:1.5px solid var(--linha2);border-radius:10px;font-size:13.5px;
   color:var(--txt2);text-align:left}
@@ -325,6 +336,7 @@ table.oferta .tp{font-size:10px;background:var(--painel2);border-radius:20px;pad
 #modal .passos b{color:var(--verde)}
 #modal .bts button{padding:9px 17px;border-radius:8px;border:1px solid var(--linha2);font-size:13.5px}
 #modal .bts button.ok{background:var(--verde-esc);border-color:var(--verde);color:#fff;font-weight:500}
+#modal .bts button.perigo{color:var(--verm);border-color:#5a2a2b}
 #modal .resumo{background:var(--painel2);border-radius:9px;padding:12px 14px;font-size:12.5px;
   color:var(--txt2);line-height:1.7;margin-bottom:4px}
 #modal .resumo b{color:var(--verde)}
@@ -662,10 +674,10 @@ input.inline{background:var(--painel2);border:1px solid var(--verde);border-radi
 
 <div class="pagina" id="pg-camp">
   <div class="abas" id="abas"></div>
-  <p class="dica">Clica em qualquer campo pra editar. Salva sozinho neste navegador — o Exportar JSON serve pra levar pra outra máquina.</p>
+  <p class="dica">Clica em qualquer campo pra editar — inclusive o título das seções e o nome das colunas. Em <b>Editar ação</b> muda datas, formato, oferta e canais, e o TAP acompanha sem perder o que você escreveu.</p>
   <div style="display:flex;gap:8px;margin-bottom:4px;flex-wrap:wrap">
     <button class="mini" onclick="duplicarTAP()">Duplicar TAP</button>
-    <button class="mini" onclick="editarPeriodo()">Datas e meta</button>
+    <button class="mini forte" onclick="editarAcao()">Editar ação</button>
     <button class="mini" onclick="regerarCronograma()">Regerar cronograma</button>
     <button class="mini perigo" onclick="excluirTAP()">Excluir TAP</button>
   </div>
@@ -981,6 +993,7 @@ const M=()=>mapaAtual();
    antes continua guardado, é só escolher no seletor lá em cima. */
 const CICLO={ano:2026,mes:9,marcas:['Botanika','VermeFree'],meta:0};
 
+const MARCAS=['Botanika','VermeFree'];
 const marcaDo=m=>(m&&m.marca)||'Botanika';
 
 function garantirCiclo(){
@@ -1074,9 +1087,14 @@ function papeisDe(tipo,ini,fim){
     return 'venda';
   });
 }
+/* Até aqui o cronograma é dia a dia; acima disso vira bloco de semana,
+   senão a tabela de um perpétuo teria trinta colunas. Eram 9 dias, o que
+   colapsava uma semana temática de 8 dias — a janela dela é 8 + 2 de
+   preparação — justamente quando estender a semana era o que se queria. */
+const DIAS_A_DIA=16;
 function colunasDe(ini,fim,tipo){
   const dias=tipo?janelaDe(tipo,ini,fim):diasEntre(ini,fim);
-  if(dias.length<=9)return dias.map(d=>`${DOW[d.getDay()]} ${dBR(d)}`);
+  if(dias.length<=DIAS_A_DIA)return dias.map(d=>`${DOW[d.getDay()]} ${dBR(d)}`);
   const out=[];
   for(let i=0;i<dias.length;i+=7){
     const a=dias[i],b=dias[Math.min(i+6,dias.length-1)];
@@ -1087,7 +1105,7 @@ function colunasDe(ini,fim,tipo){
 /* um papel por coluna; quando as colunas viram semanas, vale o papel do 1º dia */
 function papeisPorColuna(tipo,ini,fim){
   const ps=papeisDe(tipo,ini,fim);
-  if(ps.length<=9)return ps;
+  if(ps.length<=DIAS_A_DIA)return ps;
   const out=[];for(let i=0;i<ps.length;i+=7)out.push(ps[i]);return out;
 }
 
@@ -1233,6 +1251,119 @@ function gerarSecoes(c){
   ];
 }
 
+/* ---------- mudar a ação sem perder o que já foi escrito ----------
+   Estender a semana em dois dias custava o TAP inteiro: ou o cronograma
+   ficava com os dias velhos, ou "regerar" jogava fora tudo que a equipe
+   tinha preenchido. A fusão é a três: o que o gerador produzia antes
+   (base), o que está na tela agora (atual) e o que ele produz com as
+   datas novas. Célula que ninguém tocou acompanha o gerador; célula
+   escrita à mão fica como está; dia que entrou nasce preenchido. */
+const chaveLinha=l=>String((l&&l[0])||'').trim().toLowerCase();
+
+function fundirSecoes(atual,base,novo){
+  const A=atual||[];
+  /* Casa pelo título; o que sobrar de cada lado casa pela posição, para
+     uma seção renomeada à mão continuar acompanhando o gerador. */
+  const paresB=new Map(), paresN=new Map();
+  const livresB=base.map((_,i)=>i), livresN=novo.map((_,i)=>i);
+  A.forEach((sa,ia)=>{
+    const ib=base.findIndex((x,i)=>x.t===sa.t&&livresB.includes(i));
+    const inn=novo.findIndex((x,i)=>x.t===sa.t&&livresN.includes(i));
+    if(ib>=0&&inn>=0){paresB.set(ia,ib);paresN.set(ia,inn);
+      livresB.splice(livresB.indexOf(ib),1);livresN.splice(livresN.indexOf(inn),1)}
+  });
+  /* Sobrou o mesmo tanto dos três lados: são as mesmas seções, só com
+     outro nome — casa na ordem. Se as contas não batem (alguém criou uma
+     seção à mão), não arrisca: a renomeada só para de se atualizar. */
+  const soltasA=A.map((_,i)=>i).filter(i=>!paresB.has(i));
+  if(soltasA.length&&soltasA.length===livresB.length&&livresB.length===livresN.length){
+    const b2=livresB.slice(), n2=livresN.slice();
+    soltasA.forEach((ia,k)=>{paresB.set(ia,b2[k]);paresN.set(ia,n2[k]);
+      livresB.splice(livresB.indexOf(b2[k]),1);livresN.splice(livresN.indexOf(n2[k]),1)});
+  }
+  const saida=A.map((sa,ia)=>paresB.has(ia)
+    ? fundirSecao(sa,base[paresB.get(ia)],novo[paresN.get(ia)])
+    : sa);   // seção criada à mão, ou que o gerador não faz mais: intocada
+  livresN.forEach(i=>{if(!A.some(sa=>sa.t===novo[i].t))saida.push(novo[i])});
+  return saida;
+}
+
+function fundirSecao(sa,sb,sn){
+  /* Colunas: base↔novo casam pelo rótulo (é lá que o gerador escreve o
+     dia); base↔atual casam pela posição, porque são a mesma geração.
+     Coluna renomeada à mão mantém o nome novo; dia que saiu da janela
+     desaparece; dia que entrou vem preenchido pelo ritmo padrão. */
+  const usados=new Set();
+  const mapa=sn.c.map(rot=>{
+    const j=sb.c.findIndex((r,i)=>r===rot&&!usados.has(i));
+    if(j>=0)usados.add(j);
+    return j;
+  });
+  const cols=mapa.map((j,k)=>j>=0&&sa.c[j]!==undefined?sa.c[j]:sn.c[k]);
+
+  const celulas=(la,lb,ln,daPessoa)=>mapa.map((j,k)=>{
+    const va=j>=0?(la[j]??''):undefined;
+    if(daPessoa)return va===undefined?'':va;
+    const vb=j>=0&&lb?(lb[j]??''):undefined;
+    const vn=ln?(ln[k]??''):undefined;
+    if(va===undefined)return vn??'';   // coluna nova
+    if(va!==vb)return va;              // escrita à mão: fica
+    return vn!==undefined?vn:va;       // intocada: acompanha o gerador
+  });
+
+  const emB=new Map(), emN=new Map();
+  sb.l.forEach((l,i)=>{const k=chaveLinha(l);if(!emB.has(k))emB.set(k,i)});
+  sn.l.forEach((l,i)=>{const k=chaveLinha(l);if(!emN.has(k))emN.set(k,i)});
+
+  /* Linhas geradas voltam na ordem do gerador; linhas escritas à mão
+     ficam ancoradas na gerada que vinha antes delas, para o produto novo
+     não aparecer depois do frete. */
+  const fundidas=new Map(), soltas=[];
+  let ancora=-1;
+  sa.l.forEach(la=>{
+    const k=chaveLinha(la);
+    const ib=emB.has(k)?emB.get(k):-1, inn=emN.has(k)?emN.get(k):-1;
+    if(ib>=0){
+      if(inn<0)return;   // o gerador não faz mais essa linha: canal desmarcado
+      fundidas.set(inn,celulas(la,sb.l[ib],sn.l[inn],false));
+      ancora=inn;return;
+    }
+    soltas.push({l:celulas(la,null,null,true),apos:ancora});
+  });
+
+  const linhas=[];
+  const derramar=a=>soltas.forEach(x=>{if(x.apos===a)linhas.push(x.l)});
+  derramar(-1);
+  sn.l.forEach((ln,inn)=>{
+    if(fundidas.has(inn))linhas.push(fundidas.get(inn));
+    /* linha nova do gerador — canal recém-ligado. Se ela existia na base
+       e sumiu daqui, foi a pessoa que apagou: não volta. */
+    else if(!emB.has(chaveLinha(ln)))linhas.push(ln.slice());
+    derramar(inn);
+  });
+
+  const fus={t:sa.t,c:cols,l:linhas};
+  const totN=(sn.tot||[]).map(i=>chaveLinha(sn.l[i]));
+  if(totN.length){
+    const set=new Set(totN);
+    fus.tot=linhas.map((l,i)=>set.has(chaveLinha(l))?i:-1).filter(i=>i>=0);
+  }else if(sa.tot)fus.tot=sa.tot.filter(i=>i<linhas.length);
+  return fus;
+}
+
+/* O que muda no cronograma se as datas ou o formato mudarem — dito antes
+   de salvar, porque é a pergunta que a pessoa tem na cabeça. */
+const porDia=r=>!/\u2013/.test(String(r));
+function diffCronograma(antes,depois){
+  const va=colunasDe(dISO(antes.inicio),dISO(antes.fim),antes.tipo);
+  const vd=colunasDe(dISO(depois.inicio),dISO(depois.fim),depois.tipo);
+  return {entram:vd.filter(x=>!va.includes(x)), saem:va.filter(x=>!vd.includes(x)),
+    antes:va.length, depois:vd.length,
+    /* dia a dia virou bloco de semana, ou o contrário: nenhuma coluna
+       casa com a anterior, então o que estava escrito não tem para onde ir */
+    virouFormato: !!va.length&&!!vd.length&&porDia(va[0])!==porDia(vd[0])};
+}
+
 /* ================= ASSISTENTE DE CAMPANHA ================= */
 let AS={};
 function assistente(noId,sugerida){
@@ -1295,6 +1426,7 @@ function escolherTipo(k){
   if(T.temas)passoTema();else passo2();
 }
 function passoTema(){
+  $('#modal-cx').className='cx';
   $('#modal-cx').innerHTML=`
     <h3>Qual tema</h3>
     <p class="sub">Os temas que a Botanika já rodou, ou um novo.</p>
@@ -1314,6 +1446,7 @@ function passo2(){
   const T=TIPOS[AS.tipo];
   if(!AS.nome)AS.nome=T.nome+' — '+MESES[mesAtual().mes-1];
   if(!AS.fontes)AS.fontes=fontesPadrao(AS.meta,AS.inv);
+  $('#modal-cx').className='cx';
   $('#modal-cx').innerHTML=`
     <h3>${T.nome}${AS.tema?' · '+esc(AS.tema):''}</h3>
     <p class="sub">Datas, meta e verba. O faturamento das fontes pagas sai de dentro
@@ -2145,6 +2278,7 @@ function moverIrmao(dir){
 let noNota=null;
 function abrirNota(){
   const n=alvoSel();if(!n)return;noNota=sel.id;
+  $('#modal-cx').className='cx';
   $('#modal-cx').innerHTML=`<h3>Nota</h3><p class="sub">${esc(n.t||'')}</p>
     <textarea id="nt" style="height:170px">${esc(n.nota||'')}</textarea>
     <div class="bts"><button onclick="fecharModal()">Cancelar</button>
@@ -2183,7 +2317,7 @@ function abrirMenu(x,y){
       ${raiz?`<button class="destaque" onclick="fecharMenu();assistente(null)">+ Nova campanha do mês</button><hr>`:''}
       ${!raiz&&!c?`<button class="destaque" onclick="fecharMenu();assistente(${a.id})">Transformar em campanha…</button><hr>`:''}
       ${c?`<button class="destaque" onclick="fecharMenu();irCampanha(${D.campanhas.indexOf(c)})">Abrir o TAP</button>
-           <button onclick="fecharMenu();ativa=${D.campanhas.indexOf(c)};editarPeriodo()">Datas e meta</button><hr>`:''}
+           <button onclick="fecharMenu();editarAcao(${D.campanhas.indexOf(c)})">Editar ação</button><hr>`:''}
       <button onclick="fecharMenu();addFilho()">Novo filho<span class="atalho">Tab</span></button>
       ${raiz?'':'<button onclick="fecharMenu();addIrmao()">Novo irmão<span class="atalho">Enter</span></button>'}
       <button onclick="fecharMenu();editar()">Renomear<span class="atalho">F2</span></button>
@@ -2364,9 +2498,17 @@ function verDia(d0){
 function editarMetasMes(){
   const m=mesAtual();
   $('#modal-cx').className='cx';
-  $('#modal-cx').innerHTML=`<h3>Metas de ${MESES[m.mes-1]} ${m.ano} · ${esc(marcaDo(m))}</h3>
+  $('#modal-cx').innerHTML=`<h3>Editar ${MESES[m.mes-1]} ${m.ano} · ${esc(marcaDo(m))}</h3>
     <p class="sub">Passo 1 da engenharia reversa. Meta 1 é a que o mês precisa
       entregar; as outras duas são os cenários bom e ótimo.</p>
+    <div class="dupla">
+      <label><b>Mês e ano</b>
+        <input id="m-quando" value="${String(m.mes).padStart(2,'0')}/${m.ano}"
+          placeholder="09/2026"></label>
+      <label><b>Marca</b><select id="m-marca">
+        ${MARCAS.map(x=>`<option ${marcaDo(m)===x?'selected':''}>${x}</option>`).join('')}
+      </select></label>
+    </div>
     <label><b>Meta 1 — a que vale</b>
       ${campoMoeda('m-1',m.metas[0],'placeholder="480.000 — ou 480 mil"')}</label>
     <div class="dupla">
@@ -2379,18 +2521,74 @@ function editarMetasMes(){
       precisa trazer. Em branco, ela só trabalha em reais.</p>
     <label><b>Referência</b>
       <input id="m-ref" value="${esc(m.ref||'')}" placeholder="ex: mesmo mês do ano passado +20%"></label>
-    <div class="bts"><button onclick="fecharModal()">Cancelar</button>
+    <div class="bts">
+      ${D.meses.length>1?`<button class="perigo" onclick="excluirMes()"
+        style="margin-right:auto">Excluir este mês</button>`:''}
+      <button onclick="fecharModal()">Cancelar</button>
       <button class="ok" onclick="salvarMetasMes()">Salvar</button></div>`;
   $('#modal').classList.add('on');
   ['m-1','m-2','m-3','m-tk'].forEach(ecoMoeda);
 }
 function salvarMetasMes(){
   const m=mesAtual(),m1=lerMoeda('m-1');
+  const antesMes=m.mes,antesAno=m.ano,antesMarca=marcaDo(m);
+  /* mês, ano e marca também são editáveis: um mês criado na marca errada
+     não tinha conserto a não ser refazer tudo */
+  const q=String($('#m-quando')?.value||'').match(/^\s*(\d{1,2})\s*\/\s*(\d{4})\s*$/);
+  const marca=$('#m-marca')?.value||marcaDo(m);
+  if(q){
+    const mm=+q[1],aa=+q[2];
+    if(mm<1||mm>12)return aviso('Mês inválido — use 09/2026.');
+    if(D.meses.some(x=>x!==m&&x.mes===mm&&x.ano===aa&&
+       marcaDo(x).toLowerCase()===marca.toLowerCase()))
+      return aviso(`${MESES[mm-1]} de ${aa} já existe para ${marca}.`);
+    m.mes=mm;m.ano=aa;
+  }else if($('#m-quando'))return aviso('Escreva o mês como 09/2026.');
+  m.marca=marca;
   m.metas=[m1,lerMoeda('m-2')||Math.round(m1*1.17),lerMoeda('m-3')||Math.round(m1*1.33)];
   m.ticket=lerMoeda('m-tk');
   m.ref=$('#m-ref').value.trim();
-  fecharModal();guardar();pintarMes();pintarSemana();render();
-  aviso(m1?`Meta de ${brl(m1)} definida. Agora divida por ação.`:'Metas atualizadas.');
+  const virou = m.mes!==antesMes||m.ano!==antesAno||marcaDo(m)!==antesMarca;
+  /* o título do mapa é gerado a partir do mês e da marca: se ninguém
+     reescreveu à mão, ele acompanha; se reescreveu, fica como está */
+  if(virou)renomearRaiz(m,antesMes,antesMarca);
+  fecharModal();guardar();
+  if(virou)tudo();else{pintarMes();pintarSemana();render()}
+  aviso(virou?`Agora é ${MESES[m.mes-1]} de ${m.ano} · ${marcaDo(m)}.`
+    :m1?`Meta de ${brl(m1)} definida. Agora divida por ação.`:'Metas atualizadas.');
+}
+
+/* Um mês criado na marca errada, ou por engano, não tinha como sair.
+   Leva junto o que só existe dentro dele: as campanhas e o mapa. */
+function excluirMes(){
+  const m=mesAtual();
+  if(D.meses.length<2)return aviso('Este é o único mês — não dá pra excluir.');
+  const cps=D.campanhas.filter(c=>c.mesId===m.id);
+  if(!confirm(`Excluir ${MESES[m.mes-1]} de ${m.ano} · ${marcaDo(m)}?\n\n`+
+    `Vão junto ${cps.length} campanha${cps.length===1?'':'s'} e o mapa deste mês. `+
+    `Não dá pra desfazer depois de fechar a página.`))return;
+  guardar();
+  D.campanhas=D.campanhas.filter(c=>c.mesId!==m.id);
+  D.mapas=D.mapas.filter(x=>x.mesId!==m.id);
+  D.meses=D.meses.filter(x=>x.id!==m.id);
+  D.mesAtivo=D.meses[0].id;
+  ativa=Math.max(0,D.campanhas.indexOf(campsMes()[0]));
+  semanaSel=0;diaSel=null;pilha=[];pilhaR=[];
+  sel={t:'no',id:M().nos.find(n=>!n.pai)?.id||1};
+  fecharModal();tudo();
+  aviso(`${MESES[m.mes-1]} de ${m.ano} · ${marcaDo(m)} excluído.`);
+}
+
+const tituloRaiz=(mes,marca)=>'\u{1F525} '+MESES[mes-1].toUpperCase()+' \u00B7 '+String(marca).toUpperCase();
+function renomearRaiz(m,antesMes,antesMarca){
+  const mp=D.mapas.find(x=>x.mesId===m.id);if(!mp)return;
+  const raiz=mp.nos.find(n=>!n.pai);if(!raiz)return;
+  const velho=tituloRaiz(antesMes,antesMarca);
+  if(raiz.t===velho||raiz.t==='\u{1F525} '+MESES[antesMes-1].toUpperCase())
+    raiz.t=tituloRaiz(m.mes,marcaDo(m));
+  const nomeVelho=`Planejamento [${MESES[antesMes-1].toUpperCase()}-${String(antesMarca).toUpperCase()}]`;
+  if(mp.nome===nomeVelho)
+    mp.nome=`Planejamento [${MESES[m.mes-1].toUpperCase()}-${marcaDo(m).toUpperCase()}]`;
 }
 
 /* O quanto da meta já está atribuído a alguma ação, e o que sobrou.
@@ -2524,6 +2722,7 @@ function pintarEscada(){
                        title="Clique para editar a meta desta ação">${brl(c.meta)}</span>`)
         : 'contínuo'}</span>
       ${ticket?`<span class="ped">${c.meta?pedidosDe(v,ticket).toLocaleString('pt-BR')+' pedidos':''}</span>`:''}
+      <button class="mini" onclick="editarAcao(${i})">editar</button>
       <button class="mini" onclick="irCampanha(${i})">abrir TAP</button></div>`;
   }).join('');
 
@@ -2608,6 +2807,7 @@ function pintarMes(){
       <span class="dt">${dBR(dISO(c.inicio))} – ${dBR(dISO(c.fim))}</span>
       <span class="mt">${c.meta?brl(c.meta):'contínuo'}</span>
       ${cuSeloCamp(c)}
+      <button class="mini" onclick="editarAcao(${D.campanhas.indexOf(c)})">editar</button>
       <button class="mini" onclick="irCampanha(${D.campanhas.indexOf(c)})">abrir TAP</button>
     </div>`).join(''):'<div class="vazio">Nenhuma campanha ainda. Use “+ nova campanha”.</div>';
   calendario();
@@ -2639,6 +2839,7 @@ function pintarSemana(){
       <span class="dt">${dBR(dISO(c.inicio))} – ${dBR(dISO(c.fim))}</span>
       <span class="mt">${c.meta?brl(c.meta):'contínuo'}</span>
       ${cuSeloCamp(c)}
+      <button class="mini" onclick="editarAcao(${D.campanhas.indexOf(c)})">editar</button>
       <button class="mini" onclick="irCampanha(${D.campanhas.indexOf(c)})">abrir</button></div>`).join('')
     :'<div class="vazio">Nenhuma campanha nesta semana.</div>';
   const blocos=at.map(c=>{
@@ -2704,6 +2905,7 @@ function pintarOfertaSemana(ativas){
         <span class="tp">${TIPOS[c.tipo]?.nome||c.tipo}${c.tema?' · '+esc(c.tema):''}</span>
         <span class="dt">${dBR(dISO(c.inicio))} – ${dBR(dISO(c.fim))}</span>
         <span class="mt">${c.meta?brl(c.meta):'contínuo'}</span>
+        <button class="mini" onclick="editarOferta(${D.campanhas.indexOf(c)})">editar oferta</button>
         <button class="mini" onclick="irCampanha(${D.campanhas.indexOf(c)})">abrir TAP</button>
       </div>
       ${itens.length||extras?`<div class="rolagem"><table class="oferta">
@@ -2734,8 +2936,9 @@ function pintarTAP(){
   if(!c||c.mesId!==D.mesAtivo){
     $('#secoes').innerHTML='<div class="vazio">Escolha uma campanha acima.</div>';return}
   $('#secoes').innerHTML=c.secoes.map((s,si)=>`
-    <div class="sec-cab"><h3>${esc(s.t)}</h3>
+    <div class="sec-cab"><h3 contenteditable class="tit-ed" data-s="${si}">${esc(s.t)}</h3>
       <button class="mini" onclick="addCol(${si})">+ coluna</button>
+      <button class="mini perigo" onclick="delCol(${si})">− última coluna</button>
       <button class="mini perigo" onclick="delSecao(${si})">excluir seção</button></div>
     <div class="tab-caixa"><table>
       <thead><tr>${s.c.map((col,ci)=>
@@ -2756,9 +2959,16 @@ function pintarTAP(){
   document.querySelectorAll('#secoes .cab-ed').forEach(el=>{
     el.onblur=e=>{const{s,c:ci}=e.target.dataset;
       D.campanhas[ativa].secoes[s].c[ci]=e.target.innerText.trim();pintarMes()}});
+  document.querySelectorAll('#secoes .tit-ed').forEach(el=>{
+    el.onblur=e=>{const s=D.campanhas[ativa].secoes[e.target.dataset.s];
+      const t=e.target.innerText.trim();if(!t){e.target.innerText=s.t;return}
+      s.t=t;pintarMes()}});
 }
 const secTap=si=>D.campanhas[ativa].secoes[si];
 function addCol(si){const s=secTap(si);s.c.push('nova coluna');s.l.forEach(l=>l.push(''));pintarTAP()}
+function delCol(si){const s=secTap(si);
+  if(s.c.length<2)return aviso('A seção precisa de pelo menos uma coluna.');
+  s.c.pop();s.l.forEach(l=>l.pop());pintarTAP();pintarMes()}
 function addLinha(si){const s=secTap(si);s.l.push(s.c.map(()=>''));pintarTAP()}
 function addTotal(si){const s=secTap(si);s.l.push(s.c.map((_,i)=>i===0?'Total':''));
   (s.tot=s.tot||[]).push(s.l.length-1);pintarTAP()}
@@ -2773,51 +2983,271 @@ function irCampanha(i){ativa=i;const c=D.campanhas[i];
 function duplicarTAP(){const c=JSON.parse(JSON.stringify(D.campanhas[ativa]));
   c.id=D.prox.camp++;c.nome+=' (cópia)';D.campanhas.splice(ativa+1,0,c);ativa++;
   pintarTAP();pintarMes();pintarSemana()}
-function editarPeriodo(){
-  const c=D.campanhas[ativa];if(!c)return;
-  const f=c.fontes||fontesPadrao(c.meta,c.investimento||0);
-  $('#modal-cx').innerHTML=`<h3>${esc(c.nome)}</h3>
-    <p class="sub">Mudar as datas regera o cronograma e as fases.</p>
-    <label><b>Nome</b><input id="e-nome" value="${esc(c.nome)}"></label>
+/* ---------- editar a ação inteira ----------
+   Antes só dava pra mexer em nome, datas, meta e fontes — e só de dentro
+   do TAP. A oferta, o formato, o tema e os canais ficavam presos no
+   assistente: decidiu estender a semana, tirar um produto ou desligar um
+   canal depois de criar, não tinha por onde. Agora é uma tela só, com as
+   mesmas três abas do assistente, aberta de qualquer lugar onde a ação
+   aparece. */
+let ED=null, EDantes=null, EDidx=0, EDaba='dados';
+
+function editarAcao(i){
+  const idx=(i===undefined||i===null)?ativa:i;
+  const c=D.campanhas[idx];if(!c)return;
+  EDidx=idx;
+  EDantes=JSON.parse(JSON.stringify(c));
+  const O=ofertaDe(c);
+  ED={nome:c.nome,tipo:c.tipo||'outro',tema:c.tema||'',inicio:c.inicio,fim:c.fim,
+    meta:c.meta||0,
+    fontes:JSON.parse(JSON.stringify(fontesValidas(c.meta||0,
+      c.fontes||fontesPadrao(c.meta||0,c.investimento||0)))),
+    produtos:(O.produtos||[]).slice(),modoDesc:O.modoDesc,descGeral:O.descGeral,
+    descPorSku:{...(O.descPorSku||{})},extras:(O.extras||[]).slice(),
+    frete:O.frete||'',brinde:O.brinde||'',
+    bonusUniversal:O.bonusUniversal||'',bonusInfluencer:O.bonusInfluencer||'',
+    canais:(c.canais||CANAIS.map(x=>x[0])).slice(),
+    receita:c.receita?JSON.parse(JSON.stringify(c.receita)):null};
+  EDaba='dados';pintarED();
+  $('#modal').classList.add('on');
+}
+/* editarPeriodo continua existindo: é o nome que o menu do mapa e os
+   testes antigos chamam */
+function editarPeriodo(i){editarAcao(i)}
+/* atalhos pra abrir o editor já na aba que a pessoa estava olhando */
+function editarOferta(i){editarAcao(i);EDaba='oferta';pintarED()}
+function editarCanais(i){editarAcao(i);EDaba='canais';pintarED()}
+
+function edAba(a){lerED();EDaba=a;pintarED()}
+
+function pintarED(){
+  const c=D.campanhas[EDidx];if(!c||!ED)return;
+  const cat=catalogoDe(c);
+  const corpo = EDaba==='oferta' ? edOferta(cat)
+              : EDaba==='canais' ? edCanais()
+              : edDados();
+  $('#modal-cx').className='cx larga';
+  $('#modal-cx').innerHTML=`<h3>Editar ${esc(ED.nome||'a ação')}</h3>
+    <p class="sub">Tudo o que o assistente perguntou continua editável aqui.
+      O que você escreveu à mão no TAP é preservado.</p>
+    <div class="ed-abas">
+      <button class="${EDaba==='dados'?'on':''}" onclick="edAba('dados')">Datas e meta</button>
+      <button class="${EDaba==='oferta'?'on':''}" onclick="edAba('oferta')">Oferta</button>
+      <button class="${EDaba==='canais'?'on':''}" onclick="edAba('canais')">Canais e verba</button>
+    </div>
+    <div id="ed-corpo">${corpo}</div>
+    <div class="bts"><button onclick="fecharModal()">Cancelar</button>
+      <button class="ok" onclick="salvarAcao()">Salvar</button></div>`;
+  if(EDaba==='dados'){['ed-meta','ed-m-traf','ed-i-traf','ed-m-api','ed-i-api'].forEach(ecoMoeda);edPrevia()}
+  if(EDaba==='canais')edSoma();
+}
+
+function edDados(){
+  return `<label><b>Nome</b><input id="ed-nome" value="${esc(ED.nome)}"></label>
     <div class="dupla">
-      <label><b>Início</b><input type="date" id="e-ini" value="${c.inicio}"></label>
-      <label><b>Fim</b><input type="date" id="e-fim" value="${c.fim}"></label></div>
-    <label><b>Meta de faturamento da ação</b>
-      ${campoMoeda('e-meta',c.meta)}</label>
+      <label><b>Formato</b><select id="ed-tipo" onchange="lerED();edPrevia()">
+        ${Object.entries(TIPOS).map(([k,t])=>
+          `<option value="${k}" ${ED.tipo===k?'selected':''}>${esc(t.nome)}</option>`).join('')}
+      </select></label>
+      <label><b>Tema (opcional)</b>
+        <input id="ed-tema" value="${esc(ED.tema)}" placeholder="ex: Imunidade"></label>
+    </div>
+    <div class="dupla">
+      <label><b>Início</b>
+        <input type="date" id="ed-ini" value="${ED.inicio}" onchange="lerED();edPrevia()"></label>
+      <label><b>Fim</b>
+        <input type="date" id="ed-fim" value="${ED.fim}" onchange="lerED();edPrevia()"></label>
+    </div>
+    <div class="ed-previa" id="ed-previa"></div>
+    <label><b>Meta de faturamento da ação</b>${campoMoeda('ed-meta',ED.meta)}</label>
     <div class="fontes">
       <div class="cabf"><span class="nm">De onde vem esse faturamento</span>
         <span class="col">fatura</span><span class="col">investe</span><span class="rs"></span></div>
       ${FONTES.map(({k,n})=>`<div class="linf"><span class="nm">${n}</span>
-        <input type="text" inputmode="numeric" id="e-m-${k}"
-          value="${Number(f[k].meta||0).toLocaleString('pt-BR')}">
-        <input type="text" inputmode="numeric" id="e-i-${k}"
-          value="${Number(f[k].inv||0).toLocaleString('pt-BR')}">
+        <input type="text" inputmode="numeric" id="ed-m-${k}"
+          value="${Number(ED.fontes[k]?.meta||0).toLocaleString('pt-BR')}">
+        <input type="text" inputmode="numeric" id="ed-i-${k}"
+          value="${Number(ED.fontes[k]?.inv||0).toLocaleString('pt-BR')}">
         <span class="rs"></span></div>`).join('')}
     </div>
-    <p class="sub">O que sobrar da meta fica com influencer, base, atendimento e orgânico.</p>
-    <label><b>Regerar seções automáticas</b>
-      <select id="e-reger"><option value="nao">Não — manter o que já preenchi</option>
-        <option value="sim">Sim — refazer fases, metas e cronograma</option></select></label>
-    <div class="bts"><button onclick="fecharModal()">Cancelar</button>
-      <button class="ok" onclick="salvarPeriodo()">Salvar</button></div>`;
-  $('#modal').classList.add('on');
+    <p class="sub">O que sobrar da meta fica com influencer, base, atendimento e orgânico.</p>`;
 }
-function salvarPeriodo(){
-  const c=D.campanhas[ativa];
-  c.nome=$('#e-nome').value.trim()||c.nome;
-  c.inicio=$('#e-ini').value;c.fim=$('#e-fim').value;
-  c.meta=lerMoeda('e-meta');
-  const f={};FONTES.forEach(({k})=>f[k]={meta:lerMoeda('e-m-'+k),inv:lerMoeda('e-i-'+k)});
-  if(FONTES.reduce((t,{k})=>t+f[k].meta,0)>c.meta)
+
+/* Diz, antes de salvar, o que as datas fazem com o cronograma. É a
+   pergunta que a pessoa tem na cabeça quando estende a semana. */
+function edPrevia(){
+  const e=$('#ed-previa');if(!e)return;
+  const antes=EDantes, depois={inicio:ED.inicio,fim:ED.fim,tipo:ED.tipo};
+  if(!ED.inicio||!ED.fim){e.innerHTML='';return}
+  if(dISO(ED.fim)<dISO(ED.inicio)){
+    e.className='ed-previa alerta';e.textContent='O fim está antes do início.';return}
+  const d=diffCronograma(antes,depois);
+  const dias=diasEntre(dISO(ED.inicio),dISO(ED.fim)).length;
+  const abre=`${dias} dia${dias>1?'s':''} de ação`;
+  if(d.virouFormato){
+    e.className='ed-previa alerta';
+    e.innerHTML=`${abre} · o cronograma passa de ${d.antes} para ${d.depois} colunas e
+      muda de ${porDia(colunasDe(dISO(antes.inicio),dISO(antes.fim),antes.tipo)[0])
+        ?'dia a dia para blocos de semana':'blocos de semana para dia a dia'} —
+      nenhuma coluna casa com a anterior, então <b>o que estiver escrito nelas se perde</b>.`;
+    return;
+  }
+  const partes=[abre];
+  if(d.entram.length)partes.push(`o cronograma ganha ${d.entram.length}
+    coluna${d.entram.length>1?'s':''} (${d.entram.join(', ')}), já preenchida${d.entram.length>1?'s':''}
+    com o ritmo padrão`);
+  if(d.saem.length)partes.push(`${d.saem.length===1?'sai a coluna':'saem as colunas'} ${d.saem.join(', ')}`);
+  if(!d.entram.length&&!d.saem.length)partes.push('o cronograma não muda');
+  e.className='ed-previa'+(d.saem.length?' alerta':'');
+  e.innerHTML=partes.join(' · ')+'. O que você escreveu à mão continua onde está.';
+}
+
+function edOferta(cat){
+  return `<div class="radio">
+      <button class="${ED.modoDesc==='todos'?'on':''}" onclick="lerED();ED.modoDesc='todos';pintarED()">Mesmo % para todos</button>
+      <button class="${ED.modoDesc==='cada'?'on':''}" onclick="lerED();ED.modoDesc='cada';pintarED()">Um % por produto</button>
+    </div>
+    <div style="${ED.modoDesc==='todos'?'':'display:none'}">
+      <label><b>Desconto da ação</b>
+        <input type="number" id="ed-desc" value="${ED.descGeral}" min="0" max="90" step="1"></label>
+    </div>
+    ${cat.length?`<div class="cab"><span class="nm">Produto</span>
+      <span class="col">Preço</span><span class="col">% OFF</span></div>
+    <div class="lista">${cat.map(pr=>{
+      const on=ED.produtos.includes(pr.sku);
+      return `<div class="lin ${on?'':'off'}" data-sku="${esc(pr.sku)}">
+        <input type="checkbox" ${on?'checked':''} onchange="edProduto('${esc(pr.sku)}',this.checked)">
+        ${miniatura(pr,34)}
+        <span class="nm">${esc(pr.curto)}${pr.kit?' · kit':''}<small>${esc(pr.nome)} · SKU ${esc(pr.sku)}</small></span>
+        <span class="col" style="width:110px;flex:none;text-align:center;color:var(--txt2)">${brl2(pr.preco)}</span>
+        <input type="number" class="ed-d-sku" data-sku="${esc(pr.sku)}" min="0" max="90"
+          value="${ED.descPorSku[pr.sku]??ED.descGeral}"
+          style="${ED.modoDesc==='cada'?'':'visibility:hidden'}">
+      </div>`}).join('')}</div>`
+    :`<p class="sub" style="color:var(--amar)">O catálogo da
+      <b>${esc(marcaDo(mesAtual()))}</b> não está cadastrado aqui — escreva os
+      produtos abaixo, um por linha.</p>`}
+    <label><b>Produto fora do catálogo (um por linha)</b>
+      <textarea id="ed-extras" rows="2"
+        placeholder="Ex: Combo Fitness · 15% OFF">${esc(ED.extras.join('\n'))}</textarea></label>
+    <div class="dupla">
+      <label><b>Frete grátis</b><input id="ed-frete" value="${esc(ED.frete)}"></label>
+      <label><b>Brinde (opcional)</b><input id="ed-brinde" value="${esc(ED.brinde)}"></label>
+    </div>
+    <div class="dupla">
+      <label><b>Bônus universal</b><input id="ed-bu" value="${esc(ED.bonusUniversal)}"></label>
+      <label><b>Bônus via influencer</b><input id="ed-bi" value="${esc(ED.bonusInfluencer)}"></label>
+    </div>`;
+}
+function edProduto(sku,on){
+  ED.produtos=on?[...new Set([...ED.produtos,sku])]:ED.produtos.filter(x=>x!==sku);
+  document.querySelector(`#ed-corpo .lin[data-sku="${sku}"]`)?.classList.toggle('off',!on);
+}
+
+function edCanais(){
+  if(!ED.receita)ED.receita=dividirReceita(ED.meta,invTotal(ED.fontes),ED.fontes);
+  return `<div class="cab"><span class="nm">Canal que fatura</span>
+      <span class="col">Investimento</span><span class="col">Meta</span></div>
+    <div class="lista">${ED.receita.map((c,i)=>`
+      <div class="lin ${c.on===false?'off':''}" data-i="${i}">
+        <input type="checkbox" ${c.on===false?'':'checked'} onchange="edReceita(${i},this.checked)">
+        <span class="nm">${esc(c.n)}<small>${esc(c.r||'')}</small></span>
+        <input type="text" inputmode="numeric" class="ed-r-inv" data-i="${i}"
+          value="${Number(c.inv||0).toLocaleString('pt-BR')}"
+          onchange="ED.receita[${i}].inv=numeroBR(this.value);edSoma()">
+        <input type="text" inputmode="numeric" class="ed-r-meta" data-i="${i}"
+          value="${Number(c.meta||0).toLocaleString('pt-BR')}"
+          onchange="ED.receita[${i}].meta=numeroBR(this.value);edSoma()">
+      </div>`).join('')}</div>
+    <div class="resumo" id="ed-soma"></div>
+    <h3 style="font-size:15px;margin:18px 0 4px">Canais de execução</h3>
+    <p class="sub">Quem for desmarcado sai do cronograma; quem entrar nasce
+      com o ritmo padrão. As linhas que você escreveu continuam lá.</p>
+    <div class="lista">${CANAIS.map(([n,b])=>{
+      const on=ED.canais.includes(n);
+      return `<div class="lin ${on?'':'off'}" data-canal="${esc(n)}">
+        <input type="checkbox" ${on?'checked':''} onchange="edCanal('${esc(n).replace(/'/g,"\\'")}',this.checked)">
+        <span class="nm">${esc(n)}<small>${esc(b)}</small></span></div>`}).join('')}</div>`;
+}
+function edReceita(i,on){ED.receita[i].on=on;
+  document.querySelector(`#ed-corpo .lin[data-i="${i}"]`)?.classList.toggle('off',!on);edSoma()}
+function edCanal(n,on){
+  ED.canais=on?[...new Set([...ED.canais,n])]:ED.canais.filter(x=>x!==n);
+  document.querySelector(`#ed-corpo .lin[data-canal="${n}"]`)?.classList.toggle('off',!on);
+}
+function edSoma(){
+  const e=$('#ed-soma');if(!e||!ED.receita)return;
+  const at=ED.receita.filter(c=>c.on!==false);
+  const si=at.reduce((s,c)=>s+(c.inv||0),0), sm=at.reduce((s,c)=>s+(c.meta||0),0);
+  const dif=sm-ED.meta;
+  e.innerHTML=`Investimento somado: <b>${brl(si)}</b> · faturamento somado:
+    <b>${brl(sm)}</b> · ROAS <b>${roas(sm,si)}</b>.<br>
+    ${Math.abs(dif)<1?'Bate certo com a meta da ação.'
+      :`<span style="color:var(--amar)">${dif>0?'Passa':'Falta'} ${brl(Math.abs(dif))}
+        para a meta de ${brl(ED.meta)}.</span>`}`;
+}
+
+/* Guarda o que está digitado na aba aberta antes de trocar de aba ou salvar. */
+function lerED(){
+  if(!ED)return;
+  if($('#ed-nome')){
+    ED.nome=$('#ed-nome').value.trim()||ED.nome;
+    ED.tipo=$('#ed-tipo').value;ED.tema=$('#ed-tema').value.trim();
+    ED.inicio=$('#ed-ini').value||ED.inicio;ED.fim=$('#ed-fim').value||ED.fim;
+    ED.meta=lerMoeda('ed-meta');
+    FONTES.forEach(({k})=>ED.fontes[k]={meta:lerMoeda('ed-m-'+k),inv:lerMoeda('ed-i-'+k)});
+  }
+  if($('#ed-frete')){
+    if($('#ed-desc'))ED.descGeral=+$('#ed-desc').value||0;
+    document.querySelectorAll('.ed-d-sku').forEach(i=>{
+      const v=+i.value;if(isFinite(v))ED.descPorSku[i.dataset.sku]=v});
+    ED.extras=$('#ed-extras').value.split('\n').map(t=>t.trim()).filter(Boolean);
+    ED.frete=$('#ed-frete').value;ED.brinde=$('#ed-brinde').value;
+    ED.bonusUniversal=$('#ed-bu').value;ED.bonusInfluencer=$('#ed-bi').value;
+  }
+  if($('#ed-soma')&&ED.receita){
+    document.querySelectorAll('.ed-r-inv').forEach(i=>ED.receita[i.dataset.i].inv=numeroBR(i.value));
+    document.querySelectorAll('.ed-r-meta').forEach(i=>ED.receita[i.dataset.i].meta=numeroBR(i.value));
+  }
+}
+
+function salvarAcao(){
+  lerED();
+  const c=D.campanhas[EDidx];if(!c||!ED)return;
+  if(!ED.inicio||!ED.fim||dISO(ED.fim)<dISO(ED.inicio))
+    return aviso('Confira as datas: o fim não pode ser antes do início.');
+  if(FONTES.reduce((t,{k})=>t+(ED.fontes[k]?.meta||0),0)>ED.meta)
     return aviso('Tráfego e API somados passam da meta da ação — não salvei.');
-  const mudou=JSON.stringify(f)!==JSON.stringify(c.fontes);
-  c.fontes=f;c.investimento=invTotal(f);
-  /* mexeu nas fontes: a divisão por canal do TAP precisa nascer de novo */
-  if(mudou)c.receita=null;
-  if($('#e-reger').value==='sim')c.secoes=gerarSecoes(c);
-  const n=M().nos.find(x=>x.campId===c.id);if(n)n.t=c.nome;
-  fecharModal();render();pintarMes();pintarSemana();pintarTAP();aviso('Campanha atualizada.');
+  if(!ED.canais.length)
+    return aviso('Deixe pelo menos um canal de execução ligado.');
+
+  guardar();
+  const antes=EDantes;
+  const mudouFonte=JSON.stringify(ED.fontes)!==JSON.stringify(antes.fontes);
+  Object.assign(c,{nome:ED.nome,tipo:ED.tipo,tema:ED.tema,inicio:ED.inicio,fim:ED.fim,
+    meta:ED.meta,fontes:ED.fontes,investimento:invTotal(ED.fontes),
+    canais:ED.canais.slice(),
+    oferta:{produtos:ED.produtos.slice(),modoDesc:ED.modoDesc,descGeral:ED.descGeral,
+      descPorSku:{...ED.descPorSku},extras:ED.extras.slice(),frete:ED.frete,
+      brinde:ED.brinde,bonusUniversal:ED.bonusUniversal,bonusInfluencer:ED.bonusInfluencer}});
+  /* mexeu nas fontes: a divisão por canal precisa nascer de novo */
+  c.receita = mudouFonte ? null : (ED.receita||c.receita);
+
+  /* a fusão a três: o TAP acompanha o que mudou e guarda o que foi escrito */
+  const d=diffCronograma(antes,c);
+  c.secoes=fundirSecoes(c.secoes||[],gerarSecoes(antes),gerarSecoes(c));
+
+  const n=M().nos.find(x=>x.campId===c.id);
+  if(n){n.t=c.nome;if(TIPOS[c.tipo])n.cor=TIPOS[c.tipo].cor}
+  fecharModal();
+  ativa=EDidx;
+  organizar({enquadrar:false});pintarMes();pintarSemana();pintarTAP();
+  aviso(d.entram.length||d.saem.length
+    ? `"${c.nome}" atualizada — cronograma de ${d.antes} para ${d.depois} colunas, `+
+      `com o que já estava escrito no lugar.`
+    : `"${c.nome}" atualizada.`);
 }
+
 function regerarCronograma(){
   const c=D.campanhas[ativa];if(!c)return;
   if(!confirm('Isso refaz a seção CANAIS · CRONOGRAMA com as datas atuais. O que estiver preenchido nela se perde. Continuar?'))return;

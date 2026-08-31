@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node teste/sintaxe.mjs && node teste/tarefas.mjs && node teste/fluxos.mjs && node teste/nuvem.mjs && node teste/gestao.mjs && node teste/reversa.mjs && node teste/base.mjs && node teste/troca.mjs && node teste/visual.mjs && node teste/gerar.mjs && node teste/tarefeiro.mjs"
+    "test": "node teste/sintaxe.mjs && node teste/tarefas.mjs && node teste/fluxos.mjs && node teste/nuvem.mjs && node teste/gestao.mjs && node teste/reversa.mjs && node teste/base.mjs && node teste/troca.mjs && node teste/visual.mjs && node teste/gerar.mjs && node teste/tarefeiro.mjs && node teste/editar.mjs"
   },
   "devDependencies": {
     "playwright-core": "^1.49.0"

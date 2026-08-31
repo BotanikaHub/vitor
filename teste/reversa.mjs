@@ -148,18 +148,18 @@ const escada=()=>G(()=>document.querySelector('#escada').innerText);
      tap.split('\n').filter(l=>/Investimento/.test(l)).join(' / '));
 }
 
-// ---- 4c. "Datas e meta" edita as duas fontes ----
+// ---- 4c. "Editar ação" edita as duas fontes ----
 {
   await p.click('nav.paginas button[data-pg="camp"]'); await p.waitForTimeout(250);
-  await G(()=>editarPeriodo());
+  await G(()=>editarAcao());
   await p.waitForTimeout(200);
   ok('o editor da campanha separa as fontes',
-     await G(()=>!!document.querySelector('#e-m-traf') && !!document.querySelector('#e-i-traf')
-       && !!document.querySelector('#e-m-api') && !!document.querySelector('#e-i-api')));
+     await G(()=>!!document.querySelector('#ed-m-traf') && !!document.querySelector('#ed-i-traf')
+       && !!document.querySelector('#ed-m-api') && !!document.querySelector('#ed-i-api')));
   ok('não sobrou o campo único de investimento',
-     await G(()=>!document.querySelector('#e-inv')));
-  await p.fill('#e-i-traf','30000'); await p.fill('#e-i-api','10000');
-  await p.click('#modal-cx button.ok'); await p.waitForTimeout(300);
+     await G(()=>!document.querySelector('#ed-inv')));
+  await p.fill('#ed-i-traf','30000'); await p.fill('#ed-i-api','10000');
+  await p.click('#modal-cx .bts button.ok'); await p.waitForTimeout(300);
   ok('salvar soma as duas na verba da ação',
      await G(()=>campsMes()[0].investimento)===40000,
      'inv='+await G(()=>campsMes()[0].investimento));
