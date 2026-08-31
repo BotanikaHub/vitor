@@ -119,6 +119,34 @@ async function colisoes(){
      /Frete/.test(t)&&/Bônus universal/.test(t), t.replace(/\n/g,' ').slice(-90));
   ok('kit vem marcado como kit', /Kit Imunidade/.test(t));
 
+  /* foto da Shopify: a miniatura existe sempre, com a inicial embaixo pra
+     quando a imagem não puder carregar */
+  const fotos=await G(()=>[...document.querySelectorAll('#oferta-semana .mini-foto')]
+    .map(e=>({ini:e.querySelector('b')?.textContent,src:e.querySelector('img')?.getAttribute('src')||''})));
+  ok('cada produto da oferta tem miniatura', fotos.length>=9, 'n='+fotos.length);
+  /* o <img> se remove sozinho quando a imagem não carrega — e aqui a rede
+     está fechada — então a URL se confere no HTML que a função gera */
+  ok('a miniatura aponta para a foto da Shopify',
+     /cdn\.shopify\.com/.test(await G(()=>miniatura(CATALOGO[0]))),
+     (await G(()=>miniatura(CATALOGO[0]))).replace(/\s+/g,' ').slice(0,70));
+  ok('e com a inicial embaixo, pra não virar ícone quebrado',
+     fotos.every(f=>f.ini&&f.ini.length<=2), fotos.slice(0,3).map(f=>f.ini).join(','));
+  ok('o produto leva para a página dele na loja',
+     await G(()=>!!document.querySelector('#oferta-semana td.prod a[href*="botanikabrasil"]')));
+  ok('todo produto do catálogo tem foto e página cadastradas',
+     await G(()=>CATALOGO.every(p=>/^https:\/\/cdn\.shopify\.com/.test(p.foto||'')&&p.pag)));
+
+  /* e na hora de montar a oferta, no assistente */
+  await p.click('nav.paginas button[data-pg="mes"]'); await p.waitForTimeout(250);
+  await G(()=>{assistente(null)}); await p.waitForTimeout(250);
+  await p.click('#modal-cx .opcoes button'); await p.waitForTimeout(250);
+  await p.click('#modal-cx button.ok'); await p.waitForTimeout(400);
+  ok('o passo da oferta também mostra os produtos com foto',
+     await G(()=>document.querySelectorAll('#lista-prod .mini-foto').length)===9,
+     'n='+await G(()=>document.querySelectorAll('#lista-prod .mini-foto').length));
+  await G(()=>fecharModal());
+  await p.click('nav.paginas button[data-pg="semana"]'); await p.waitForTimeout(300);
+
   await G(()=>{semanaSel=0;pintarSemana()}); await p.waitForTimeout(400);
   ok('semana sem ação com data diz isso, em vez de ficar vazia',
      /Nenhuma ação com data nesta semana/i.test(

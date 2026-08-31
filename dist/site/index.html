@@ -94,6 +94,20 @@ tr.total .cel{font-weight:600;color:var(--verde)}
   padding:2px 8px;border-radius:20px}
 .faixa-camp .dt{font-size:12.5px;color:var(--txt3);font-family:ui-monospace,monospace}
 .faixa-camp .mt{font-size:13px;color:var(--verde);font-weight:600}
+/* Miniatura do produto: a inicial fica embaixo e a foto cobre quando
+   carrega. Sem imagem, o espaço não muda de tamanho e nada pula. */
+.mini-foto{position:relative;display:inline-flex;align-items:center;justify-content:center;
+  flex-shrink:0;border-radius:8px;background:var(--painel2);border:1px solid var(--linha2);
+  overflow:hidden}
+.mini-foto b{font-size:11px;color:var(--txt3);font-weight:700;letter-spacing:.03em}
+.mini-foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  opacity:0;transition:opacity .2s}
+.mini-foto img.ok{opacity:1}
+table.oferta td.prod{display:flex;align-items:center;gap:11px}
+table.oferta td.prod .txt{min-width:0}
+table.oferta td.prod a{color:var(--txt);text-decoration:none;border-bottom:1px dotted var(--linha2)}
+table.oferta td.prod a:hover{color:var(--verde);border-bottom-color:var(--verde)}
+
 /* a oferta da semana: preço cheio, desconto e preço final lado a lado */
 .oferta-camp{border:1px solid var(--linha);border-radius:11px;margin-bottom:14px;overflow:hidden}
 .oferta-camp .rolagem{overflow-x:auto}
@@ -672,16 +686,20 @@ const CANAIS=[
 /* ===== CATÁLOGO — é aqui que se mexe quando o portfólio ou o padrão muda ===== */
 /* Catálogo real da loja (Shopify · Botanika Brasil), puxado em 20/08/2026.
    Quando o portfólio mudar é só pedir pro Claude sincronizar de novo. */
+/* Fotos e páginas vêm da Shopify. Dentro do visualizador de Artifacts o
+   navegador bloqueia imagem de fora, e a miniatura cai numa inicial; no
+   link publicado na Vercel elas carregam normalmente. */
+const F='https://cdn.shopify.com/s/files/1/0780/7238/1672/files/';
 const CATALOGO=[
-  {curto:'Tri[Mg]',      sku:'80.1.1', preco:87.50,  nome:'Tri[Mg] Complex — Magnésio 3 em 1 de Rápida Absorção'},
-  {curto:'Vit C',        sku:'80.1.2', preco:89.52,  nome:'Super Vitamina C — Vitamina C + Quercetina + Própolis'},
-  {curto:'Ômega 3',      sku:'80.1.3', preco:163.12, nome:'Super Ômega 3 + CoQ10 — Concentrado'},
-  {curto:'Hair',         sku:'80.1.5', preco:99.40,  nome:'Hair Botanika — Cabelos, Unhas e Pele'},
-  {curto:'Sleep',        sku:'80.1.6', preco:119.70, nome:'Sleep Inositol — Relaxamento e Rotina do Sono'},
-  {curto:'Creatina',     sku:'80.1.7', preco:128.30, nome:'Creatina Monohidratada + Magnésio Taurato'},
-  {curto:'Whey',         sku:'80.1.8', preco:147.30, nome:'Whey Balance Chocolate — Whey + Colágeno C-PURE®'},
-  {curto:'TetraVit D',   sku:'80.1.9', preco:117.12, nome:'TetraVit D — Vitaminas A, D, E e K em Gotas'},
-  {curto:'Kit Imunidade',sku:'kitimu', preco:361.71, nome:'Kit Imunidade — TetraVit D + Ômega 3 + Vit C', kit:true}
+  {curto:'Tri[Mg]',      sku:'80.1.1', preco:87.50,  nome:'Tri[Mg] Complex — Magnésio 3 em 1 de Rápida Absorção', foto:F+'hf_20260831_001724_6d9f444b-0b2a-47db-b598-0174d70f35da_300x300.png?v=1788140235', pag:'tri-mg-complex'},
+  {curto:'Vit C',        sku:'80.1.2', preco:89.52,  nome:'Super Vitamina C — Vitamina C + Quercetina + Própolis', foto:F+'hf_20260831_140355_ecfcb375-7dee-46e9-8055-24a934ab890e_300x300.png?v=1788186842', pag:'super-vitamina-c'},
+  {curto:'Ômega 3',      sku:'80.1.3', preco:163.12, nome:'Super Ômega 3 + CoQ10 — Concentrado', foto:F+'hf_20260831_040137_c0b4c41d-86dd-4df3-bffc-bfab6960bfa6_300x300.png?v=1788149560', pag:'super-omega-3-coq10'},
+  {curto:'Hair',         sku:'80.1.5', preco:99.40,  nome:'Hair Botanika — Cabelos, Unhas e Pele', foto:F+'hf_20260831_015943_a7df23dd-86f6-4d6d-ace1-b86157f1dd82_300x300.png?v=1788142206', pag:'hair-botanika'},
+  {curto:'Sleep',        sku:'80.1.6', preco:119.70, nome:'Sleep Inositol — Relaxamento e Rotina do Sono', foto:F+'01-principal_300x300.png?v=1781566957', pag:'sleep-inositol'},
+  {curto:'Creatina',     sku:'80.1.7', preco:128.30, nome:'Creatina Monohidratada + Magnésio Taurato', foto:F+'hf_20260830_184404_172a0541-20c1-47fe-bb80-cc2bf1d31bfa_300x300.png?v=1788117425', pag:'creatina-l-carnitina'},
+  {curto:'Whey',         sku:'80.1.8', preco:147.30, nome:'Whey Balance Chocolate — Whey + Colágeno C-PURE®', foto:F+'hf_20260830_192912_8ab2f4ee-b8c0-4326-bae6-7da4552792fc_300x300.png?v=1788120748', pag:'whey-balance-chocolate'},
+  {curto:'TetraVit D',   sku:'80.1.9', preco:117.12, nome:'TetraVit D — Vitaminas A, D, E e K em Gotas', foto:F+'hf_20260831_025348_50f9c075-c3b8-49ef-b998-a62a63a764ed_300x300.png?v=1788145495', pag:'tetravit-d'},
+  {curto:'Kit Imunidade',sku:'kitimu', preco:361.71, nome:'Kit Imunidade — TetraVit D + Ômega 3 + Vit C', kit:true, foto:F+'kitsemana_300x300.png?v=1784419178', pag:'kit-da-imunidade'}
 ];
 const SKUS=CATALOGO.filter(p=>!p.kit).map(p=>p.curto);
 const KITS=CATALOGO.filter(p=>p.kit).map(p=>[p.curto,'10% OFF']);
@@ -1022,6 +1040,16 @@ function ofertaDe(c){
     frete:P.frete,brinde:'',
     bonusUniversal:BONUS.universal,bonusInfluencer:BONUS.influencer, ...dela};
 }
+/* A imagem pode não carregar (dentro do Artifact ela é bloqueada). Em vez
+   de ícone quebrado, fica a inicial do produto no mesmo espaço. */
+function miniatura(pr,tam=44){
+  const ini=esc(String(pr.curto||'?').replace(/[^A-Za-zÀ-ÿ0-9]/g,'').slice(0,2).toUpperCase());
+  return `<span class="mini-foto" style="width:${tam}px;height:${tam}px">
+    <b>${ini}</b>${pr.foto?`<img src="${esc(pr.foto)}" alt="" loading="lazy"
+      onload="this.classList.add('ok')" onerror="this.remove()">`:''}</span>`;
+}
+const linkLoja=pr=>pr.pag?`https://botanikabrasil.com.br/products/${pr.pag}`:'';
+
 const descontoDe=(o,sku)=>o.modoDesc==='cada'?(o.descPorSku[sku]??o.descGeral):o.descGeral;
 const pct=v=>v>0?v+'% OFF':'—';
 
@@ -1252,6 +1280,7 @@ function passo3(){
       const on=AS.produtos.includes(pr.sku);
       return `<div class="lin ${on?'':'off'}" data-sku="${pr.sku}">
         <input type="checkbox" ${on?'checked':''} onchange="ligarProduto('${pr.sku}',this.checked)">
+        ${miniatura(pr,34)}
         <span class="nm">${esc(pr.curto)}${pr.kit?' · kit':''}<small>${esc(pr.nome)} · SKU ${esc(pr.sku)}</small></span>
         <span class="col" style="width:110px;flex:none;text-align:center;color:var(--txt2)">${brl2(pr.preco)}</span>
         <input type="number" class="d-sku" data-sku="${pr.sku}" min="0" max="90"
@@ -2513,8 +2542,11 @@ function pintarOfertaSemana(ativas){
     const linhas=itens.map(pr=>{
       const d=descontoDe(O,pr.sku);
       const fim=pr.preco*(1-(d||0)/100);
-      return `<tr><td>${esc(pr.curto)}${pr.kit?' <span class="tp">kit</span>':''}
-          <small>${esc(pr.nome)} · SKU ${esc(pr.sku)}</small></td>
+      const lk=linkLoja(pr);
+      return `<tr><td class="prod">${miniatura(pr)}
+          <span class="txt">${lk?`<a href="${lk}" target="_blank" rel="noopener">${esc(pr.curto)}</a>`
+            :esc(pr.curto)}${pr.kit?' <span class="tp">kit</span>':''}
+          <small>${esc(pr.nome)} · SKU ${esc(pr.sku)}</small></span></td>
         <td class="n">${brl2(pr.preco)}</td>
         <td class="n ${d?'off':''}">${d?d+'% OFF':'—'}</td>
         <td class="n forte">${brl2(fim)}</td></tr>`;
