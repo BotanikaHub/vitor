@@ -446,6 +446,27 @@ input.inline{background:var(--painel2);border:1px solid var(--verde);border-radi
 .trilho{height:7px;border-radius:99px;background:var(--linha);overflow:hidden;display:flex;
   margin-top:11px}
 .trilho i{display:block;height:100%}
+/* Gerar tarefas: a lista que espera aprovação */
+.ta-topo{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px;
+  padding:12px 14px;border:1px solid var(--linha2);border-radius:11px;background:var(--painel)}
+.ta-topo label{font-size:12px;color:var(--txt3);display:flex;align-items:center;gap:6px}
+.ta-topo input[type=date]{background:var(--painel2);border:1px solid var(--linha2);
+  border-radius:8px;padding:5px 9px;font-size:12.5px}
+.ta-conta{flex:1;font-size:12.5px;color:var(--txt2);min-width:150px}
+.ta-mae{font-size:11px;color:var(--txt3);margin:-6px 0 9px;letter-spacing:.03em}
+.ta-linha{display:flex;align-items:center;gap:10px;padding:7px 0;font-size:12.5px;
+  border-top:1px dashed var(--linha)}
+.ta-linha .nm{flex:1;min-width:0}
+.ta-linha .quem{font-size:11px;color:var(--txt3);white-space:nowrap}
+.ta-linha.ja .nm{color:var(--txt2)}
+.ta-selo{font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;
+  border-radius:20px;white-space:nowrap;text-decoration:none}
+.ta-selo.ok{background:#12331f;color:var(--verde)}
+.ta-selo.esperando{background:#2a2412;color:var(--amar)}
+.ta-selo.nao{background:#3a1a1b;color:var(--verm)}
+.ta-rodape{margin-top:14px;padding:12px 14px;border:1px dashed var(--linha2);border-radius:11px;
+  font-size:12.5px;color:var(--txt2)}
+.ta-rodape b{color:var(--verde)}
 #pg-gestao #g-resumo{margin-bottom:18px}
 #pg-gestao #g-resumo:empty{display:none}
 #pg-gestao .g-tap{font-size:11px;color:var(--txt2);border:1px solid var(--linha2);
@@ -595,6 +616,7 @@ input.inline{background:var(--painel2);border:1px solid var(--verde);border-radi
       <button data-ga="semana" onclick="cuAbrirAba('semana')">Semana</button>
       <button data-ga="pessoa" onclick="cuAbrirAba('pessoa')">Por pessoa</button>
       <button data-ga="atrasado" onclick="cuAbrirAba('atrasado')">Atrasado</button>
+      <button data-ga="gerar" onclick="cuAbrirAba('gerar')">Gerar tarefas</button>
     </div>
     <button class="mini" id="g-marca" onclick="cuTrocarMarca()"></button>
     <button class="mini" id="g-atualizar" onclick="cuLer({forcar:true})">Atualizar</button>
@@ -3701,6 +3723,167 @@ function cuResumo(){
       <div class="pe">${naSemana.length-semFeitas} a entregar até domingo</div></div>`;
 }
 
+/* ================= GERAR TAREFAS =================
+   O cronograma do TAP já diz o que sai, em que dia, por qual canal e
+   quem faz. Isso é uma tarefa. Faltava o caminho até o ClickUp — e ele
+   passa por uma aprovação: a tela propõe, alguém lê, marca o que vale,
+   e só o que foi marcado vira tarefa. Nada nasce no ClickUp sozinho.
+
+   O nome sai no padrão que a equipe já usa lá:
+     DIA D — E-mails base antiga (2 vendas) · QUA 09/09 | BOTANIKA */
+const TA_DOW=['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+let taDe=null, taAte=null, taFila=null, taLendo=false, taMarcadas=new Set();
+
+function taSemanaQueVem(){
+  const h=new Date();h.setHours(12,0,0,0);
+  const seg=new Date(h);seg.setDate(h.getDate()-((h.getDay()+6)%7)+7);
+  const dom=new Date(seg);dom.setDate(seg.getDate()+6);
+  return [iso(seg),iso(dom)];
+}
+
+/* Uma peça = uma linha do cronograma num dia com conteúdo. */
+function taPecas(de,ate){
+  const fora=[];
+  campsMes().forEach(c=>{
+    const sec=(c.secoes||[]).find(x=>/CANAIS/i.test(x.t));if(!sec)return;
+    const marca=marcaDo(mesAtual()), ano=mesAtual().ano;
+    sec.c.forEach((col,i)=>{
+      const mm=String(col).match(/(\d{2})\/(\d{2})/);if(!mm)return;
+      const dia=`${ano}-${mm[2]}-${mm[1]}`;
+      if(dia<de||dia>ate)return;
+      sec.l.forEach(l=>{
+        const v=String(l[i]??'').trim();
+        if(!v||v==='—'||v==='0'||v==='-')return;
+        fora.push({marca,campanha:c.nome,dia,canal:String(l[0]||''),
+          detalhe:v,base:String(l[1]||''),quem:String(l[sec.c.length-1]||''),
+          campId:c.id});
+      });
+    });
+  });
+  return fora.sort((a,b)=>a.dia.localeCompare(b.dia)||a.campanha.localeCompare(b.campanha));
+}
+
+const taAcao=nome=>String(nome||'').replace(/\s*[—-]\s*\d{2}\/\d{2}\s*$/,'').trim().toUpperCase();
+function taNome(p){
+  const d=dISO(p.dia);
+  const quando=`${TA_DOW[d.getDay()]} ${String(d.getDate()).padStart(2,'0')}/${
+    String(d.getMonth()+1).padStart(2,'0')}`;
+  const det=p.detalhe&&p.detalhe!=='1'?` (${p.detalhe})`:'';
+  return `${taAcao(p.campanha)} — ${p.canal}${det} · ${quando} | ${p.marca.toUpperCase()}`;
+}
+/* A tarefa-mãe da ação, que agrupa as filhas no ClickUp. */
+const taNomeMae=(p,fim)=>`${taAcao(p.campanha)} — ${dBR(dISO(fim))} | ${p.marca.toUpperCase()}`;
+const taAssinatura=p=>[p.marca,p.campanha,p.dia,p.canal,p.detalhe].join('§');
+
+function taAgrupar(pecas){
+  const por=new Map();
+  pecas.forEach(p=>{
+    const k=p.marca+'§'+p.campanha;
+    if(!por.has(k))por.set(k,{marca:p.marca,campanha:p.campanha,pecas:[]});
+    por.get(k).pecas.push(p);
+  });
+  return [...por.values()].map(g=>{
+    const fim=g.pecas.map(p=>p.dia).sort().at(-1);
+    return {...g,mae:taNomeMae(g.pecas[0],fim),maeAss:g.marca+'§'+g.campanha+'§mae'};
+  });
+}
+
+async function taCarregar(){
+  if(taLendo)return;
+  taLendo=true;cuPintar();
+  try{
+    const r=await sbFetch(`${SB.url}/rest/v1/tarefas_planejadas`+
+      `?select=assinatura,situacao,clickup_url&dia=gte.${taDe}&dia=lte.${taAte}`,
+      {headers:sbCab()});
+    taFila=r.ok?await r.json():[];
+  }catch(e){taFila=[]}
+  taLendo=false;cuPintar();
+}
+
+function cuPintarGerar(){
+  if(!taDe){[taDe,taAte]=taSemanaQueVem();taCarregar()}
+  const pecas=taPecas(taDe,taAte);
+  const jaFeito=new Map((taFila||[]).map(t=>[t.assinatura,t]));
+  const grupos=taAgrupar(pecas);
+
+  const cab=`<div class="ta-topo">
+    <label>De <input type="date" value="${taDe}" onchange="taDe=this.value;taFila=null;taCarregar()"></label>
+    <label>Até <input type="date" value="${taAte}" onchange="taAte=this.value;taFila=null;taCarregar()"></label>
+    <span class="ta-conta">${pecas.length} peça${pecas.length===1?'':'s'} no período,
+      em ${grupos.length} ${grupos.length===1?'ação':'ações'}</span>
+    <button class="mini" onclick="taMarcarTudo(true)">marcar todas</button>
+    <button class="mini" onclick="taMarcarTudo(false)">desmarcar</button>
+    <button class="mini forte" onclick="taAprovar()">Aprovar as marcadas</button>
+  </div>`;
+
+  if(!pecas.length)return cab+`<div class="g-vazio">Nada com data neste período.
+    Ajuste as datas, ou preencha o cronograma da ação no TAP.</div>`;
+
+  const corpo=grupos.map(g=>{
+    const linhas=g.pecas.map(p=>{
+      const a=taAssinatura(p), j=jaFeito.get(a);
+      const marcada=taMarcadas.has(a);
+      const selo=j?.situacao==='criada'
+          ?`<a class="ta-selo ok" href="${esc(j.clickup_url||'#')}" target="_blank" rel="noopener">no ClickUp</a>`
+        :j?.situacao==='aprovada'?'<span class="ta-selo esperando">aprovada, aguardando</span>'
+        :j?.situacao==='recusada'?'<span class="ta-selo nao">recusada</span>':'';
+      return `<div class="ta-linha${j?' ja':''}">
+        <input type="checkbox" ${marcada?'checked':''} ${j?'disabled':''}
+          onchange="taMarcar('${esc(a).replace(/'/g,"\\'")}',this.checked)">
+        <span class="nm">${esc(taNome(p))}</span>
+        <span class="quem">${esc(p.quem||'—')}</span>${selo}</div>`;
+    }).join('');
+    return `<div class="g-acao"><div class="g-cab">
+        <h3>${esc(g.mae)}</h3>
+        <span class="g-frac">${g.pecas.length} peça${g.pecas.length===1?'':'s'}</span></div>
+      <div class="ta-mae">tarefa-mãe · as de baixo entram como subtarefas</div>
+      ${linhas}</div>`;
+  }).join('');
+
+  const marcadas=taMarcadas.size;
+  return cab+corpo+`<div class="ta-rodape">
+    ${marcadas?`<b>${marcadas}</b> marcada${marcadas===1?'':'s'} para aprovar.`
+      :'Marque o que deve virar tarefa e clique em aprovar.'}
+    Aprovar não cria nada no ClickUp ainda: põe na fila, e eu crio quando você pedir.</div>`;
+}
+
+function taMarcar(a,on){on?taMarcadas.add(a):taMarcadas.delete(a);cuPintar()}
+function taMarcarTudo(on){
+  const jaFeito=new Set((taFila||[]).map(t=>t.assinatura));
+  taMarcadas=new Set();
+  if(on)taPecas(taDe,taAte).forEach(p=>{
+    const a=taAssinatura(p);if(!jaFeito.has(a))taMarcadas.add(a)});
+  cuPintar();
+}
+
+async function taAprovar(){
+  if(!taMarcadas.size)return aviso('Marque ao menos uma tarefa antes de aprovar.');
+  if(!sbOk)return aviso('Sem a base não dá pra guardar a aprovação — recarregue a página.');
+  const pecas=taPecas(taDe,taAte).filter(p=>taMarcadas.has(taAssinatura(p)));
+  if(!confirm(`Aprovar ${pecas.length} tarefa${pecas.length===1?'':'s'}? `+
+    `Elas entram na fila; a criação no ClickUp acontece depois, quando você pedir.`))return;
+  const grupos=taAgrupar(pecas);
+  const linhas=[];
+  grupos.forEach(g=>{
+    linhas.push({assinatura:g.maeAss,marca:g.marca,campanha:g.campanha,dia:null,
+      canal:null,nome:g.mae,responsavel:null,base:null,situacao:'aprovada',
+      quem:sbQuem(),decidida_em:new Date().toISOString()});
+    g.pecas.forEach(p=>linhas.push({assinatura:taAssinatura(p),marca:p.marca,
+      campanha:p.campanha,dia:p.dia,canal:p.canal,nome:taNome(p),
+      responsavel:p.quem,base:p.base,situacao:'aprovada',mae_de:g.maeAss,
+      quem:sbQuem(),decidida_em:new Date().toISOString()}));
+  });
+  try{
+    const r=await sbFetch(`${SB.url}/rest/v1/tarefas_planejadas`,{method:'POST',
+      headers:sbCab({Prefer:'resolution=merge-duplicates,return=minimal'}),
+      body:JSON.stringify(linhas)});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    taMarcadas=new Set();taFila=null;
+    aviso(`${pecas.length} tarefa${pecas.length===1?'':'s'} na fila. Peça pra eu criar no ClickUp.`);
+    taCarregar();
+  }catch(e){aviso('Não consegui guardar a aprovação: '+e.message)}
+}
+
 function cuPintar(){
   const alvo=$('#g-corpo'),topo=$('#g-quando'),resumo=$('#g-resumo');if(!alvo)return;
   document.querySelectorAll('#pg-gestao .g-abas button')
@@ -3714,6 +3897,14 @@ function cuPintar(){
   if(ba)ba.style.display=MCP?'':'none';
   if(resumo)resumo.innerHTML='';
 
+  /* A aba de gerar tarefas sai do planejamento, não do ClickUp: funciona
+     mesmo sem conector e mesmo sem o retrato carregado. */
+  if(cuAba==='gerar'){
+    if(resumo)resumo.innerHTML='';
+    topo.textContent='';
+    alvo.innerHTML=cuPintarGerar();
+    return;
+  }
   if(!MCP&&!cuTarefas){
     alvo.innerHTML=`<div class="g-aviso"><b>Esta cópia não trouxe as tarefas do ClickUp.</b>
       O resto do planejador funciona normalmente — só esta aba fica sem dados.</div>`;
@@ -3737,6 +3928,7 @@ function cuPintar(){
   if(resumo)resumo.innerHTML=cuResumo();
   alvo.innerHTML = cuAba==='semana'?cuPintarSemana()
     : cuAba==='pessoa'?cuPintarPessoa()
+    : cuAba==='gerar'?cuPintarGerar()
     : cuAba==='atrasado'?cuPintarAtrasado() : cuPintarAcoes();
 }
 
