@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# gerado pelo prebuild a partir de dist/site — não versionar duas vezes
+/public/planejador/

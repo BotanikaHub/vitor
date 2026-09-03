@@ -6,16 +6,14 @@ import { usePathname } from 'next/navigation';
 /** As seções da plataforma. As que ainda não existem aparecem apagadas
  *  em vez de sumirem: é o mapa do que vem, e evita a pergunta "cadê". */
 export const SECOES = [
-  { href: '/',           nome: 'Início',      pronta: true  },
-  { href: '/tarefas',    nome: 'Tarefas',     pronta: false },
-  { href: '/semana',     nome: 'Semana',      pronta: false },
-  { href: '/mes',        nome: 'Mês',         pronta: false },
-  { href: '/campanhas',  nome: 'Campanhas',   pronta: false },
-  { href: '/mapa',       nome: 'Mapa mental', pronta: false },
-  { href: '/metas',      nome: 'Metas',       pronta: false },
-  { href: '/processos',  nome: 'Processos',   pronta: false },
-  { href: '/ferramentas',nome: 'Ferramentas', pronta: false },
-  { href: '/equipe',     nome: 'Equipe',      pronta: false },
+  { href: '/',            nome: 'Início',     pronta: true  },
+  /* Mapa mental, mês, semana, campanhas, metas e tarefas vivem aqui
+     dentro hoje. Vão sair para páginas próprias uma a uma; até lá,
+     ninguém fica sem ferramenta. */
+  { href: '/planejador',  nome: 'Planejador', pronta: true  },
+  { href: '/processos',   nome: 'Processos',  pronta: false },
+  { href: '/ferramentas', nome: 'Ferramentas',pronta: false },
+  { href: '/equipe',      nome: 'Equipe',     pronta: false },
 ];
 
 export function Navegacao() {
