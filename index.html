@@ -4322,13 +4322,21 @@ function tfVisiveis(){
     return todos.indexOf(tfQuem)>=0;
   });
 }
+/* A lista do ClickUp que corresponde a uma marca. Toda tarefa nascida
+   aqui precisa de uma: o quadro filtra por lista, e linha sem lista
+   ficaria invisível no instante seguinte ao de ser criada. */
+function tfListaDaMarca(marca){
+  const alvo=cuNorm(marca||'');
+  return tfListas().find(l=>cuNorm(l)===alvo)||
+    /* a base ainda não tem lista nenhuma: uso o nome da marca como ela
+       é escrita no ClickUp, que é o que o espelho vai trazer depois */
+    (alvo?String(marca).charAt(0).toUpperCase()+String(marca).slice(1).toLowerCase():null);
+}
 /* A lista onde uma tarefa criada aqui nasce: a que está aberta no
    quadro. Sem isso ela nasceria fora de qualquer filtro e sumiria da
    tela no instante seguinte ao de ser criada. */
 function tfListaDeTrabalho(){
-  if(tfNaLista)return tfNaLista;
-  const alvo=cuNorm(marcaDo(mesAtual()));
-  return tfListas().find(l=>cuNorm(l)===alvo)||tfListas()[0]||null;
+  return tfNaLista||tfListaDaMarca(marcaDo(mesAtual()))||tfListas()[0]||null;
 }
 /* As listas que vieram do ClickUp, na ordem em que aparecem. */
 const tfListas=()=>[...new Set(TFL.map(l=>l.nome)
@@ -5020,11 +5028,13 @@ async function taAprovar(){
   const maesJa=new Set((taFila||[]).map(t=>t.assinatura));
   new Set(escolhidas.map(x=>x.a)).forEach(a=>{
     if(maesJa.has(a.maeAss))return;
-    linhas.push({assinatura:a.maeAss,marca:a.marca,campanha:a.campanha,
+    linhas.push({assinatura:a.maeAss,marca:a.marca,lista:tfListaDaMarca(a.marca),
+      campanha:a.campanha,
       nome:a.maeNome,descricao:a.maeDesc,responsavel:'Pedro Lage',prioridade:'urgent',
       inicio:iso(a.prep),dia:iso(a.fim),situacao:'aprovada',quem,decidida_em:agora});
   });
   escolhidas.forEach(({a,f})=>linhas.push({assinatura:f.assinatura,marca:a.marca,
+    lista:tfListaDaMarca(a.marca),
     campanha:a.campanha,nome:f.nome,responsavel:f.responsavel,prioridade:f.prioridade,
     inicio:f.inicio,dia:f.dia,checklist:f.checklist,mae_de:a.maeAss,
     situacao:'aprovada',quem,decidida_em:agora}));

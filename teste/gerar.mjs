@@ -128,6 +128,10 @@ const corpo=()=>G(()=>document.querySelector('#g-corpo').innerText);
      /\*\*Pedro\*\* \d+/.test(mae.descricao),
      mae.descricao.split('\n').at(-1));
   ok('tudo entra como aprovada, nunca como criada', fila.every(t=>t.situacao==='aprovada'));
+  /* o quadro de Tarefas filtra por lista; tarefa aprovada sem lista
+     nasceria invisível lá */
+  ok('cada tarefa nasce numa lista do ClickUp',
+     fila.every(t=>t.lista==='Botanika'), JSON.stringify(fila.map(t=>t.lista).slice(0,3)));
   ok('as filhas apontam pra mãe', fila.filter(t=>t.mae_de).every(t=>t.mae_de===mae.assinatura));
   ok('o checklist vai junto',
      fila.some(t=>Array.isArray(t.checklist)&&t.checklist.length>0));
