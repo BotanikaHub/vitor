@@ -2,6 +2,9 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { renovarSessao } from '@/lib/supabase/proxy';
 
 const PUBLICAS = ['/entrar', '/cadastro', '/auth'];
+/* O banco de provas só existe com PROVA_VISUAL=1, que nunca é ligado
+   em produção. Sem a variável a rota devolve 404 de qualquer jeito. */
+if (process.env.PROVA_VISUAL === '1') PUBLICAS.push('/prova-visual');
 
 export async function proxy(req: NextRequest) {
   const { resposta, user } = await renovarSessao(req);

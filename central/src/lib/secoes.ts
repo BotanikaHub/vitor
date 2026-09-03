@@ -17,6 +17,10 @@ export const SECOES: Secao[] = [
   /* Mapa mental, mês, semana, campanhas, metas e tarefas vivem dentro do
      planejador hoje. Vão sair para páginas próprias uma a uma; até lá,
      ninguém fica sem ferramenta. */
+  { href: '/tarefas',     nome: 'Tarefas',     pronta: true },
+  /* O que ainda não saiu do planejador: mapa mental, mês, semana,
+     campanhas e gestão. Esta entrada encolhe conforme as telas viram
+     página nativa daqui. */
   { href: '/planejador',  nome: 'Planejador',  pronta: true },
   { href: '/processos',   nome: 'Processos',   pronta: true },
   { href: '/ferramentas', nome: 'Ferramentas', pronta: true },
