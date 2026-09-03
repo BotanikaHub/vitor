@@ -1,6 +1,6 @@
 import { sessaoAtual } from '@/lib/sessao';
 import { cartao } from '@/lib/design';
-import { SECOES } from '@/components/Navegacao';
+import { SECOES } from '@/lib/secoes';
 
 export const metadata = { title: 'Início · Central' };
 

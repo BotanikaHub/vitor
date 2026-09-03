@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "prebuild": "node scripts/embutir-planejador.mjs"
+    "prebuild": "node scripts/embutir-planejador.mjs",
+    "teste": "node teste/fronteira.mjs && node teste/auth.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.5",

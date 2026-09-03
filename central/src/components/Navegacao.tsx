@@ -2,19 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { SECOES } from '@/lib/secoes';
 
-/** As seções da plataforma. As que ainda não existem aparecem apagadas
- *  em vez de sumirem: é o mapa do que vem, e evita a pergunta "cadê". */
-export const SECOES = [
-  { href: '/',            nome: 'Início',     pronta: true  },
-  /* Mapa mental, mês, semana, campanhas, metas e tarefas vivem aqui
-     dentro hoje. Vão sair para páginas próprias uma a uma; até lá,
-     ninguém fica sem ferramenta. */
-  { href: '/planejador',  nome: 'Planejador', pronta: true  },
-  { href: '/processos',   nome: 'Processos',  pronta: false },
-  { href: '/ferramentas', nome: 'Ferramentas',pronta: false },
-  { href: '/equipe',      nome: 'Equipe',     pronta: false },
-];
+/** A navegação. As seções que ainda não existem aparecem apagadas em vez
+ *  de sumirem: é o mapa do que vem, e evita a pergunta "cadê". */
+
 
 export function Navegacao() {
   const aqui = usePathname();

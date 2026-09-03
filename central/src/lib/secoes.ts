@@ -1,0 +1,24 @@
+/** As seções da plataforma.
+ *
+ *  Mora num módulo comum de propósito. Já morou dentro do componente de
+ *  navegação, que é 'use client', e o servidor importava a lista de lá:
+ *  no build de produção os exports de um módulo cliente viram referência
+ *  de cliente, e a lista chegava no servidor como algo que não é lista.
+ *  Compilava, passava no build, e caía em produção na primeira página
+ *  que a usasse. */
+export type Secao = {
+  href: string;
+  nome: string;
+  pronta: boolean;
+};
+
+export const SECOES: Secao[] = [
+  { href: '/',            nome: 'Início',      pronta: true },
+  /* Mapa mental, mês, semana, campanhas, metas e tarefas vivem dentro do
+     planejador hoje. Vão sair para páginas próprias uma a uma; até lá,
+     ninguém fica sem ferramenta. */
+  { href: '/planejador',  nome: 'Planejador',  pronta: true },
+  { href: '/processos',   nome: 'Processos',   pronta: false },
+  { href: '/ferramentas', nome: 'Ferramentas', pronta: false },
+  { href: '/equipe',      nome: 'Equipe',      pronta: false },
+];
