@@ -275,6 +275,36 @@ const resumo=p=>G(p,()=>document.querySelector('#tf-resumo').innerText);
   await p.close();
 }
 
+// ---- 9. o filtro de marca não pode fingir que o quadro está vazio ----
+{
+  /* Todas as tarefas são da outra marca. Antes disso o quadro abria vazio
+     e parecia que o ClickUp aqui dentro não tinha nada — mentira. */
+  const soDaOutra=TAREFAS().filter(t=>t.marca==='VERMEFREE');
+  const {p,erros}=await abrir({tarefas:soDaOutra});
+  const t=await corpo(p);
+  ok('mostra as tarefas mesmo sendo todas da outra marca',
+     /FRASCO NOVO/.test(t), t.slice(0,90));
+  ok('e avisa que está mostrando as duas marcas',
+     /duas marcas/.test(await G(p,()=>document.querySelector('#tf-marca').innerText)));
+  ok('sem erro de JS', erros.length===0, erros.join(' | '));
+  await p.close();
+}
+
+// ---- 10. filtro que esconde tudo se explica e se desfaz ----
+{
+  const {p,erros}=await abrir();
+  await G(p,()=>{tfQuem='Ninguém Aqui';tfPintar()});
+  await p.waitForTimeout(200);
+  const t=await corpo(p);
+  ok('diz que o filtro é que está escondendo', /fora do filtro/.test(t), t.slice(0,90));
+  await p.click('#tf-corpo button');
+  await p.waitForTimeout(250);
+  ok('o botão Ver todas traz as tarefas de volta',
+     /Dia D Kids|DIA D KIDS|Trocar o banner/.test(await corpo(p)));
+  ok('sem erro de JS', erros.length===0, erros.join(' | '));
+  await p.close();
+}
+
 await b.close();
 console.log(`\n${ok_} OK, ${mau} falha(s)`);
 process.exit(mau?1:0);

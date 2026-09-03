@@ -4189,6 +4189,11 @@ function tfVisiveis(){
     return true;
   });
 }
+/* Quantas tarefas sobram olhando só a marca do mês em cartaz. */
+const tfDaMarca=()=>{
+  const alvo=cuNorm(marcaDo(mesAtual()));
+  return TF.filter(t=>t.situacao!=='recusada'&&cuNorm(t.marca||'')===alvo).length;
+};
 const tfEhMae=t=>!t.mae_de;
 const tfFilhas=t=>TF.filter(x=>x.mae_de===t.assinatura);
 
@@ -4202,6 +4207,9 @@ async function tfCarregar(op){
       `?select=*&situacao=neq.recusada&order=dia.asc,ordem.asc`,{headers:sbCab()});
     if(!r.ok)throw new Error('HTTP '+r.status);
     TF=await r.json();tfQuando=Date.now();
+    /* Se a marca do mês não tem tarefa nenhuma mas o banco tem, o quadro
+       vazio seria mentira: mostro as duas marcas em vez de nada. */
+    if(tfSoMarca&&TF.length&&!tfDaMarca())tfSoMarca=false;
   }catch(e){tfErro=e.message;TF=[]}
   tfLendo=false;tfPintar();
 }
@@ -4352,6 +4360,15 @@ function tfPintar(){
   if(tfErro){alvo.innerHTML=`<div class="g-aviso alerta"><b>Não consegui ler as tarefas.</b>
     ${esc(tfErro)} — o resto do planejador continua funcionando.</div>`;return}
   if(tfLendo&&!TF.length){alvo.innerHTML='<div class="g-vazio">Lendo as tarefas…</div>';return}
+  /* Filtro escondendo tudo é o jeito mais fácil de achar que o quadro
+     está vazio quando não está. Digo qual filtro e dou o botão de tirar. */
+  if(TF.length&&!tfVisiveis().length){
+    alvo.innerHTML=`<div class="g-vazio">
+      As ${TF.length} tarefas estão todas fora do filtro de agora.
+      <button class="mini" onclick="tfQuem='';tfSoMarca=false;tfPintar()"
+        style="margin-left:8px">Ver todas</button></div>`;
+    return;
+  }
   alvo.innerHTML = tfVista==='lista'?tfLista() : tfVista==='pessoa'?tfPessoa() : tfQuadro();
 }
 function tfVer(v){tfVista=v;tfPintar()}
