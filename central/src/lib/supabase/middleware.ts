@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { SUPABASE_URL, SUPABASE_ANON } from '@/lib/supabase/projeto';
 
 /** Renova a sessão a cada navegação e devolve o usuário.
  *  Sem isto o token expira e a pessoa é deslogada no meio do trabalho. */
@@ -7,8 +8,8 @@ export async function renovarSessao(req: NextRequest) {
   let resposta = NextResponse.next({ request: req });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SUPABASE_URL,
+    SUPABASE_ANON,
     {
       cookies: {
         getAll: () => req.cookies.getAll(),

@@ -1,12 +1,13 @@
 import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
+import { SUPABASE_URL, SUPABASE_ANON } from '@/lib/supabase/projeto';
 
 /** O Supabase visto do servidor, com a sessão vinda do cookie. */
 export async function clienteServidor() {
   const jar = await cookies();
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SUPABASE_URL,
+    SUPABASE_ANON,
     {
       cookies: {
         getAll: () => jar.getAll(),
