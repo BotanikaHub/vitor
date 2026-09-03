@@ -421,17 +421,28 @@ table.oferta .tp{font-size:10px;background:var(--painel2);border-radius:20px;pad
   font-size:10.5px;color:var(--txt2)}
 #pg-tarefas .tf-prio{color:var(--c);border:1px solid currentColor;border-radius:999px;
   padding:1px 6px;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase}
-#pg-tarefas .tf-prazo{font-variant-numeric:tabular-nums;white-space:nowrap}
-#pg-tarefas .tf-prazo.vencido{color:var(--verm)}
-#pg-tarefas .tf-check,#pg-tarefas .tf-sub{background:var(--linha);border-radius:5px;padding:1px 5px}
-#pg-tarefas .tf-quem{margin-left:auto;white-space:nowrap;color:var(--txt3)}
+#pg-tarefas .tf-prazo,#tf-painel .tf-prazo{font-variant-numeric:tabular-nums;
+  white-space:nowrap;font-size:11.5px;color:var(--txt2);flex:none}
+#pg-tarefas .tf-prazo.vencido,#tf-painel .tf-prazo.vencido{color:var(--verm)}
+#pg-tarefas .tf-check,#pg-tarefas .tf-sub,#tf-painel .tf-check{
+  background:var(--linha);border-radius:5px;padding:1px 5px}
+#pg-tarefas .tf-quem,#tf-painel .tf-quem{margin-left:auto;white-space:nowrap;
+  color:var(--txt3);flex:none;font-size:11.5px}
 #pg-tarefas .tf-vazio{font-size:11.5px;color:var(--txt3);padding:9px 2px;text-align:center}
-#pg-tarefas .tf-linha{display:flex;align-items:center;gap:9px;font-size:12.5px;padding:7px 0;
-  border-top:1px solid var(--linha);cursor:pointer}
-#pg-tarefas .tf-linha:hover .nm{color:var(--verde)}
-#pg-tarefas .tf-linha .nm{flex:1 1 auto;min-width:0}
-#pg-tarefas .tf-linha.feita .nm{color:var(--txt2);text-decoration:line-through}
-#pg-tarefas .tf-bola{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+/* A lista de subtarefas também mora dentro do painel, que é outro
+   elemento — sem repetir a regra aqui, lá ela virava texto corrido com
+   nome, prazo e responsável colados. */
+#pg-tarefas .tf-linha,#tf-painel .tf-linha{display:flex;align-items:center;gap:9px;
+  font-size:12.5px;padding:7px 0;border-top:1px solid var(--linha);cursor:pointer}
+#pg-tarefas .tf-linha:hover .nm,#tf-painel .tf-linha:hover .nm{color:var(--verde)}
+#pg-tarefas .tf-linha .nm,#tf-painel .tf-linha .nm{flex:1 1 auto;min-width:0}
+/* nome de tarefa do ClickUp é longo; no painel ele corta em vez de
+   empurrar o prazo e a pessoa para outra linha */
+#tf-painel .tf-linha .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pg-tarefas .tf-linha.feita .nm,#tf-painel .tf-linha.feita .nm{
+  color:var(--txt2);text-decoration:line-through}
+#pg-tarefas .tf-bola,#tf-painel .tf-bola{width:9px;height:9px;border-radius:50%;
+  background:var(--c);flex:none}
 #pg-tarefas .tf-selo{font-size:10px;letter-spacing:.05em;text-transform:uppercase;font-weight:600;
   color:var(--c);border:1px solid currentColor;border-radius:999px;padding:2px 8px}
 /* painel de detalhe */
@@ -456,7 +467,43 @@ table.oferta .tp{font-size:10px;background:var(--painel2);border-radius:20px;pad
 #tf-painel .fechar{position:absolute;top:14px;right:18px;font-size:22px;color:var(--txt2);
   line-height:1;padding:4px 8px}
 #tf-painel .meta{font-size:12px;color:var(--txt2);margin-top:2px}
-@media(max-width:900px){#pg-tarefas .tf-quadro{grid-template-columns:repeat(5,minmax(180px,1fr))}}
+/* Etiquetas do ClickUp, no cartão e no painel. */
+#pg-tarefas .tf-tags,#tf-painel .tf-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+#pg-tarefas .tf-tag,#tf-painel .tf-tag{font-size:10px;padding:1px 7px;border-radius:999px;
+  background:var(--painel2);border:1px solid var(--linha2);color:var(--txt2)}
+/* A descrição vem do ClickUp em markdown; aqui ela é lida, não editada.
+   A tabela rola sozinha para a folha nunca rolar de lado. */
+#tf-painel .tf-md{font-size:13px;line-height:1.55;color:var(--txt);
+  border:1px solid var(--linha);border-radius:10px;padding:2px 13px 11px;
+  background:var(--painel)}
+#tf-painel .tf-md h3,#tf-painel .tf-md h4,#tf-painel .tf-md h5,#tf-painel .tf-md h6{
+  font-size:12.5px;letter-spacing:.02em;margin:14px 0 5px;color:var(--txt)}
+#tf-painel .tf-md h3{font-size:14px}
+#tf-painel .tf-md p{margin:7px 0}
+#tf-painel .tf-md ul,#tf-painel .tf-md ol{margin:7px 0;padding-left:19px}
+#tf-painel .tf-md li{margin:3px 0}
+#tf-painel .tf-md ul.tf-cx{list-style:none;padding-left:2px}
+#tf-painel .tf-md ul.tf-cx li{display:flex;gap:7px;align-items:flex-start}
+#tf-painel .tf-md ul.tf-cx .cx{flex:0 0 auto;width:13px;height:13px;margin-top:3px;
+  border:1px solid var(--linha2);border-radius:3px;font-size:10px;line-height:12px;
+  text-align:center;color:var(--verde)}
+#tf-painel .tf-md ul.tf-cx li.ok{color:var(--txt2)}
+#tf-painel .tf-md ul.tf-cx li.ok .cx{border-color:var(--verde)}
+#tf-painel .tf-md code{background:var(--painel2);border-radius:4px;padding:1px 5px;font-size:12px}
+#tf-painel .tf-md pre{background:var(--painel2);border-radius:8px;padding:9px 11px;overflow-x:auto}
+#tf-painel .tf-md pre code{background:none;padding:0}
+#tf-painel .tf-md blockquote{margin:8px 0;padding:2px 0 2px 11px;
+  border-left:2px solid var(--linha2);color:var(--txt2)}
+#tf-painel .tf-md hr{border:0;border-top:1px solid var(--linha);margin:12px 0}
+#tf-painel .tf-md a{color:var(--verde)}
+#tf-painel .tf-tab{overflow-x:auto;margin:9px 0}
+#tf-painel .tf-md table{border-collapse:collapse;font-size:12px;min-width:100%}
+#tf-painel .tf-md th,#tf-painel .tf-md td{border:1px solid var(--linha);
+  padding:5px 9px;text-align:left;vertical-align:top}
+#tf-painel .tf-md th{background:var(--painel2);color:var(--txt2);font-weight:600;
+  font-size:11px;letter-spacing:.04em;text-transform:uppercase}
+#tf-painel .tf-editar{float:right;font-size:10px;letter-spacing:0;text-transform:none;
+  color:var(--verde);padding:0}
 /* Tráfego e API lado a lado no passo 2: o que cada um fatura e o que
    cada um consome, com o resto da meta calculado embaixo. */
 .fontes{border:1px solid var(--linha2);border-radius:11px;padding:4px 13px 10px;margin:14px 0 4px}
@@ -693,7 +740,7 @@ input.inline{background:var(--painel2);border:1px solid var(--verde);border-radi
       <button data-tv="pessoa" onclick="tfVer('pessoa')">Por pessoa</button>
     </div>
     <select id="tf-quem" onchange="tfQuem=this.value;tfPintar()"></select>
-    <button class="mini" id="tf-marca" onclick="tfSoMarca=!tfSoMarca;tfPintar()"></button>
+    <select id="tf-nalista" onchange="tfNaLista=this.value;tfPintar()"></select>
     <button class="mini forte" onclick="tfNova()">+ nova tarefa</button>
     <button class="mini" onclick="tfCarregar({forcar:true})">Atualizar</button>
     <span class="g-quando" id="tf-quando"></span>
@@ -4164,36 +4211,133 @@ function cuResumo(){
 }
 
 /* ================= TAREFAS =================
-   As tarefas passam a viver aqui, não só no ClickUp. Mesma tabela da
-   fila de aprovação, com duas colunas a mais: `status`, no andamento do
-   trabalho, e o checklist do que já foi feito. Os nomes de status são os
-   mesmos de lá, para a migração não pedir tradução de ninguém. */
-const TF_STATUS=['a fazer','fazendo','revisar','ajustes necessários','feito'];
+   Espelho do ClickUp. Nada aqui é adivinhado pelo título: a hierarquia
+   das subtarefas vem do campo `parent` de lá, a campanha vem do campo
+   personalizado "Projeto", e o status, a prioridade e as cores das
+   colunas vêm do próprio ClickUp. Quem traz é o fluxo
+   "[Botanika] ClickUp → Planejador", no n8n. */
+
+/* Cores de reserva. Só valem para tarefa criada aqui dentro, que não
+   nasceu no ClickUp e por isso não traz cor nenhuma. */
 const TF_COR={'a fazer':'#87909e','fazendo':'#b660e0','revisar':'#f8ae00',
   'ajustes necessários':'#e16b16','feito':'#008844'};
 const TF_PRIO={urgent:['urgente','#f2777a'],high:['alta','#f5c451'],
   normal:['normal','#5eb3f0'],low:['baixa','#5f7a6d']};
+const TF_STATUS=['a fazer','fazendo','revisar','ajustes necessários','feito'];
+const tfCor=t=>t.status_cor||TF_COR[t.status]||'#87909e';
+const tfPrioCor=t=>t.prioridade_cor||(TF_PRIO[t.prioridade]||[])[1]||null;
+const tfPrioNome=t=>t.prioridade?((TF_PRIO[t.prioridade]||[])[0]||t.prioridade):null;
 
-let TF=[], tfVista='quadro', tfQuem='', tfSoMarca=true, tfLendo=false,
+let TF=[], TFL=[], tfVista='quadro', tfQuem='', tfNaLista='', tfLendo=false,
     tfQuando=0, tfAberta=null, tfErro='';
+
+/* As descrições vêm do ClickUp em markdown, com títulos, tabelas e
+   listas. Mostrar o texto cru seria perder metade da informação, e
+   carregar uma biblioteca só pra isso não vale — o que o ClickUp escreve
+   cabe aqui. Tudo passa por esc() antes de virar HTML. */
+function tfMdLinha(t){
+  /* O ClickUp escapa o que poderia virar formatação: IMG\_3638, tra\(1\).
+     Devolver a barra invertida para a tela seria mostrar o encanamento. */
+  return esc(t)
+    .replace(/\\([\\`*_{}\[\]()#+\-.!])/g,'\u0000$1')
+    .replace(/`([^`]+)`/g,(m,c)=>'<code>'+c+'</code>')
+    .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')
+    .replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<i>$2</i>')
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g,(m,txt,u)=>
+      /^https?:\/\//.test(u)?`<a href="${u}" target="_blank" rel="noopener">${txt}</a>`:txt)
+    .replace(/\u0000/g,'');
+}
+function tfMd(cru){
+  const L=String(cru||'').replace(/\r/g,'').split('\n');
+  const fora=[]; let i=0;
+  const celulas=r=>r.replace(/^\s*\|/,'').replace(/\|\s*$/,'')
+    .split('|').map(c=>tfMdLinha(c.trim()));
+  while(i<L.length){
+    const l=L[i];
+    if(/^\s*$/.test(l)){i++;continue}
+    if(/^```/.test(l)){
+      const b=[];i++;
+      while(i<L.length&&!/^```/.test(L[i]))b.push(L[i++]);
+      i++;fora.push('<pre><code>'+esc(b.join('\n'))+'</code></pre>');continue;
+    }
+    if(/^#{1,6}\s/.test(l)){
+      const n=Math.min(l.match(/^#+/)[0].length+2,6);
+      fora.push(`<h${n}>`+tfMdLinha(l.replace(/^#+\s*/,''))+`</h${n}>`);i++;continue;
+    }
+    /* régua: --- e também * * * , que é como o ClickUp escreve */
+    if(/^\s*([-*_])(\s*\1){2,}\s*$/.test(l)){fora.push('<hr>');i++;continue}
+    /* tabela: cabeçalho seguido da linha de trações */
+    if(l.indexOf('|')>=0&&i+1<L.length&&/^\s*\|?[\s:|-]+\|[\s:|-]*$/.test(L[i+1])){
+      const cab=celulas(l);i+=2;const corpo=[];
+      while(i<L.length&&L[i].indexOf('|')>=0&&!/^\s*$/.test(L[i]))corpo.push(celulas(L[i++]));
+      fora.push('<div class="tf-tab"><table><thead><tr>'+
+        cab.map(c=>'<th>'+c+'</th>').join('')+'</tr></thead><tbody>'+
+        corpo.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+
+        '</tbody></table></div>');continue;
+    }
+    if(/^\s*>/.test(l)){
+      const b=[];while(i<L.length&&/^\s*>/.test(L[i]))b.push(L[i++].replace(/^\s*>\s?/,''));
+      fora.push('<blockquote>'+tfMdLinha(b.join(' '))+'</blockquote>');continue;
+    }
+    if(/^\s*[-*+]\s+/.test(l)){
+      const b=[];while(i<L.length&&/^\s*[-*+]\s+/.test(L[i]))b.push(L[i++].replace(/^\s*[-*+]\s+/,''));
+      /* as descrições do ClickUp trazem checklist como "- [ ] item";
+         mostrar o colchete cru seria pior que mostrar a caixinha */
+      const caixa=b.every(x=>/^\[[ xX]\]\s?/.test(x));
+      if(caixa){
+        fora.push('<ul class="tf-cx">'+b.map(x=>{
+          const feito=/^\[[xX]\]/.test(x);
+          return `<li class="${feito?'ok':''}"><span class="cx">${feito?'✓':''}</span>`+
+                 tfMdLinha(x.replace(/^\[[ xX]\]\s?/,''))+'</li>';
+        }).join('')+'</ul>');
+      } else {
+        fora.push('<ul>'+b.map(x=>'<li>'+tfMdLinha(x)+'</li>').join('')+'</ul>');
+      }
+      continue;
+    }
+    if(/^\s*\d+[.)]\s+/.test(l)){
+      const b=[];while(i<L.length&&/^\s*\d+[.)]\s+/.test(L[i]))b.push(L[i++].replace(/^\s*\d+[.)]\s+/,''));
+      fora.push('<ol>'+b.map(x=>'<li>'+tfMdLinha(x)+'</li>').join('')+'</ol>');continue;
+    }
+    const p=[];
+    while(i<L.length&&!/^\s*$/.test(L[i])&&L[i].indexOf('|')<0&&
+          !/^(#{1,6}\s|```|\s*[-*+]\s|\s*\d+[.)]\s|\s*>)/.test(L[i]))p.push(L[i++]);
+    /* linha que só o teste da tabela barrou: vai como parágrafo, e o
+       laço anda — nenhuma linha pode sumir nem travar aqui */
+    if(p.length)fora.push('<p>'+tfMdLinha(p.join(' '))+'</p>');
+    else {fora.push('<p>'+tfMdLinha(L[i])+'</p>');i++;}
+  }
+  return fora.join('');
+}
 
 const tfOrdenar=a=>a.sort((x,y)=>
   (x.dia||'9999').localeCompare(y.dia||'9999')||(x.ordem-y.ordem)||x.nome.localeCompare(y.nome));
 
 function tfVisiveis(){
-  const alvo=cuNorm(marcaDo(mesAtual()));
-  return TF.filter(t=>{
-    if(t.situacao==='recusada')return false;
-    if(tfSoMarca&&cuNorm(t.marca||'')!==alvo)return false;
-    if(tfQuem&&String(t.responsavel||'')!==tfQuem)return false;
-    return true;
+  return tfDaLista().filter(t=>{
+    if(!tfQuem)return true;
+    /* uma tarefa pode ter mais de um responsável no ClickUp */
+    const todos=(t.responsaveis||[]).map(r=>r&&r.nome).filter(Boolean);
+    if(!todos.length&&t.responsavel)todos.push(t.responsavel);
+    return todos.indexOf(tfQuem)>=0;
   });
 }
-/* Quantas tarefas sobram olhando só a marca do mês em cartaz. */
-const tfDaMarca=()=>{
+/* A lista onde uma tarefa criada aqui nasce: a que está aberta no
+   quadro. Sem isso ela nasceria fora de qualquer filtro e sumiria da
+   tela no instante seguinte ao de ser criada. */
+function tfListaDeTrabalho(){
+  if(tfNaLista)return tfNaLista;
   const alvo=cuNorm(marcaDo(mesAtual()));
-  return TF.filter(t=>t.situacao!=='recusada'&&cuNorm(t.marca||'')===alvo).length;
-};
+  return tfListas().find(l=>cuNorm(l)===alvo)||tfListas()[0]||null;
+}
+/* As listas que vieram do ClickUp, na ordem em que aparecem. */
+const tfListas=()=>[...new Set(TFL.map(l=>l.nome)
+  .concat(TF.map(t=>t.lista)).filter(Boolean))].sort();
+/* Tudo da lista escolhida, sem o filtro de pessoa: é daqui que saem as
+   colunas do quadro, para uma coluna vazia continuar aparecendo como
+   aparece no ClickUp. */
+const tfDaLista=()=>TF.filter(t=>t.situacao!=='recusada'&&
+  (!tfNaLista||t.lista===tfNaLista));
 const tfEhMae=t=>!t.mae_de;
 const tfFilhas=t=>TF.filter(x=>x.mae_de===t.assinatura);
 
@@ -4203,13 +4347,26 @@ async function tfCarregar(op){
   if(!op?.forcar&&tfQuando&&Date.now()-tfQuando<60000){tfPintar();return}
   tfLendo=true;tfErro='';tfPintar();
   try{
-    const r=await sbFetch(`${SB.url}/rest/v1/tarefas_planejadas`+
-      `?select=*&situacao=neq.recusada&order=dia.asc,ordem.asc`,{headers:sbCab()});
+    const [r,rl]=await Promise.all([
+      sbFetch(`${SB.url}/rest/v1/tarefas_planejadas`+
+        `?select=*&situacao=neq.recusada&order=dia.asc,ordem.asc`,{headers:sbCab()}),
+      /* as listas trazem o conjunto de status de cada uma; se essa
+         leitura falhar o quadro ainda funciona, só perde as colunas
+         que hoje estão sem tarefa nenhuma */
+      sbFetch(`${SB.url}/rest/v1/listas_clickup?select=*`,{headers:sbCab()})
+        .catch(()=>null)
+    ]);
     if(!r.ok)throw new Error('HTTP '+r.status);
     TF=await r.json();tfQuando=Date.now();
-    /* Se a marca do mês não tem tarefa nenhuma mas o banco tem, o quadro
-       vazio seria mentira: mostro as duas marcas em vez de nada. */
-    if(tfSoMarca&&TF.length&&!tfDaMarca())tfSoMarca=false;
+    TFL=(rl&&rl.ok)?await rl.json():[];
+    /* Na primeira leitura, abre na lista da marca do mês em cartaz — e
+       só se ela tiver tarefa, senão o quadro abriria vazio dizendo que
+       não há nada quando há. */
+    if(tfNaLista===''&&TF.length){
+      const alvo=cuNorm(marcaDo(mesAtual()));
+      const casa=tfListas().find(l=>cuNorm(l)===alvo);
+      if(casa&&TF.some(t=>t.lista===casa))tfNaLista=casa;
+    }
   }catch(e){tfErro=e.message;TF=[]}
   tfLendo=false;tfPintar();
 }
@@ -4233,34 +4390,89 @@ async function tfSalvar(t,mudanca){
   }
 }
 
-const tfAtrasada=t=>t.status!=='feito'&&t.dia&&t.dia<iso(new Date());
+/* Cada lista do ClickUp nomeia o seu status de encerramento do seu
+   jeito — "feito" numa, "fechado" na outra. O que fecha de verdade é a
+   data de encerramento que vem de lá. */
+const tfFechada=t=>!!t.encerrada_em||t.status===(tfStatusQueFecha(t.lista)||'feito');
+const tfAtrasada=t=>!tfFechada(t)&&t.dia&&t.dia<iso(new Date());
 const tfProgresso=t=>{
   const n=(t.checklist||[]).length;
   return n?{feitos:(t.checklist_feito||[]).length,total:n}:null;
 };
 
 /* ---- desenho ---- */
+const tfQuemCurto=r=>String(r||'').split('|')[0].trim();
+/* Todos os responsáveis, como o ClickUp mostra. */
+function tfQuemTodos(t){
+  const l=(t.responsaveis||[]).map(r=>r&&r.nome).filter(Boolean);
+  if(!l.length&&t.responsavel)l.push(t.responsavel);
+  return l;
+}
+
 function tfCartao(t){
-  const p=tfProgresso(t), prio=TF_PRIO[t.prioridade]||null;
+  const p=tfProgresso(t), prio=tfPrioNome(t), cor=tfPrioCor(t);
   const filhas=tfEhMae(t)?tfFilhas(t):[];
+  const quem=tfQuemTodos(t).map(tfQuemCurto);
   return `<div class="tf-card${tfAtrasada(t)?' atrasada':''}" onclick="tfAbrir('${esc(t.assinatura)}')">
     <div class="tf-nome">${esc(t.nome)}</div>
+    ${(t.etiquetas||[]).length?`<div class="tf-tags">${(t.etiquetas||[])
+      .map(g=>`<span class="tf-tag">${esc(g)}</span>`).join('')}</div>`:''}
     <div class="tf-pe">
-      ${prio?`<span class="tf-prio" style="--c:${prio[1]}">${prio[0]}</span>`:''}
+      ${prio?`<span class="tf-prio" style="--c:${esc(cor||'#87909e')}">${esc(prio)}</span>`:''}
       ${t.dia?`<span class="tf-prazo${tfAtrasada(t)?' vencido':''}">${dBR(dISO(t.dia))}</span>`:''}
       ${p?`<span class="tf-check">${p.feitos}/${p.total}</span>`:''}
-      ${filhas.length?`<span class="tf-sub">${filhas.filter(f=>f.status==='feito').length}/${filhas.length} subtarefas</span>`:''}
-      <span class="tf-quem">${esc(String(t.responsavel||'—').split('|')[0].trim())}</span>
+      ${filhas.length?`<span class="tf-sub">${filhas.filter(tfFechada).length}/${filhas.length} subtarefas</span>`:''}
+      <span class="tf-quem">${quem.length?esc(quem.join(', ')):'—'}</span>
     </div></div>`;
+}
+
+/* As colunas do quadro são os status que a lista tem configurados no
+   ClickUp — não os que por acaso têm tarefa agora. A diferença importa:
+   se ninguém está em "revisar" hoje, a coluna teria sumido e não haveria
+   para onde mover nada. Quando a lista não veio (tarefa criada aqui, ou
+   a leitura das listas falhou), aí sim as colunas saem das tarefas. */
+function tfColunas(){
+  const m=new Map();
+  const guarda=(nome,cor,ordem)=>{
+    const tem=m.get(nome);
+    if(!tem)m.set(nome,{status:nome,cor:cor||'#87909e',ordem:ordem});
+    else{
+      if(!tem.cor&&cor)tem.cor=cor;
+      if(ordem!==null&&(tem.ordem===null||ordem<tem.ordem))tem.ordem=ordem;
+    }
+  };
+  const doClickUp=TFL.filter(l=>!tfNaLista||l.nome===tfNaLista);
+  for(const l of doClickUp)
+    for(const st of (l.statuses||[]))
+      guarda(st.nome,st.cor,st.ordem===null||st.ordem===undefined?null:Number(st.ordem));
+  for(const t of tfDaLista()){
+    const o=(t.status_ordem===null||t.status_ordem===undefined)?null:Number(t.status_ordem);
+    guarda(t.status||'a fazer',tfCor(t),o);
+  }
+  /* sem ordem vinda do ClickUp, vale a ordem de sempre */
+  return [...m.values()].sort((a,b)=>{
+    const oa=a.ordem===null?TF_STATUS.indexOf(a.status):a.ordem;
+    const ob=b.ordem===null?TF_STATUS.indexOf(b.status):b.ordem;
+    return (oa<0?99:oa)-(ob<0?99:ob)||a.status.localeCompare(b.status);
+  });
+}
+
+/* Fecha a tarefa o status marcado como "closed" na lista dela. */
+function tfStatusQueFecha(lista){
+  for(const l of TFL) if(l.nome===lista)
+    for(const st of (l.statuses||[])) if(st.fecha) return st.nome;
+  return null;
 }
 
 function tfQuadro(){
   const ts=tfVisiveis().filter(t=>!tfEhMae(t)||!tfFilhas(t).length);
-  return `<div class="tf-quadro">${TF_STATUS.map(st=>{
-    const doStatus=tfOrdenar(ts.filter(t=>t.status===st));
+  const cols=tfColunas();
+  return `<div class="tf-quadro" style="grid-template-columns:repeat(${
+      Math.max(cols.length,1)},minmax(190px,1fr))">${cols.map(c=>{
+    const doStatus=tfOrdenar(ts.filter(t=>t.status===c.status));
     return `<div class="tf-col">
-      <div class="tf-col-cab" style="--c:${TF_COR[st]}">
-        <span>${st}</span><b>${doStatus.length}</b></div>
+      <div class="tf-col-cab" style="--c:${esc(c.cor)}">
+        <span>${esc(c.status)}</span><b>${doStatus.length}</b></div>
       <div class="tf-col-corpo">${doStatus.map(tfCartao).join('')||
         '<div class="tf-vazio">nada aqui</div>'}</div></div>`;
   }).join('')}</div>`;
@@ -4272,11 +4484,11 @@ function tfLista(){
   const soltas=ts.filter(t=>!maes.some(m=>m.assinatura===(t.mae_de||t.assinatura)));
   const blocos=maes.map(m=>{
     const f=tfOrdenar(ts.filter(x=>x.mae_de===m.assinatura));
-    const feitas=f.filter(x=>x.status==='feito').length;
+    const feitas=f.filter(tfFechada).length;
     return `<div class="g-acao"><div class="g-cab">
         <h3>${esc(m.nome)}</h3>
         <span class="g-frac">${feitas} de ${f.length} feitas</span>
-        <span class="tf-selo" style="--c:${TF_COR[m.status]}">${m.status}</span></div>
+        <span class="tf-selo" style="--c:${esc(tfCor(m))}">${esc(m.status)}</span></div>
       <div class="g-barra"><i style="width:${f.length?Math.round(100*feitas/f.length):0}%"></i></div>
       ${f.map(tfLinha).join('')||'<div class="tf-vazio">sem subtarefas</div>'}</div>`;
   }).join('');
@@ -4289,25 +4501,28 @@ function tfLista(){
 }
 
 function tfLinha(t){
-  const p=tfProgresso(t);
-  return `<div class="tf-linha${t.status==='feito'?' feita':''}" onclick="tfAbrir('${esc(t.assinatura)}')">
-    <span class="tf-bola" style="--c:${TF_COR[t.status]}"></span>
+  const p=tfProgresso(t), quem=tfQuemTodos(t).map(tfQuemCurto);
+  return `<div class="tf-linha${tfFechada(t)?' feita':''}" onclick="tfAbrir('${esc(t.assinatura)}')">
+    <span class="tf-bola" style="--c:${esc(tfCor(t))}"></span>
     <span class="nm">${esc(t.nome)}</span>
     ${p?`<span class="tf-check">${p.feitos}/${p.total}</span>`:''}
     ${t.dia?`<span class="tf-prazo${tfAtrasada(t)?' vencido':''}">${dBR(dISO(t.dia))}</span>`:''}
-    <span class="tf-quem">${esc(String(t.responsavel||'—').split('|')[0].trim())}</span></div>`;
+    <span class="tf-quem">${quem.length?esc(quem.join(', ')):'—'}</span></div>`;
 }
 
 function tfPessoa(){
   const ts=tfVisiveis().filter(t=>!tfEhMae(t)||!tfFilhas(t).length);
   const por=new Map();
   ts.forEach(t=>{
-    const q=String(t.responsavel||'Sem responsável').split('|')[0].trim();
-    if(!por.has(q))por.set(q,[]);por.get(q).push(t);
+    /* tarefa com dois responsáveis aparece nos dois, como no ClickUp */
+    const quem=tfQuemTodos(t).map(tfQuemCurto);
+    (quem.length?quem:['Sem responsável']).forEach(q=>{
+      if(!por.has(q))por.set(q,[]);por.get(q).push(t);
+    });
   });
   if(!por.size)return '<div class="g-vazio">Nenhuma tarefa para distribuir.</div>';
   return [...por.entries()].map(([q,l])=>{
-    const feitas=l.filter(x=>x.status==='feito').length;
+    const feitas=l.filter(tfFechada).length;
     const atras=l.filter(tfAtrasada).length;
     return {q,l,feitas,atras};
   }).sort((a,b)=>(b.atras-a.atras)||(b.l.length-a.l.length)).map(g=>
@@ -4315,21 +4530,21 @@ function tfPessoa(){
       <span class="g-frac">${g.feitas} de ${g.l.length} feitas</span>
       ${g.atras?`<span class="g-selo atras">${g.atras} atrasada${g.atras>1?'s':''}</span>`:''}</div>
       <div class="g-barra"><i style="width:${Math.round(100*g.feitas/g.l.length)}%"></i></div>
-      ${tfOrdenar(g.l.filter(x=>x.status!=='feito')).map(tfLinha).join('')||
+      ${tfOrdenar(g.l.filter(x=>!tfFechada(x))).map(tfLinha).join('')||
         '<div class="tf-vazio">tudo feito</div>'}</div>`).join('');
 }
 
 function tfResumo(){
   const ts=tfVisiveis().filter(t=>!tfEhMae(t)||!tfFilhas(t).length);
   if(!ts.length)return '';
-  const feitas=ts.filter(t=>t.status==='feito').length;
+  const feitas=ts.filter(tfFechada).length;
   const atras=ts.filter(tfAtrasada).length;
   const hoje=iso(new Date());
-  const doDia=ts.filter(t=>t.dia===hoje&&t.status!=='feito').length;
+  const doDia=ts.filter(t=>t.dia===hoje&&!tfFechada(t)).length;
   const pct=Math.round(100*feitas/ts.length);
   return `<div class="cartao"><div class="rot">Concluídas</div>
       <div class="num ${pct>=100?'v':''}">${feitas} de ${ts.length}</div>
-      <div class="pe">${pct}% das tarefas ${tfSoMarca?'da '+esc(marcaDo(mesAtual())):''}</div></div>
+      <div class="pe">${pct}% ${tfNaLista?'da lista '+esc(tfNaLista):'de todas as listas'}</div></div>
     <div class="cartao"><div class="rot">Para hoje</div><div class="num">${doDia}</div>
       <div class="pe">vencem hoje e não foram feitas</div></div>
     <div class="cartao"><div class="rot">Atrasadas</div>
@@ -4344,15 +4559,21 @@ function tfPintar(){
   const alvo=$('#tf-corpo');if(!alvo)return;
   document.querySelectorAll('#tf-abas button')
     .forEach(b=>b.classList.toggle('on',b.dataset.tv===tfVista));
-  const bm=$('#tf-marca');
-  if(bm)bm.textContent=tfSoMarca?'Só '+marcaDo(mesAtual()):'As duas marcas';
+  const bl=$('#tf-nalista');
+  if(bl){
+    const listas=tfListas();
+    bl.innerHTML='<option value="">todas as listas</option>'+listas.map(l=>
+      `<option value="${esc(l)}" ${tfNaLista===l?'selected':''}>${esc(l)}</option>`).join('');
+  }
   const sel=$('#tf-quem');
   if(sel){
-    const quens=[...new Set(TF.map(t=>String(t.responsavel||'').split('|')[0].trim())
-      .filter(Boolean))].sort();
+    /* os nomes saem das tarefas da lista aberta: filtrar por alguém que
+       não trabalha nela só devolveria tela vazia */
+    const quens=[...new Set([].concat(...tfDaLista().map(tfQuemTodos))
+      .map(tfQuemCurto).filter(Boolean))].sort();
+    if(tfQuem&&quens.indexOf(tfQuem)<0)tfQuem='';
     sel.innerHTML='<option value="">todo mundo</option>'+quens.map(q=>
-      `<option value="${esc(TF.find(t=>String(t.responsavel||'').startsWith(q))?.responsavel||q)}"
-        ${tfQuem&&tfQuem.startsWith(q)?'selected':''}>${esc(q)}</option>`).join('');
+      `<option value="${esc(q)}" ${tfQuem===q?'selected':''}>${esc(q)}</option>`).join('');
   }
   $('#tf-quando').textContent=tfLendo?'lendo…':
     tfQuando?'lido '+new Date(tfQuando).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'';
@@ -4360,12 +4581,15 @@ function tfPintar(){
   if(tfErro){alvo.innerHTML=`<div class="g-aviso alerta"><b>Não consegui ler as tarefas.</b>
     ${esc(tfErro)} — o resto do planejador continua funcionando.</div>`;return}
   if(tfLendo&&!TF.length){alvo.innerHTML='<div class="g-vazio">Lendo as tarefas…</div>';return}
-  /* Filtro escondendo tudo é o jeito mais fácil de achar que o quadro
-     está vazio quando não está. Digo qual filtro e dou o botão de tirar. */
+  /* Lista sem tarefa nenhuma parece página quebrada. Digo que a lista é
+     que está vazia, e ofereço o caminho de volta — mas só quando existe
+     tarefa em outro lugar, senão a frase seria mentira. */
   if(TF.length&&!tfVisiveis().length){
     alvo.innerHTML=`<div class="g-vazio">
-      As ${TF.length} tarefas estão todas fora do filtro de agora.
-      <button class="mini" onclick="tfQuem='';tfSoMarca=false;tfPintar()"
+      ${tfNaLista?`Nenhuma tarefa na lista ${esc(tfNaLista)}.`
+                 :'Nenhuma tarefa no filtro de agora.'}
+      As outras ${TF.length} estão fora dele.
+      <button class="mini" onclick="tfQuem='';tfNaLista='';tfPintar()"
         style="margin-left:8px">Ver todas</button></div>`;
     return;
   }
@@ -4383,7 +4607,9 @@ function tfAbrir(a){
   const t=tfAchar(a);if(!t)return;
   tfAberta=a;$('#tf-painel').classList.add('on');tfFolha();
 }
-function tfFechar(){tfAberta=null;$('#tf-painel').classList.remove('on')}
+function tfFechar(){tfAberta=null;tfEditarDesc=false;$('#tf-painel').classList.remove('on')}
+/* A descrição abre formatada; o texto cru fica a um clique de distância. */
+let tfEditarDesc=false;
 
 function tfFolha(){
   const alvo=$('#tf-folha');if(!alvo)return;
@@ -4393,23 +4619,29 @@ function tfFolha(){
   const itens=(t.checklist||[]);
   const mae=t.mae_de?tfAchar(t.mae_de):null;
   const filhas=tfEhMae(t)?tfOrdenar(tfFilhas(t)):[];
-  const quens=[...new Set(TF.map(x=>x.responsavel).filter(Boolean))].sort();
+  const quens=[...new Set([].concat(...TF.map(tfQuemTodos)).filter(Boolean))].sort();
   if(t.responsavel&&!quens.includes(t.responsavel))quens.push(t.responsavel);
 
+  const status=[...new Set(tfColunas().map(c=>c.status).concat(t.status))];
   alvo.innerHTML=`<button class="fechar" onclick="tfFechar()" title="Fechar">×</button>
     <h3>${esc(t.nome)}</h3>
-    <div class="meta">${esc(t.marca||'')}${t.campanha?' · '+esc(t.campanha):''}
+    <div class="meta">${esc(t.lista||t.marca||'')}${t.projeto?' · '+esc(t.projeto):
+        (t.campanha?' · '+esc(t.campanha):'')}
+      ${t.fase?' · '+esc(t.fase):''}
       ${mae?` · dentro de <b>${esc(mae.nome)}</b>`:''}
       ${t.clickup_url?` · <a href="${esc(t.clickup_url)}" target="_blank" rel="noopener">abrir no ClickUp</a>`:''}
       ${t.situacao&&t.situacao!=='criada'?` · fila: ${esc(t.situacao)}`:''}</div>
+    ${(t.etiquetas||[]).length?`<div class="tf-tags">${(t.etiquetas||[])
+      .map(g=>`<span class="tf-tag">${esc(g)}</span>`).join('')}</div>`:''}
 
     <div class="campo"><label>Status</label>
-      <select onchange="tfMudar('status',this.value)">${TF_STATUS.map(st=>
-        `<option ${t.status===st?'selected':''}>${st}</option>`).join('')}</select></div>
+      <select onchange="tfMudar('status',this.value)">${status.map(st=>
+        `<option ${t.status===st?'selected':''}>${esc(st)}</option>`).join('')}</select></div>
 
     <div class="dupla2">
-      <div class="campo"><label>Responsável</label>
-        <input type="text" list="tf-quens" value="${esc(t.responsavel||'')}"
+      <div class="campo"><label>Responsável${
+          tfQuemTodos(t).length>1?' — '+tfQuemTodos(t).length+' pessoas':''}</label>
+        <input type="text" list="tf-quens" value="${esc(tfQuemTodos(t).join(', '))}"
           onchange="tfMudar('responsavel',this.value.trim()||null)">
         <datalist id="tf-quens">${quens.map(q=>`<option value="${esc(q)}">`).join('')}</datalist></div>
       <div class="campo"><label>Prioridade</label>
@@ -4435,17 +4667,22 @@ function tfFolha(){
         <span>${esc(it)}</span></label>`).join('')}</div>`:''}
 
     ${filhas.length?`<div class="campo"><label>Subtarefas —
-      ${filhas.filter(f=>f.status==='feito').length} de ${filhas.length}</label>
-      ${filhas.map(f=>`<div class="tf-linha${f.status==='feito'?' feita':''}"
+      ${filhas.filter(tfFechada).length} de ${filhas.length}</label>
+      ${filhas.map(f=>`<div class="tf-linha${tfFechada(f)?' feita':''}"
         onclick="tfAbrir('${esc(f.assinatura)}')">
-        <span class="tf-bola" style="--c:${TF_COR[f.status]}"></span>
+        <span class="tf-bola" style="--c:${esc(tfCor(f))}"></span>
         <span class="nm">${esc(f.nome)}</span>
-        <span class="tf-quem">${esc(String(f.responsavel||'—').split('|')[0].trim())}</span>
+        ${f.dia?`<span class="tf-prazo${tfAtrasada(f)?' vencido':''}">${dBR(dISO(f.dia))}</span>`:''}
+        <span class="tf-quem">${esc(tfQuemTodos(f).map(tfQuemCurto).join(', ')||'—')}</span>
       </div>`).join('')}</div>`:''}
 
-    <div class="campo"><label>Descrição</label>
-      <textarea onchange="tfMudar('descricao',this.value||null)"
-        placeholder="o que precisa acontecer">${esc(t.descricao||'')}</textarea></div>
+    <div class="campo"><label>Descrição
+      ${t.descricao?`<button class="tf-editar" onclick="tfEditarDesc=!tfEditarDesc;tfFolha()">${
+        tfEditarDesc?'ver formatada':'editar'}</button>`:''}</label>
+      ${t.descricao&&!tfEditarDesc
+        ?`<div class="tf-md">${tfMd(t.descricao)}</div>`
+        :`<textarea onchange="tfMudar('descricao',this.value||null)"
+            placeholder="o que precisa acontecer">${esc(t.descricao||'')}</textarea>`}</div>
 
     <div class="campo" style="color:var(--txt3);font-size:11.5px">
       ${t.atualizada_em?'mexida pela última vez em '+
@@ -4480,14 +4717,14 @@ function tfNova(){
     String(a.inicio||'').localeCompare(String(b.inicio||'')));
   $('#modal-cx').className='cx';
   $('#modal-cx').innerHTML=`<h3>Nova tarefa</h3>
-    <p class="sub">Ela nasce aqui, na marca ${esc(marca)}. Se quiser levar pro
-      ClickUp depois, é a mesma fila das outras.</p>
+    <p class="sub">Ela nasce aqui, na lista ${esc(tfListaDeTrabalho()||marca)}.
+      Se quiser levar pro ClickUp depois, é a mesma fila das outras.</p>
     <label><b>O que precisa ser feito</b>
       <input id="tn-nome" type="text" placeholder="ex.: Criar as artes do Dia D"></label>
     <div class="dupla">
       <label><b>Responsável</b>
         <input id="tn-quem" type="text" list="tf-quens2" placeholder="quem faz">
-        <datalist id="tf-quens2">${[...new Set(TF.map(x=>x.responsavel).filter(Boolean))]
+        <datalist id="tf-quens2">${[...new Set([].concat(...TF.map(tfQuemTodos)).filter(Boolean))]
           .sort().map(q=>`<option value="${esc(q)}">`).join('')}</datalist></label>
       <label><b>Prazo</b>
         <input id="tn-dia" type="date" value="${iso(new Date())}"></label>
@@ -4512,7 +4749,8 @@ async function tfCriar(){
   const marca=marcaDo(mesAtual()).toUpperCase();
   const linha={
     assinatura:`MAO§${Date.now()}§${Math.random().toString(36).slice(2,7)}`,
-    marca, campanha:$('#tn-camp').value||'Avulsa', nome,
+    marca, lista:tfListaDeTrabalho(),
+    campanha:$('#tn-camp').value||'Avulsa', nome,
     responsavel:$('#tn-quem').value.trim()||null,
     prioridade:$('#tn-prio').value||null,
     dia:$('#tn-dia').value||null,

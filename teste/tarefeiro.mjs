@@ -16,8 +16,33 @@ const b = await chromium.launch({
 const hoje=new Date(), d=n=>{const x=new Date(hoje);x.setDate(x.getDate()+n);
   return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`};
 
+/* Os status configurados em cada lista, como o ClickUp devolve. Repare
+   que "revisar" e "ajustes necessários" não têm tarefa nenhuma: é
+   exatamente o caso que faz a coluna sumir se ela for deduzida das
+   tarefas em vez de vir da lista. */
+const STATUS=[
+  {nome:'a fazer',cor:'#87909e',ordem:0,fecha:false},
+  {nome:'fazendo',cor:'#b660e0',ordem:1,fecha:false},
+  {nome:'revisar',cor:'#f8ae00',ordem:2,fecha:false},
+  {nome:'ajustes necessários',cor:'#e16b16',ordem:3,fecha:false},
+  {nome:'feito',cor:'#008844',ordem:4,fecha:true},
+];
+const LISTAS=()=>[
+  {lista_id:'901328327165',nome:'Botanika',statuses:STATUS},
+  {lista_id:'901328142677',nome:'VermeFree',statuses:STATUS},
+];
+const cor=st=>(STATUS.find(s=>s.nome===st)||{}).cor||null;
+const ordem=st=>STATUS.findIndex(s=>s.nome===st);
+
 /* O que a base devolve. Uma mãe com duas filhas, uma avulsa e uma da
-   outra marca, para o filtro ter o que filtrar. */
+   outra lista, para o filtro ter o que filtrar. */
+const enfeita=t=>Object.assign({
+  lista:t.marca==='VERMEFREE'?'VermeFree':'Botanika',
+  status_cor:cor(t.status),status_ordem:ordem(t.status),
+  prioridade_cor:null,responsaveis:t.responsavel?[{id:1,nome:t.responsavel}]:[],
+  etiquetas:[],encerrada_em:t.status==='feito'?new Date().toISOString():null,
+  projeto:t.campanha,fase:null,clickup_pai:t.mae_de?t.mae_de.replace('§mae','')  :null
+},t);
 const TAREFAS=()=>[
   {assinatura:'BOTANIKA§1§mae',marca:'BOTANIKA',campanha:'Dia D Kids',
    nome:'DIA D KIDS — 10/09 | BOTANIKA',responsavel:'Pedro Lage',prioridade:'urgent',
@@ -42,13 +67,34 @@ const TAREFAS=()=>[
    nome:'FRASCO NOVO — 20/09 | VERMEFREE',responsavel:'Sarah | Gestora',
    prioridade:'high',dia:d(9),situacao:'aprovada',status:'revisar',mae_de:null,
    ordem:0,checklist:null,checklist_feito:[]},
-];
+].map(enfeita);
+
+/* Uma tarefa com tudo que o ClickUp manda: descrição em markdown com
+   tabela, duas pessoas responsáveis e etiquetas. */
+const TAREFA_CHEIA=()=>Object.assign(enfeita({
+  assinatura:'BOTANIKA§1§copy',marca:'BOTANIKA',campanha:'Dia D Kids',
+  nome:'DIA D KIDS — Criar toda a copy · QUI 04/09 até 18h | BOTANIKA',
+  responsavel:'Pedro Lage',prioridade:'urgent',dia:d(-1),situacao:'aprovada',
+  status:'a fazer',mae_de:'BOTANIKA§1§mae',ordem:1,checklist:null,checklist_feito:[]
+}),{
+  responsaveis:[{id:1,nome:'Pedro Lage'},{id:2,nome:'Ítalo Neves'}],
+  etiquetas:['urgente','copy'],
+  descricao:'# Dia D Kids\n\n**Ação de cinco dias.**\n\n## A oferta\n\n'+
+    '| Item | O que é |\n| --- | --- |\n| Desconto | 10% em todos |\n'+
+    '| Frete | Grátis, sem mínimo |\n\n- primeiro ponto\n- segundo ponto\n\n'+
+    '> uma citação qualquer\n\nUm parágrafo com `código` e [link](https://exemplo.com).'
+});
 
 /* Base de mentira: só o suficiente do PostgREST que a página usa. */
-function baseFalsa({tarefas=TAREFAS(),falharPatch=false,falharGet=false}={}){
+function baseFalsa(op={}){
+  const {tarefas=TAREFAS(),falharPatch=false,falharGet=false}=op;
   const reg={tarefas,patches:[],posts:[],gets:0};
   return {reg, rota: async r=>{
     const req=r.request(), u=req.url();
+    if(/listas_clickup/.test(u)){
+      return r.fulfill({status:200,contentType:'application/json',
+        body:JSON.stringify(op.listas===undefined?LISTAS():op.listas)});
+    }
     if(!/tarefas_planejadas/.test(u)){
       // a tabela do planejamento: vazia, para o resto da página seguir igual
       if(req.method()==='GET')return r.fulfill({status:200,contentType:'application/json',body:'[]'});
@@ -116,7 +162,10 @@ const resumo=p=>G(p,()=>document.querySelector('#tf-resumo').innerText);
      'colunas='+await G(p,()=>document.querySelectorAll('#pg-tarefas .tf-col').length));
   ok('as colunas usam os nomes de status de lá',
      /a fazer/i.test(t)&&/ajustes necessários/i.test(t)&&/revisar/i.test(t), t.split('\n')[0]);
-  ok('só a marca do mês aparece', !/FRASCO NOVO/.test(t), 'vazou VermeFree');
+  ok('abre na lista da marca do mês', !/FRASCO NOVO/.test(t), 'vazou VermeFree');
+  ok('e o seletor diz em qual lista está',
+     await G(p,()=>document.querySelector('#tf-nalista').value)==='Botanika',
+     await G(p,()=>document.querySelector('#tf-nalista').value));
   ok('a mãe com filhas não vira cartão solto no quadro',
      !/DIA D KIDS — 10\/09/.test(t));
   ok('a tarefa avulsa aparece', /Trocar o banner da home/.test(t));
@@ -126,6 +175,7 @@ const resumo=p=>G(p,()=>document.querySelector('#tf-resumo').innerText);
      'atrasadas='+await G(p,()=>document.querySelectorAll('#pg-tarefas .tf-card.atrasada').length));
   const r=await resumo(p);
   ok('o resumo conta as concluídas', /1 de 3/.test(r), r.replace(/\n/g,' · '));
+  ok('e diz de qual lista está falando', /lista Botanika/.test(r), r.replace(/\n/g,' · '));
   ok('o resumo conta as atrasadas', /Atrasadas\n1\n/i.test(r), r.replace(/\n/g,' · '));
   ok('carimbou a hora da leitura',
      /lido \d{2}:\d{2}/.test(await G(p,()=>document.querySelector('#tf-quando').textContent)));
@@ -133,15 +183,23 @@ const resumo=p=>G(p,()=>document.querySelector('#tf-resumo').innerText);
   await p.close();
 }
 
-// ---- 2. as duas marcas e o filtro por pessoa ----
+// ---- 2. o filtro por lista e o filtro por pessoa ----
 {
   const {p,erros}=await abrir();
-  await p.click('#tf-marca');
+  ok('o seletor oferece as listas do ClickUp',
+     (await G(p,()=>[...document.querySelectorAll('#tf-nalista option')].map(o=>o.value)))
+       .join('|')==='|Botanika|VermeFree',
+     (await G(p,()=>[...document.querySelectorAll('#tf-nalista option')].map(o=>o.value))).join('|'));
+  await p.selectOption('#tf-nalista','');
   await p.waitForTimeout(200);
-  ok('o botão mostra as duas marcas', /FRASCO NOVO/.test(await corpo(p)));
-  await p.click('#tf-marca');
+  ok('todas as listas mostram as duas', /FRASCO NOVO/.test(await corpo(p)));
+  await p.selectOption('#tf-nalista','VermeFree');
   await p.waitForTimeout(200);
-  ok('e volta pra marca do mês', !/FRASCO NOVO/.test(await corpo(p)));
+  const so=await corpo(p);
+  ok('e uma lista só mostra só ela',
+     /FRASCO NOVO/.test(so)&&!/Trocar o banner/.test(so), so.replace(/\n+/g,' · ').slice(0,90));
+  await p.selectOption('#tf-nalista','Botanika');
+  await p.waitForTimeout(200);
   await p.selectOption('#tf-quem','Ítalo Neves');
   await p.waitForTimeout(200);
   const t=await corpo(p);
@@ -277,30 +335,150 @@ const resumo=p=>G(p,()=>document.querySelector('#tf-resumo').innerText);
 
 // ---- 9. o filtro de marca não pode fingir que o quadro está vazio ----
 {
-  /* Todas as tarefas são da outra marca. Antes disso o quadro abria vazio
-     e parecia que o ClickUp aqui dentro não tinha nada — mentira. */
+  /* A lista da marca do mês está vazia. O quadro não pode abrir nela e
+     dizer que não há nada, quando há na outra. */
   const soDaOutra=TAREFAS().filter(t=>t.marca==='VERMEFREE');
   const {p,erros}=await abrir({tarefas:soDaOutra});
   const t=await corpo(p);
-  ok('mostra as tarefas mesmo sendo todas da outra marca',
+  ok('mostra as tarefas mesmo com a lista do mês vazia',
      /FRASCO NOVO/.test(t), t.slice(0,90));
-  ok('e avisa que está mostrando as duas marcas',
-     /duas marcas/.test(await G(p,()=>document.querySelector('#tf-marca').innerText)));
+  ok('e fica em todas as listas em vez de numa vazia',
+     await G(p,()=>document.querySelector('#tf-nalista').value)==='',
+     await G(p,()=>document.querySelector('#tf-nalista').value));
   ok('sem erro de JS', erros.length===0, erros.join(' | '));
   await p.close();
 }
 
-// ---- 10. filtro que esconde tudo se explica e se desfaz ----
+// ---- 10. lista existente mas sem tarefa se explica e se desfaz ----
 {
-  const {p,erros}=await abrir();
-  await G(p,()=>{tfQuem='Ninguém Aqui';tfPintar()});
-  await p.waitForTimeout(200);
+  /* A Revita existe no ClickUp e ainda não tem tarefa. Escolher ela não
+     pode parecer página quebrada. */
+  const {p,erros}=await abrir({listas:LISTAS().concat(
+    [{lista_id:'901328348023',nome:'Revita',statuses:STATUS}])});
+  await p.selectOption('#tf-nalista','Revita');
+  await p.waitForTimeout(250);
   const t=await corpo(p);
-  ok('diz que o filtro é que está escondendo', /fora do filtro/.test(t), t.slice(0,90));
+  ok('diz que a lista é que está vazia', /Nenhuma tarefa na lista Revita/.test(t), t.slice(0,90));
+  ok('e conta quantas estão fora dela', /outras 5 estão fora/.test(t), t.slice(0,110));
   await p.click('#tf-corpo button');
   await p.waitForTimeout(250);
   ok('o botão Ver todas traz as tarefas de volta',
-     /Dia D Kids|DIA D KIDS|Trocar o banner/.test(await corpo(p)));
+     /DIA D KIDS|Trocar o banner/.test(await corpo(p)));
+  ok('sem erro de JS', erros.length===0, erros.join(' | '));
+  await p.close();
+}
+
+// ---- 11. o filtro de pessoa não pode apontar pra quem não está na lista ----
+{
+  const {p,erros}=await abrir();
+  await p.selectOption('#tf-quem','Ítalo Neves');
+  await p.waitForTimeout(200);
+  ok('filtrou pela pessoa', /Criar todas as artes/.test(await corpo(p)));
+  await p.selectOption('#tf-nalista','VermeFree');
+  await p.waitForTimeout(250);
+  ok('trocar de lista solta o filtro em vez de esvaziar a tela',
+     await G(p,()=>document.querySelector('#tf-quem').value)===''&&
+     /FRASCO NOVO/.test(await corpo(p)),
+     await G(p,()=>document.querySelector('#tf-quem').value));
+  ok('sem erro de JS', erros.length===0, erros.join(' | '));
+  await p.close();
+}
+
+// ---- 12. as colunas são as configuradas na lista, não as que têm tarefa ----
+{
+  const {p,erros}=await abrir();
+  const cols=await G(p,()=>[...document.querySelectorAll('#pg-tarefas .tf-col-cab span')]
+    .map(c=>c.textContent));
+  ok('as cinco colunas do ClickUp aparecem, com as vazias',
+     cols.join('|')==='a fazer|fazendo|revisar|ajustes necessários|feito', cols.join('|'));
+  const cores=await G(p,()=>[...document.querySelectorAll('#pg-tarefas .tf-col-cab')]
+    .map(c=>c.style.getPropertyValue('--c')));
+  ok('e cada uma com a cor que vem de lá',
+     cores.join('|')==='#87909e|#b660e0|#f8ae00|#e16b16|#008844', cores.join('|'));
+  /* sem a leitura das listas, o quadro não pode quebrar: cai para os
+     status que as tarefas têm */
+  const b2=await abrir({listas:[]});
+  const cols2=await G(b2.p,()=>[...document.querySelectorAll('#pg-tarefas .tf-col-cab span')]
+    .map(c=>c.textContent));
+  ok('sem as listas, ainda desenha as colunas que existem nas tarefas',
+     cols2.length>0&&cols2.indexOf('a fazer')===0, cols2.join('|'));
+  ok('sem erro de JS', erros.length===0&&b2.erros.length===0,
+     erros.concat(b2.erros).join(' | '));
+  await b2.p.close();await p.close();
+}
+
+// ---- 13. o painel mostra a tarefa como ela é no ClickUp ----
+{
+  const {p,erros}=await abrir({tarefas:TAREFAS()
+    .filter(t=>t.assinatura!=='BOTANIKA§1§copy').concat([TAREFA_CHEIA()])});
+  await p.evaluate(()=>tfAbrir('BOTANIKA§1§copy'));
+  await p.waitForTimeout(300);
+  const folha=()=>G(p,()=>document.querySelector('#tf-folha').innerText);
+  const html=()=>G(p,()=>document.querySelector('#tf-folha').innerHTML);
+  ok('o título vai inteiro, como está lá',
+     /DIA D KIDS — Criar toda a copy · QUI 04\/09 até 18h \| BOTANIKA/.test(await folha()),
+     (await folha()).split('\n')[0]);
+  ok('a descrição vira markdown, não texto cru',
+     /<h3>Dia D Kids<\/h3>/.test(await html()));
+  ok('com a tabela montada', /<table>[\s\S]*<th>Item<\/th>/.test(await html()));
+  ok('com a lista de tópicos', /<li>primeiro ponto<\/li>/.test(await html()));
+  ok('com o negrito e o link', /<b>Ação de cinco dias\.<\/b>/.test(await html())&&
+     /<a href="https:\/\/exemplo\.com"/.test(await html()));
+  ok('mostra os dois responsáveis',
+     await G(p,()=>[...document.querySelectorAll('#tf-folha input[type=text]')]
+       .map(i=>i.value).join('|'))==='Pedro Lage, Ítalo Neves',
+     await G(p,()=>[...document.querySelectorAll('#tf-folha input[type=text]')]
+       .map(i=>i.value).join('|')));
+  ok('e diz que são duas pessoas', /2 pessoas/i.test(await folha()));
+  ok('mostra as etiquetas do ClickUp',
+     /urgente/.test(await folha())&&/copy/.test(await folha()));
+  ok('o status oferece os cinco, inclusive os sem tarefa',
+     (await G(p,()=>[...document.querySelectorAll('#tf-folha select option')]
+        .map(o=>o.textContent))).filter(x=>x==='revisar').length===1);
+  await p.click('#tf-folha .tf-editar');
+  await p.waitForTimeout(200);
+  ok('o botão editar mostra o markdown cru',
+     await G(p,()=>!!document.querySelector('#tf-folha textarea')));
+  ok('sem erro de JS', erros.length===0, erros.join(' | '));
+  await p.close();
+}
+
+// ---- 14. o markdown não perde linha nem trava ----
+{
+  const {p,erros}=await abrir();
+  const casos=await G(p,()=>{
+    const r=[];
+    r.push(tfMd('linha com | barra no meio').indexOf('barra')>0);
+    r.push(tfMd('').length===0);
+    r.push(/<hr>/.test(tfMd('---')));
+    r.push(/<blockquote>/.test(tfMd('> citada')));
+    r.push(/<ol>/.test(tfMd('1. um\n2. dois')));
+    r.push(/<code>x<\/code>/.test(tfMd('tem `x` aqui')));
+    /* nada de HTML alheio passando */
+    r.push(!/<script>/.test(tfMd('<script>alert(1)</script>')));
+    return r;
+  });
+  ok('markdown: barra solta vira parágrafo em vez de sumir', casos[0]);
+  ok('markdown: vazio devolve vazio', casos[1]);
+  ok('markdown: régua, citação, lista numerada e código', 
+     casos[2]&&casos[3]&&casos[4]&&casos[5]);
+  ok('markdown: HTML de dentro do texto não vira HTML', casos[6]);
+  const cu=await G(p,()=>{
+    const r={};
+    /* o que o ClickUp escreve de verdade nas descrições */
+    r.caixa=tfMd('- [ ] conferir o frete\n- [x] conferir o banner');
+    r.regua=tfMd('* * *');
+    r.escape=tfMd('arquivo IMG\\_3638 e tra\\(1\\)');
+    return r;
+  });
+  ok('markdown: "- [ ]" vira caixinha, não colchete na tela',
+     /class="tf-cx"/.test(cu.caixa)&&!/\[ \]/.test(cu.caixa), cu.caixa.slice(0,80));
+  ok('markdown: a caixinha marcada aparece marcada',
+     /<li class="ok">/.test(cu.caixa)&&/✓/.test(cu.caixa));
+  ok('markdown: "* * *" também é régua', /<hr>/.test(cu.regua), cu.regua);
+  ok('markdown: o escape do ClickUp não vaza barra invertida',
+     /IMG_3638/.test(cu.escape)&&/tra\(1\)/.test(cu.escape)&&!/\\/.test(cu.escape),
+     cu.escape);
   ok('sem erro de JS', erros.length===0, erros.join(' | '));
   await p.close();
 }
