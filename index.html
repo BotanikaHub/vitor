@@ -13,6 +13,18 @@
   --verde:#35d07f;--verde-esc:#1a6b45;--roxo:#a78bfa;--amar:#f5c451;--verm:#f2777a;
   --c-bg:#f2f2f2;--c-grade:#e0e0e0;--c-txt:#1a1a1a;--c-borda:#d5d5d8;--c-azul:#4262ff;
 }
+/* O tema claro da Central. O planejador vive dentro dela, e um retângulo
+   escuro no meio de uma página branca parece dois produtos colados em vez
+   de um. Só as cores mudam — nenhuma regra de layout depende disto.
+   O verde clareia demais para servir de texto sobre branco, então ele
+   escurece; o mesmo vale para o âmbar e o vermelho. */
+html[data-tema="claro"]{
+  --bg:#fafafa;--painel:#ffffff;--painel2:#f4f4f5;--linha:#e4e4e7;--linha2:#d4d4d8;
+  --txt:#18181b;--txt2:#52525b;--txt3:#a1a1aa;
+  /* --verde-esc é fundo de botão com texto branco em sete lugares, então
+     continua escuro aqui — clareá-lo apagaria o texto de cima dele. */
+  --verde:#15803d;--verde-esc:#15803d;--roxo:#7c3aed;--amar:#b45309;--verm:#dc2626;
+}
 *{box-sizing:border-box}
 /* clip, não hidden: não cria contexto de rolagem, então #quadro.cheio
    (position:fixed) continua escapando pra tela toda */

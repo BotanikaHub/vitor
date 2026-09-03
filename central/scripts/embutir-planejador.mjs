@@ -23,7 +23,17 @@ if (!existsSync(origem)) {
 }
 
 mkdirSync(dirname(destino), { recursive: true });
-const html = readFileSync(origem, 'utf8');
+let html = readFileSync(origem, 'utf8');
+
+/* Dentro da Central o planejador usa o tema claro. É a mesma folha de
+   estilo dele, com o outro conjunto de cores — não uma cópia editada. */
+const antes = html;
+html = html.replace('<html lang="pt-BR">', '<html lang="pt-BR" data-tema="claro">');
+if (html === antes) {
+  console.error('Não achei a tag <html> para marcar o tema claro.');
+  process.exit(1);
+}
+
 writeFileSync(destino, html);
 console.log(
   'planejador embutido — ' + (html.length / 1024).toFixed(0) + ' KB, ' +

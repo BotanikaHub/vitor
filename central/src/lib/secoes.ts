@@ -18,7 +18,7 @@ export const SECOES: Secao[] = [
      planejador hoje. Vão sair para páginas próprias uma a uma; até lá,
      ninguém fica sem ferramenta. */
   { href: '/planejador',  nome: 'Planejador',  pronta: true },
-  { href: '/processos',   nome: 'Processos',   pronta: false },
-  { href: '/ferramentas', nome: 'Ferramentas', pronta: false },
-  { href: '/equipe',      nome: 'Equipe',      pronta: false },
+  { href: '/processos',   nome: 'Processos',   pronta: true },
+  { href: '/ferramentas', nome: 'Ferramentas', pronta: true },
+  { href: '/equipe',      nome: 'Equipe',      pronta: true },
 ];
