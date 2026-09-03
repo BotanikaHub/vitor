@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+/* =====================================================================
+   Central — branco, minimalista, técnico.
+
+   A régua: papel branco, um cinza só para o texto secundário, uma linha
+   fina para separar, e cor apenas onde ela significa alguma coisa —
+   a marca, o status, o prazo vencido. Nada decorativo.
+   ===================================================================== */
+:root {
+  --papel:        #ffffff;
+  --papel-2:      #fafafa;   /* fundo da página, um degrau abaixo do cartão */
+  --papel-3:      #f4f4f5;   /* preenchimento de campo e selo neutro */
+  --tinta:        #18181b;   /* texto principal */
+  --tinta-2:      #52525b;   /* texto secundário */
+  --tinta-3:      #a1a1aa;   /* texto de apoio, carimbo, placeholder */
+  --linha:        #e4e4e7;
+  --linha-2:      #d4d4d8;
+  --acento:       #18181b;   /* a marca sobrescreve em tempo de execução */
+  --vermelho:     #dc2626;
+  --ambar:        #d97706;
+  --verde:        #16a34a;
+  --raio:         10px;
+}
+
+@theme inline {
+  --color-papel:     var(--papel);
+  --color-papel-2:   var(--papel-2);
+  --color-papel-3:   var(--papel-3);
+  --color-tinta:     var(--tinta);
+  --color-tinta-2:   var(--tinta-2);
+  --color-tinta-3:   var(--tinta-3);
+  --color-linha:     var(--linha);
+  --color-linha-2:   var(--linha-2);
+  --color-acento:    var(--acento);
+  --color-vermelho:  var(--vermelho);
+  --color-ambar:     var(--ambar);
+  --color-verde:     var(--verde);
+  --radius-cartao:   var(--raio);
+  --font-sans:       var(--fonte-sans);
+}
+
+* { min-width: 0; }
+
+html, body {
+  background: var(--papel-2);
+  color: var(--tinta);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--fonte-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Números de dinheiro, prazo e contagem alinham em coluna. */
+.tabular { font-variant-numeric: tabular-nums; }
+
+/* O foco tem que aparecer: parte da equipe navega no teclado. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::placeholder { color: var(--tinta-3); }
