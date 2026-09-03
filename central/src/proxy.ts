@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { renovarSessao } from '@/lib/supabase/middleware';
+import { renovarSessao } from '@/lib/supabase/proxy';
 
 const PUBLICAS = ['/entrar', '/cadastro', '/auth'];
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { resposta, user } = await renovarSessao(req);
   const caminho = req.nextUrl.pathname;
   const publica = PUBLICAS.some((p) => caminho === p || caminho.startsWith(p + '/'));
