@@ -1,0 +1,28 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html",        "x": 0,    "y": 0,    "w": 1440, "h": 900, "title": "Início — a minha área" },
+    { "file": "Resultado.dc.html",   "x": 1560, "y": 0,    "w": 1440, "h": 900, "title": "Resultado" },
+    { "file": "Campanhas.dc.html",   "x": 3120, "y": 0,    "w": 1440, "h": 900, "title": "Campanhas" },
+    { "file": "Tarefas.dc.html",     "x": 0,    "y": 1060, "w": 1440, "h": 900, "title": "Tarefas — VermeFree" },
+    { "file": "Conteudo.dc.html",    "x": 1560, "y": 1060, "w": 1440, "h": 900, "title": "Conteúdo" },
+    { "file": "Atendimento.dc.html", "x": 3120, "y": 1060, "w": 1440, "h": 900, "title": "Atendimento" },
+    { "file": "Creators.dc.html",    "x": 1560, "y": 2120, "w": 1440, "h": 900, "title": "Creators" }
+  ],
+  "annotations": [
+    { "id": "a-marca", "x": 0, "y": -210, "w": 470,
+      "text": "MARCA PRIMEIRO\n\nA marca fica no topo da barra lateral e manda em tudo que está embaixo. Trocar de marca troca metas, campanhas, tarefas, conteúdo e atendimento de uma vez.\n\nA terceira marca entra por cadastro, não por deploy." },
+    { "id": "a-inicio", "x": 500, "y": -210, "w": 470,
+      "text": "INÍCIO = A MINHA ÁREA\n\nNão é um painel genérico. Abre na área da pessoa: o que a área entrega esta semana, a carga de quem está nela, os processos dela e o que ela leva pra reunião de quinta.\n\nO Vitor é Gestão, então vê carga da equipe. O Ítalo veria as peças de Design." },
+    { "id": "a-caixa", "x": 1000, "y": -210, "w": 440,
+      "text": "A CAIXA DE ENTRADA resolve o problema das 29 demandas soltas: o que nasce em reunião ou no grupo cai aqui e vira tarefa num clique, em vez de sumir." },
+    { "id": "a-perpetuo", "x": 3120, "y": -120, "w": 460,
+      "text": "O PERPÉTUO GANHA LUGAR PRÓPRIO — responde por 70% do faturamento e é o que mais atrasa, porque não tem data de fim e sempre perde prioridade para campanha." },
+    { "id": "a-anexo", "x": 1560, "y": 940, "w": 470,
+      "text": "O ANEXO É O QUE DESTRAVA O PRÓXIMO: o Pedro anexa as copies, a Sarah pega e programa. O calendário mostra o que ainda não tem material antes de o dia chegar." },
+    { "id": "a-resultado", "x": 1560, "y": -120, "w": 460,
+      "text": "REGISTRAR O RESULTADO era o problema nº 4: as campanhas aconteciam e ninguém anotava quanto renderam. Aqui cada uma guarda meta, realizado, ROAS e qual criativo performou." },
+    { "id": "a-tarefas", "x": 0, "y": 1975, "w": 470,
+      "text": "Esta é a única tela que já existe funcionando. As outras seis são o desenho.\n\nRepare que a marca mudou para VermeFree — a barra lateral inteira acompanha." }
+  ],
+  "launch": { "view": "canvas" }
+}

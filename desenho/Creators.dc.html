@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:#FBFBFA;color:#1C1917;
+       font-size:13px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  a{color:#1C1917;text-decoration:none}
+  a:hover{color:#57534E}
+  .num{font-family:'IBM Plex Mono','SF Mono',monospace;font-variant-numeric:tabular-nums}
+  .app{display:grid;grid-template-columns:224px 1fr;height:900px;overflow:hidden}
+  /* ---- barra lateral: a marca manda, e o resto vive dentro dela ---- */
+  .lado{background:#F5F5F4;border-right:1px solid #E7E5E4;display:flex;flex-direction:column;overflow:hidden}
+  .marca{padding:14px 14px 12px;border-bottom:1px solid #E7E5E4}
+  .marca-cx{display:flex;align-items:center;gap:9px;padding:7px 9px;background:#fff;
+            border:1px solid #E7E5E4;border-radius:6px;cursor:pointer}
+  .marca-pt{width:9px;height:9px;border-radius:2px;flex:none}
+  .marca-nm{font-weight:600;font-size:13px;letter-spacing:-.01em;flex:1}
+  .marca-sub{font-size:10.5px;color:#A8A29E;margin-top:5px;padding-left:2px;letter-spacing:.01em}
+  .nav{padding:10px 8px;overflow-y:auto;flex:1}
+  .nav-t{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+         color:#A8A29E;padding:12px 8px 5px}
+  .nav-i{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:5px;
+         color:#44403C;font-size:12.5px;cursor:pointer}
+  .nav-i:hover{background:#EBEAE8}
+  .nav-i.on{background:#fff;color:#1C1917;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  .nav-i svg{flex:none;color:#78716C}
+  .nav-i.on svg{color:#1C1917}
+  .nav-b{margin-left:auto;font-size:10.5px;color:#A8A29E;font-family:'IBM Plex Mono',monospace}
+  .nav-b.mal{color:#B91C1C;font-weight:600}
+  .eu{border-top:1px solid #E7E5E4;padding:10px 12px;display:flex;align-items:center;gap:9px}
+  .av{width:26px;height:26px;border-radius:50%;background:#E7E5E4;display:flex;align-items:center;
+      justify-content:center;font-size:10px;font-weight:600;color:#57534E;flex:none}
+  /* ---- conteúdo ---- */
+  .corpo{overflow:hidden;display:flex;flex-direction:column}
+  .topo{border-bottom:1px solid #E7E5E4;background:#fff;padding:13px 22px;display:flex;
+        align-items:center;gap:14px}
+  .topo h1{font-size:16px;font-weight:600;letter-spacing:-.015em}
+  .topo .sub{font-size:11.5px;color:#78716C}
+  .dir{margin-left:auto;display:flex;align-items:center;gap:7px}
+  .bt{border:1px solid #E7E5E4;background:#fff;border-radius:5px;padding:5px 10px;font-size:12px;
+      font-family:inherit;color:#44403C;cursor:pointer}
+  .bt.forte{background:#1C1917;border-color:#1C1917;color:#fff;font-weight:500}
+  .pg{padding:18px 22px;overflow-y:auto;flex:1}
+  /* ---- peças ---- */
+  .cx{background:#fff;border:1px solid #E7E5E4;border-radius:6px}
+  .cx-t{padding:9px 13px;border-bottom:1px solid #E7E5E4;display:flex;align-items:center;gap:9px}
+  .cx-t h2{font-size:12px;font-weight:600;letter-spacing:-.005em}
+  .cx-t .mais{margin-left:auto;font-size:11px;color:#A8A29E}
+  .rot{font-size:9.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:#A8A29E}
+  .g{display:grid;gap:12px}
+  table{width:100%;border-collapse:collapse}
+  th{font-size:9.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#A8A29E;
+     text-align:left;padding:7px 13px;border-bottom:1px solid #E7E5E4;background:#FCFCFB}
+  td{padding:8px 13px;border-bottom:1px solid #F5F5F4;font-size:12.5px;vertical-align:middle}
+  tr:last-child td{border-bottom:0}
+  th.d,td.d{text-align:right}
+  .selo{display:inline-flex;align-items:center;gap:4px;padding:1px 6px;border-radius:3px;
+        font-size:10.5px;font-weight:500;line-height:1.5}
+  .pt{width:6px;height:6px;border-radius:50%;flex:none}
+  .barra{height:5px;background:#F0EFED;border-radius:3px;overflow:hidden;display:flex}
+  .barra i{display:block;height:100%}
+  .mal{color:#B91C1C}.bom{color:#15803D}.ate{color:#B45309}
+</style></helmet>
+<div class="app">
+  <aside class="lado">
+    <div class="marca">
+      <div class="marca-cx">
+        <span class="marca-pt" style="background:#14713D"></span>
+        <span class="marca-nm">Botanika</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A8A29E" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round"><path d="m7 9 5-5 5 5"/><path d="m7 15 5 5 5-5"/></svg>
+      </div>
+      <div class="marca-sub">Suplementação · 11 produtos · ticket R$ 340</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-t">Todo dia</div>
+      <div class="nav-i"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg><span>Início</span></div>
+      <div class="nav-i"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg><span>Tarefas</span><span class="nav-b mal">9</span></div>
+      <div class="nav-i"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Conteúdo</span><span class="nav-b">4</span></div>
+      <div class="nav-i"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12Z"/></svg><span>Atendimento</span><span class="nav-b mal">12</span></div>
+      <div class="nav-t">O mês</div>
+      <div class="nav-i"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><rect x="5" y="11" width="3.5" height="7"/><rect x="10.5" y="6" width="3.5" height="12"/><rect x="16" y="14" width="3.5" height="4"/></svg><span>Resultado</span></div>
+      <div class="nav-i"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15c-1 2-1 5-1 5s3 0 5-1"/><path d="M9 14 6.5 11.5C6.5 6 11 3 16 3c2.5 0 5 0 5 0s0 2.5 0 5c0 5-3 9.5-8.5 9.5L10 15"/><circle cx="15" cy="9" r="1.6"/></svg><span>Campanhas</span><span class="nav-b">3</span></div>
+      <div class="nav-i on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 11.5a3 3 0 0 0 0-6"/><path d="M18 20c0-2.4-.9-4.2-2.4-5.2"/></svg><span>Creators</span><span class="nav-b">2</span></div>
+      <div class="nav-t">A casa</div>
+      <div class="nav-i"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20v3H6.5A2.5 2.5 0 0 1 4 20.5Z"/></svg><span>Processos</span></div>
+      <div class="nav-i"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 7.5a4.5 4.5 0 1 0-4.2 6L9 15H7v2H5v2H2v-3l6-6a4.5 4.5 0 0 1 6.5-2.5Z"/><circle cx="16.5" cy="6.5" r="1"/></svg><span>Ferramentas</span></div>
+      <div class="nav-i"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="3.4"/><path d="M4.5 20c0-3.6 3.4-6.2 7.5-6.2s7.5 2.6 7.5 6.2"/></svg><span>Equipe</span></div>
+    </nav>
+    <div class="eu">
+      <span class="av">VG</span>
+      <div style="min-width:0;flex:1">
+        <div style="font-size:12px;font-weight:500">Vitor Gutierrez</div>
+        <div style="font-size:10.5px;color:#A8A29E">Gestão de projetos</div>
+      </div>
+    </div>
+  </aside>
+  <div class="corpo">
+    <header class="topo">
+      <div>
+        <h1>Creators</h1>
+        <div class="sub">Botanika · quem é, o que combinou, o que entregou e quanto rendeu</div>
+      </div>
+      <div class="dir"><button class="bt">Ativos</button><button class="bt forte">+ Creator</button></div>
+    </header>
+    <div class="pg">
+<div class="g" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px">
+  <div class="cx" style="padding:11px 13px"><div class="rot">Creators ativos</div>
+    <div class="num" style="font-size:22px;font-weight:600;margin-top:3px">7</div>
+    <div style="font-size:11px;color:#78716C;margin-top:2px">2 entram este mês</div></div>
+  <div class="cx" style="padding:11px 13px"><div class="rot">Entregas atrasadas</div>
+    <div class="num mal" style="font-size:22px;font-weight:600;margin-top:3px">3</div>
+    <div style="font-size:11px;color:#B91C1C;margin-top:2px">a mais antiga há 12 dias</div></div>
+  <div class="cx" style="padding:11px 13px"><div class="rot">Sem autorização de imagem</div>
+    <div class="num ate" style="font-size:22px;font-weight:600;margin-top:3px">4</div>
+    <div style="font-size:11px;color:#B45309;margin-top:2px">bloqueia anunciar em collab</div></div>
+  <div class="cx" style="padding:11px 13px"><div class="rot">Faturado por creators</div>
+    <div class="num" style="font-size:22px;font-weight:600;margin-top:3px">R$ 33.600</div>
+    <div style="font-size:11px;color:#78716C;margin-top:2px">28% da meta do canal</div></div>
+</div>
+
+<div class="cx" style="margin-bottom:12px">
+  <div class="cx-t"><h2>Quem é, o que combinou, o que entregou</h2>
+    <span class="mais">7 ativos</span></div>
+  <table>
+    <tr><th style="width:19%">Creator</th><th>Combinado</th><th style="width:150px">Entregas</th>
+        <th class="d">Custo</th><th class="d">Rendeu</th><th class="d">Imagem</th><th>Próxima</th></tr>
+    <tr><td><b style="font-weight:600">Grazi</b>
+            <div style="font-size:10.5px;color:#A8A29E">sócia · farmacêutica há 20 anos</div></td>
+        <td style="color:#57534E">3 ganchos, 3 desenvolvimentos e 2 CTAs por protocolo</td>
+        <td><div class="barra"><i style="width:75%;background:#14713D"></i></div>
+            <div style="font-size:10.5px;color:#78716C;margin-top:3px">6 de 8</div></td>
+        <td class="d num">—</td><td class="d num bom">14.200</td>
+        <td class="d"><span class="selo bom" style="background:#F0FDF4">ok</span></td>
+        <td class="num">08/09</td></tr>
+    <tr><td><b style="font-weight:600">Larissa</b>
+            <div style="font-size:10.5px;color:#A8A29E">lives · duas por dia</div></td>
+        <td style="color:#57534E">2 lives diárias, uma por marca</td>
+        <td><div class="barra"><i style="width:100%;background:#14713D"></i></div>
+            <div style="font-size:10.5px;color:#78716C;margin-top:3px">14 de 14</div></td>
+        <td class="d num">2.800</td><td class="d num">—</td>
+        <td class="d"><span class="selo bom" style="background:#F0FDF4">ok</span></td>
+        <td class="num">hoje 19h</td></tr>
+    <tr><td><b style="font-weight:600">Júlia Colares</b>
+            <div style="font-size:10.5px;color:#A8A29E">comissão de 15%</div></td>
+        <td style="color:#57534E">Posts em collab, comissão sobre venda</td>
+        <td><div class="barra"><i style="width:50%;background:#B45309"></i><i style="width:50%;background:#D6D3D1"></i></div>
+            <div style="font-size:10.5px;color:#78716C;margin-top:3px">2 de 4</div></td>
+        <td class="d num">15%</td><td class="d num bom">9.400</td>
+        <td class="d"><span class="selo ate" style="background:#FFFBEB">falta</span></td>
+        <td class="num">—</td></tr>
+    <tr><td><b style="font-weight:600">Vitória</b>
+            <div style="font-size:10.5px;color:#A8A29E">contato pelo Gabriel</div></td>
+        <td style="color:#57534E">Roteiros com o Ítalo, ainda a combinar</td>
+        <td><div class="barra"><i style="width:0%;background:#D6D3D1"></i></div>
+            <div style="font-size:10.5px;color:#78716C;margin-top:3px">0 de 3 · roteiro pendente</div></td>
+        <td class="d num" style="color:#A8A29E">—</td><td class="d num" style="color:#A8A29E">—</td>
+        <td class="d"><span class="selo ate" style="background:#FFFBEB">falta</span></td>
+        <td class="num" style="color:#A8A29E">—</td></tr>
+    <tr><td><b style="font-weight:600">Paula</b>
+            <div style="font-size:10.5px;color:#A8A29E">começa dia 11</div></td>
+        <td style="color:#57534E">UGC · 4 vídeos no formato pergunta-e-resposta</td>
+        <td><div class="barra"><i style="width:0%;background:#D6D3D1"></i></div>
+            <div style="font-size:10.5px;color:#78716C;margin-top:3px">não começou</div></td>
+        <td class="d num">1.200</td><td class="d num" style="color:#A8A29E">—</td>
+        <td class="d"><span class="selo bom" style="background:#F0FDF4">ok</span></td>
+        <td class="num">11/09</td></tr>
+    <tr><td><b style="font-weight:600">Polyana</b>
+            <div style="font-size:10.5px;color:#A8A29E">depoimento · "sou uma péssima mãe"</div></td>
+        <td style="color:#57534E">Material bruto para o Ítalo editar</td>
+        <td><div class="barra"><i style="width:0%;background:#B91C1C"></i><i style="width:100%;background:#D6D3D1"></i></div>
+            <div style="font-size:10.5px;color:#B91C1C;margin-top:3px">venceu 04/09</div></td>
+        <td class="d num">—</td><td class="d num" style="color:#A8A29E">—</td>
+        <td class="d"><span class="selo bom" style="background:#F0FDF4">ok</span></td>
+        <td class="num mal">atrasada</td></tr>
+  </table>
+</div>
+
+<div class="g" style="grid-template-columns:1fr 1fr">
+  <div class="cx">
+    <div class="cx-t"><h2>Collabs esperando autorização</h2>
+      <span class="mais">sem ela não dá pra anunciar plugando o perfil</span></div>
+    <table>
+      <tr><th>Post</th><th>Creator</th><th class="d">Desempenho</th><th class="d">Pedido em</th></tr>
+      <tr><td>Opinião do doutor · viralizou</td><td>Dr. Willian</td>
+          <td class="d num bom">42 mil views</td><td class="d num ate">há 8 dias</td></tr>
+      <tr><td>Collab espontânea</td><td>Júlia Colares</td>
+          <td class="d num">11 mil views</td><td class="d num ate">há 5 dias</td></tr>
+      <tr><td>Corte da live</td><td>Grazi</td>
+          <td class="d num">26 mil views</td><td class="d num">—</td></tr>
+    </table>
+    <div style="padding:9px 13px;border-top:1px solid #F5F5F4;font-size:11px;color:#78716C">
+      Ana pediu a lista ao Ítalo em 03/09. Novos contratos já saem com o termo.
+    </div>
+  </div>
+  <div class="cx">
+    <div class="cx-t"><h2>O que rendeu por creator · 7 dias</h2></div>
+    <table>
+      <tr><th>Creator</th><th style="width:110px">Participação</th>
+          <th class="d">Vendas</th><th class="d">Faturado</th></tr>
+      <tr><td>Grazi</td><td><div class="barra"><i style="width:60%;background:#14713D"></i></div></td>
+          <td class="d num">16</td><td class="d num">7.120</td></tr>
+      <tr><td>Júlia Colares</td><td><div class="barra"><i style="width:32%;background:#2563EB"></i></div></td>
+          <td class="d num">8</td><td class="d num">3.760</td></tr>
+      <tr><td>Dr. Willian</td><td><div class="barra"><i style="width:14%;background:#7C3AED"></i></div></td>
+          <td class="d num">4</td><td class="d num">1.550</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
