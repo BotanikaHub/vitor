@@ -1,0 +1,137 @@
+/* Monta o briefing das copies do Grupo VIP para a Sarah programar.
+   O texto vai com os asteriscos: é assim que o WhatsApp entende negrito,
+   e é assim que ela precisa colar. */
+import { writeFileSync } from 'node:fs';
+
+const LINK = 'https://vermefree.com.br/';
+const CUPOM = 'VIP7';
+
+const MENSAGENS = [
+  {
+    n: 1,
+    dia: 'Sábado, 05 de setembro',
+    hora: '17h00',
+    quando: 'hoje',
+    objetivo: 'Abrir o desconto exclusivo. O frete grátis é de todo mundo — o que é só deles são os 7%.',
+    texto: `🎁 *Só pra quem tá aqui: 7% OFF*
+
+Começou hoje o *frete grátis* no site — pra todo mundo.
+
+Mas vocês do VIP levam mais: *7% de desconto* por cima, em qualquer produto. Isso não aparece pra ninguém de fora do grupo.
+
+*Frete grátis + 7%*, no protocolo adulto e no Kids.
+
+⏳ Vai até *domingo*.
+
+👉 ${LINK}
+Cupom: *${CUPOM}*`,
+  },
+  {
+    n: 2,
+    dia: 'Domingo, 06 de setembro',
+    hora: '15h00',
+    quando: 'amanhã, à tarde',
+    objetivo: 'Últimas horas. Puxa a compra da casa inteira, que é como a maioria delas decide.',
+    texto: `⏳ *Últimas horas do 7% de vocês*
+
+O frete grátis acaba hoje. O *7% exclusivo do grupo* acaba junto.
+
+Se você tava esperando pra fechar — o seu ou o das crianças — é hoje. Muita mãe daqui aproveita pra desparasitar a casa toda de uma vez, sai bem mais em conta que separado.
+
+Amanhã volta o preço normal e o frete normal.
+
+👉 ${LINK}
+Cupom: *${CUPOM}*`,
+  },
+  {
+    n: 3,
+    dia: 'Domingo, 06 de setembro',
+    hora: '20h00',
+    quando: 'amanhã, à noite',
+    objetivo: 'Fechamento. Curta de propósito: às 20h de domingo o que converte é o prazo e o link.',
+    texto: `🚨 *Encerra hoje à meia-noite*
+
+Última chamada: *frete grátis + 7%*.
+
+Amanhã de manhã não tem mais.
+
+👉 ${LINK} · Cupom *${CUPOM}*`,
+  },
+];
+
+const fuga = (t) => t.replace(/[<>&]/g, (m) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[m]));
+
+const bloco = (m) => `
+  <section class="msg">
+    <div class="cab">
+      <div class="quando">
+        <span class="n">${m.n}</span>
+        <div>
+          <div class="dia">${m.dia} · <b>${m.hora}</b></div>
+          <div class="canal">Grupo VIP · WhatsApp &nbsp;·&nbsp; ${m.quando}</div>
+        </div>
+      </div>
+    </div>
+    <p class="obj">${fuga(m.objetivo)}</p>
+    <pre class="copy">${fuga(m.texto)}</pre>
+  </section>`;
+
+const html = `<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>Copies · Grupo VIP VermeFree</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 14mm; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"DejaVu Sans",system-ui,sans-serif;color:#18181b;font-size:10.5pt;line-height:1.5}
+  .topo{border-bottom:2px solid #18181b;padding-bottom:9pt;margin-bottom:14pt}
+  h1{font-size:16pt;letter-spacing:-.01em;font-weight:700}
+  .sub{font-size:9pt;color:#52525b;margin-top:3pt}
+  .campanha{display:flex;gap:0;border:1px solid #e4e4e7;border-radius:4pt;
+            margin-bottom:16pt;overflow:hidden}
+  .campanha div{flex:1;padding:7pt 10pt;border-right:1px solid #e4e4e7}
+  .campanha div:last-child{border-right:0}
+  .rot{font-size:7pt;letter-spacing:.09em;text-transform:uppercase;color:#a1a1aa;font-weight:700}
+  .val{font-size:10.5pt;margin-top:2pt}
+  .msg{border:1px solid #e4e4e7;border-radius:4pt;margin-bottom:12pt;
+       page-break-inside:avoid;break-inside:avoid}
+  .cab{background:#fafafa;border-bottom:1px solid #e4e4e7;padding:8pt 10pt}
+  .quando{display:flex;align-items:center;gap:9pt}
+  .n{width:20pt;height:20pt;border-radius:50%;background:#18181b;color:#fff;
+     font-size:10pt;font-weight:700;display:flex;align-items:center;justify-content:center;flex:none}
+  .dia{font-size:11pt}
+  .canal{font-size:8.5pt;color:#71717a;margin-top:1pt}
+  .obj{font-size:9pt;color:#52525b;padding:7pt 10pt 0;font-style:italic}
+  .copy{font-family:"DejaVu Sans","Noto Color Emoji",sans-serif;font-size:10pt;line-height:1.55;
+        white-space:pre-wrap;background:#fff;border:1px dashed #d4d4d8;border-radius:3pt;
+        margin:7pt 10pt 10pt;padding:9pt 11pt}
+  .pe{border-top:1px solid #e4e4e7;padding-top:9pt;margin-top:4pt;font-size:9pt;color:#52525b}
+  .pe h2{font-size:9pt;letter-spacing:.06em;text-transform:uppercase;color:#a1a1aa;margin-bottom:5pt}
+  .pe li{margin:0 0 3pt 14pt}
+  b{font-weight:700}
+</style></head><body>
+  <div class="topo">
+    <h1>Copies do Grupo VIP · VermeFree</h1>
+    <div class="sub">Frete grátis + 7% exclusivo · três disparos · para a Sarah programar</div>
+  </div>
+
+  <div class="campanha">
+    <div><div class="rot">Campanha</div><div class="val">Frete grátis (site) + 7% VIP</div></div>
+    <div><div class="rot">Cupom</div><div class="val"><b>${CUPOM}</b></div></div>
+    <div><div class="rot">Link</div><div class="val">vermefree.com.br</div></div>
+    <div><div class="rot">Janela</div><div class="val">05/09 a 06/09</div></div>
+  </div>
+
+  ${MENSAGENS.map(bloco).join('')}
+
+  <div class="pe">
+    <h2>Antes de programar</h2>
+    <ul>
+      <li>O texto vai <b>com os asteriscos</b> — é assim que o WhatsApp faz o negrito.</li>
+      <li>Os horários são proposta: 17h no sábado, 15h e 20h no domingo. Ajuste se a janela do grupo for outra.</li>
+      <li>A mensagem 3 diz <b>“encerra hoje à meia-noite”</b>. Se a campanha fechar mais cedo no domingo, corrija a hora nas mensagens 2 e 3.</li>
+      <li>Se os 7% entrarem sozinhos no carrinho, troque a linha do cupom por “já vem aplicado” — cupom que a pessoa esquece de colar é venda perdida.</li>
+    </ul>
+  </div>
+</body></html>`;
+
+writeFileSync('copies-grupo-vip.html', html);
+console.log('html pronto');
