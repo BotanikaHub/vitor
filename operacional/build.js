@@ -18,6 +18,7 @@ const CAMADAS = [
   'cilo-v6-0.css', 'cilo-v6-1.css', 'cilo-v6-2.css', 'cilo-v6-3.css',
   'cilo-v6-4.css', 'cilo-v6-5.css', 'cilo-v6-6.css', 'cilo-v6-7.css',
   'cilo-design-v7.css',
+  'cilo-v8-correcoes.css',
 ];
 
 const estilos = CAMADAS
@@ -29,8 +30,9 @@ let html = estilos
   ? base.replace('</style>', `\n${estilos}\n</style>`)
   : base;
 
-if (fs.existsSync(path.join(src, 'cilo-design-v6.js')))
-  html = html.replace('</body>', `<script>\n${leia('cilo-design-v6.js').trim()}\n</script>\n</body>`);
+for (const js of ['cilo-design-v6.js', 'cilo-v8-comportamento.js'])
+  if (fs.existsSync(path.join(src, js)))
+    html = html.replace('</body>', `<script>\n${leia(js).trim()}\n</script>\n</body>`);
 
 /* A ponte com o Supabase entra no <head>, e não antes do </body>, porque o
    app lê o localStorage assim que o próprio script roda: a sessão precisa

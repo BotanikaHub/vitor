@@ -225,8 +225,23 @@
   }
 
   /* ================= quem está logado, e como sair ================= */
-  function marcarSessao(sb, sessao) {
-    const nome = (sessao.user.email || '').split('@')[0];
+  /* O começo do e-mail dá nomes horrorosos ("comercialvittorgutierrez"),
+     então o nome vem da tabela de perfis quando existir. Se a consulta
+     falhar, o e-mail cortado serve — ninguém fica sem saber quem está
+     logado por causa disso. */
+  async function nomeDe(sb, sessao) {
+    try {
+      const { data } = await sb.from('profiles')
+        .select('nome').eq('id', sessao.user.id).maybeSingle();
+      const n = (data?.nome || '').trim();
+      if (n) return n.split(/\s+/)[0];
+    } catch { /* segue com o e-mail */ }
+    const bruto = (sessao.user.email || '').split('@')[0];
+    return bruto.length > 14 ? bruto.slice(0, 14) + '…' : bruto;
+  }
+
+  async function marcarSessao(sb, sessao) {
+    const nome = await nomeDe(sb, sessao);
     const põe = () => {
       const barra = document.querySelector('.global-toolbar');
       if (!barra || document.getElementById('ent-quem')) return;

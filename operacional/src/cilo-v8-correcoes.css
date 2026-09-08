@@ -1,0 +1,93 @@
+/* ======================================================================
+   V8 — correções em cima das onze camadas anteriores.
+
+   Cada bloco aqui conserta um defeito medido no navegador, não uma
+   suspeita. As medidas estão anotadas junto de cada um.
+   ====================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. O painel da tarefa nascia deslocado meia largura para a esquerda.
+
+   Medido: o painel tem 1080px e sai em x = -360, com
+   transform: matrix(1,0,0,1,-540,0) — exatamente meia largura. Sobrou de
+   quando este componente era gaveta lateral e era posicionado com
+   left:50% + translateX(-50%); as camadas seguintes trocaram para grade
+   centralizada e tiraram o left, mas o translate ficou.
+
+   A consequência não era só feia: metade do painel ficava fora da tela,
+   junto com o botão de fechar. Sem como fechar, a página inteira travava.
+
+   Nenhuma regra de folha de estilo declara esse transform (procurei por
+   seletor, por texto e por animação), então em vez de caçar a origem eu
+   fixo o valor certo — !important vence inline e vence animação. */
+.tdrawer.open{
+  display:grid!important;
+  place-items:center!important;
+  padding:22px!important;
+}
+.tdrawer.open .tdrawer-panel{
+  position:relative!important;
+  inset:auto!important;
+  margin:0!important;
+  transform:none!important;
+  translate:none!important;
+  width:min(1080px,calc(100vw - 44px))!important;
+  height:min(780px,calc(100vh - 44px))!important;
+  max-height:calc(100vh - 44px)!important;
+}
+
+/* O botão de salvar estava solto no topo, encostando na borda. Volta para
+   dentro do cabeçalho, alinhado com o título. */
+.tdrawer-head{align-items:center!important}
+.tdrawer-save{position:static!important;margin-left:auto!important;flex:0 0 auto!important}
+
+/* ---------------------------------------------------------------------
+   2. Linha dupla: moldura dentro de moldura.
+
+   Medido: SECTION.module desenha borda e canto arredondado, e logo dentro
+   dela DIV.card, DIV.stat e DIV.timeline-card desenham os seus a 1px de
+   distância. Duas linhas paralelas coladas — é o que aparece nas fotos.
+
+   Quem deve ficar com a moldura é o cartão, que é a peça que a pessoa
+   enxerga como objeto. A seção vira só agrupamento. */
+.module:has(> .card),
+.module:has(> .stat),
+.module:has(> .timeline-card),
+.module:has(> .cu-list-group),
+/* a fileira de indicadores vem embrulhada num .stats sem moldura, então o
+   :has(> .stat) não pegava: a moldura de fora é a da seção, a 1px dos
+   cartões */
+.module:has(> .stats),
+.module:has(> .cards){
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  padding:0!important;
+}
+
+/* Onde :has() não existir, o resultado continua aceitável: fica a moldura
+   dupla de antes, e não um layout quebrado. */
+
+/* Cartão de campanha dentro de cartão: mesma história, folga de 11px. */
+.card > .campaign{
+  border-left:0!important;
+  border-right:0!important;
+  border-radius:0!important;
+}
+.card > .campaign:first-child{border-top:0!important}
+.card > .campaign:last-child{border-bottom:0!important}
+
+/* ---------------------------------------------------------------------
+   3. Vazio ocupando tela inteira.
+
+   A caixa de entregas sem nada dentro esticava até o fim da janela, com
+   o texto perdido no meio de um campo enorme. Passa a ter altura de
+   caixa, não de página. */
+.delivery-empty,.empty-state,.cu-empty,
+.delivery-list:empty,.delivery-detail:empty{
+  min-height:0!important;
+  height:auto!important;
+  padding:56px 24px!important;
+}
+.delivery-workspace{align-items:start!important}
