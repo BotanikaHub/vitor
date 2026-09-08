@@ -309,6 +309,68 @@
 .as-regerar:hover{background:#f2f2f0;border-color:#151718}
 
 /* ======================================================================
+   Calendário de barras — mês, semana e a aba Campanhas.
+
+   Uma barra por campanha atravessando os dias dela, no lugar do mesmo
+   chip repetido em cada dia. É o desenho do planejador, e é o que deixa
+   ver de relance quanto tempo cada ação ocupa.
+   ====================================================================== */
+.cal-grade{
+  background:#fff;border:1px solid #e9e9e7;border-radius:12px;overflow:hidden;
+  font-family:"Geist Variable","Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  display:block!important;
+}
+.cal-cab{display:grid;grid-template-columns:repeat(7,1fr);background:#fbfbfa;
+  border-bottom:1px solid #ececea}
+.cal-cab div{padding:8px 10px;font-size:10.5px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:#a4a8ac}
+
+.cal-sem{position:relative;border-bottom:1px solid #f2f2f0}
+.cal-sem:last-child{border-bottom:0}
+.cal-dias{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal-dia{
+  min-height:78px;padding:9px 10px 10px;border-right:1px solid #f2f2f0;
+  display:flex;flex-direction:column;gap:4px;
+}
+/* reserva a altura das barras daquela semana, para o dia crescer junto */
+.cal-espaco{display:block;flex:none}
+.cal-dia:last-child{border-right:0}
+.cal-fora{background:#fcfcfb}
+.cal-fora .cal-n{color:#c9ccce}
+.cal-n{font-size:12px;font-weight:600;color:#5c6166;font-variant-numeric:tabular-nums}
+.cal-hoje .cal-n{
+  background:#151718;color:#fff;border-radius:50%;
+  width:21px;height:21px;display:flex;align-items:center;justify-content:center;
+}
+.cal-venc{font-size:10px;color:#a4a8ac}
+
+/* as barras flutuam por cima da grade de dias */
+.cal-barras{position:absolute;inset:0;pointer-events:none}
+.cal-barra{
+  position:absolute;height:19px;pointer-events:auto;cursor:pointer;
+  padding:0 8px;border:0;font:inherit;font-size:10.5px;font-weight:600;line-height:19px;
+  color:#fff;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.cal-barra:hover{opacity:.86}
+
+/* a semana: a mesma régua, e embaixo o que vence em cada dia */
+.cal-semana .cal-dia{min-height:60px}
+.cal-cols{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid #ececea}
+.cal-col{padding:10px;border-right:1px solid #f2f2f0;min-height:150px}
+.cal-col:last-child{border-right:0}
+.cal-col.cal-hoje{background:#fbfbfa}
+.cal-col-cab{display:flex;align-items:baseline;gap:6px;margin-bottom:9px}
+.cal-col-cab b{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.cal-col-cab span{font-size:11px;color:#a4a8ac;font-variant-numeric:tabular-nums}
+.cal-tarefa{
+  padding:7px 9px;margin-bottom:6px;background:#fbfbfa;
+  border:1px solid #ececea;border-radius:9px;
+}
+.cal-tarefa b{display:block;font-size:11.5px;font-weight:600;line-height:1.35}
+.cal-tarefa span{display:block;margin-top:2px;font-size:10.5px;color:#8b9095}
+.cal-nada{font-size:10.5px;color:#c0c4c7;padding:6px 2px}
+
+/* ======================================================================
    Faixa das campanhas contínuas, acima do mês e da semana.
    ====================================================================== */
 .cal-faixa{
@@ -316,7 +378,16 @@
   background:#fbfbfa;border:1px solid #e9e9e7;border-radius:12px;
   font-family:"Geist Variable","Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
-.cal-faixa-cab{display:flex;align-items:baseline;gap:9px;margin-bottom:10px;flex-wrap:wrap}
+.cal-faixa-cab{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.cal-faixa-corpo{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:11px;
+  padding-top:11px;border-top:1px solid #ececea}
+.cal-filtros{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+.cal-filtros button{
+  padding:4px 11px;font:inherit;font-size:11.5px;font-weight:600;cursor:pointer;
+  background:#fff;border:1px solid #e4e5e2;border-radius:20px;color:#5c6166;
+}
+.cal-filtros button:hover{border-color:#151718;color:#151718}
+.cal-filtros button.cal-on{background:#151718;border-color:#151718;color:#fff}
 .cal-faixa-tit{font-size:12px;font-weight:700;color:#151718;letter-spacing:-.01em}
 .cal-faixa-sub{font-size:11.5px;color:#8b9095;flex:1;min-width:180px}
 .cal-alternar{
