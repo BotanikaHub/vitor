@@ -307,3 +307,32 @@
   cursor:pointer;background:#fff;border:1px solid #e4e5e2;border-radius:9px;color:#151718;
 }
 .as-regerar:hover{background:#f2f2f0;border-color:#151718}
+
+/* ======================================================================
+   Faixa das campanhas contínuas, acima do mês e da semana.
+   ====================================================================== */
+.cal-faixa{
+  margin:0 0 12px;padding:12px 14px;
+  background:#fbfbfa;border:1px solid #e9e9e7;border-radius:12px;
+  font-family:"Geist Variable","Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.cal-faixa-cab{display:flex;align-items:baseline;gap:9px;margin-bottom:10px;flex-wrap:wrap}
+.cal-faixa-tit{font-size:12px;font-weight:700;color:#151718;letter-spacing:-.01em}
+.cal-faixa-sub{font-size:11.5px;color:#8b9095;flex:1;min-width:180px}
+.cal-alternar{
+  padding:4px 10px;font:inherit;font-size:11px;font-weight:600;cursor:pointer;
+  background:#fff;border:1px solid #e4e5e2;border-radius:8px;color:#5c6166;
+}
+.cal-alternar:hover{border-color:#151718;color:#151718}
+.cal-faixa-chips{display:flex;flex-wrap:wrap;gap:6px}
+
+/* o chip é o mesmo objeto no mês, na semana e na faixa: a barra de cor à
+   esquerda é o que liga visualmente à campanha */
+.cal-chip{
+  display:block;width:100%;text-align:left;
+  padding:4px 8px 4px 9px;font:inherit;font-size:10.5px;font-weight:600;line-height:1.3;
+  color:#fff;background:var(--pc,#121415);border:0;border-radius:6px;cursor:pointer;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.cal-chip:hover{opacity:.88}
+.cal-faixa-chips .cal-chip{width:auto;padding:5px 11px;font-size:11px}
