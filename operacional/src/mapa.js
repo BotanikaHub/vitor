@@ -41,12 +41,21 @@
   let pilha = [], pilhaR = [], medidas = {};
   let cerca, mundo, fios, grade, paleta, menu, elPc;
   let ligadoAoDocumento = false, jaEnquadrou = false, olhoDeTamanho = null;
+  let marcaAberta = null;
 
-  const chave = () => {
-    /* o app guarda o usuário num objeto global; se ele mudar de nome, a
-       chave acompanha em vez de quebrar calada */
+  /* O mapa é por marca, como o resto do sistema: o planejamento da
+     Botanika não é o da VermeFree. No planejador cada mês/marca já tinha o
+     seu, e um mapa só para as duas misturaria duas operações na mesma
+     tela. Quando o seletor está em "Todas as marcas", cai no mapa geral —
+     que é também a chave antiga, então quem já tinha algo ali não perde. */
+  const marcaAtual = () => {
+    const v = document.getElementById('brandSelect')?.value || '';
+    return (!v || /todas/i.test(v)) ? '' : v;
+  };
+  const chave = (marca) => {
     const id = (window.user && window.user.id) || 'vitor-gutierrez';
-    return `central.planning.map.${id}`;
+    const m = marca === undefined ? marcaAtual() : marca;
+    return `central.planning.map.${id}` + (m ? '.' + m : '');
   };
 
   /* ================= dados ================= */
@@ -80,6 +89,11 @@
   function carregar() {
     let cru = null;
     try { cru = JSON.parse(localStorage.getItem(chave()) || 'null'); } catch { /* nasce novo */ }
+    /* primeira vez numa marca: se existir o mapa geral antigo, ele serve de
+       ponto de partida em vez de a pessoa encarar uma tela em branco */
+    if (!cru && marcaAtual()) {
+      try { cru = JSON.parse(localStorage.getItem(chave('')) || 'null'); } catch { /* segue */ }
+    }
     if (!cru) return mapaNovo();
     if (Array.isArray(cru)) return converter(cru);
     if (!cru.nos || !cru.nos.length) return mapaNovo();
@@ -823,6 +837,7 @@
 
   /* ================= entrada ================= */
   function abrir(hospedeiro) {
+    marcaAberta = marcaAtual();
     M = carregar();
     sel = { t: 'no', id: raiz()?.id ?? null };
     Z = 1; PX = 0; PY = 0; pilha = []; pilhaR = []; medidas = {}; termo = '';
@@ -849,6 +864,13 @@
     };
     tenta();
     new MutationObserver(tenta).observe(document.documentElement, { childList: true, subtree: true });
+
+    /* trocar de marca troca de mapa: o seletor é do app, então escuto ele */
+    document.addEventListener('change', (e) => {
+      if (e.target?.id !== 'brandSelect') return;
+      if (!cerca?.isConnected || marcaAtual() === marcaAberta) return;
+      abrir(cerca.parentElement);
+    });
   }
 
   if (document.readyState === 'loading')

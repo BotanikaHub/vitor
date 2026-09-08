@@ -318,18 +318,37 @@
 
     const uid = session.user.id;
     marcarSessao(sb, session);
+
+    /* Buscar ANTES de espelhar, e não depois.
+
+       O app roda logo abaixo deste script e grava o estado padrão dele no
+       localStorage. Se o espelho já estivesse ligado, esse padrão subiria
+       para o banco e passaria por cima do que estava lá — foi o que quase
+       apagou as dezoito campanhas. Ligando o espelho só depois, as
+       gravações do começo ficam locais, a busca sobrescreve, e a página
+       recarrega com o dado certo.
+
+       Também não existe mais marca de "já hidratei nesta aba": ela fazia a
+       busca acontecer uma vez só e nunca mais, então dado carregado no
+       banco depois disso nunca chegava em quem estava com a aba aberta. O
+       laço não acontece por construção — depois de escrever, o local passa
+       a ser igual ao remoto, e a próxima comparação não acha diferença. */
+    let mudou = false;
+    try {
+      mudou = await hidratar(sb, uid);
+    } catch (e) {
+      console.error('[central] não consegui buscar o estado:', e.message);
+    }
     espelhar(sb, uid);
 
-    /* A marca existe para o recarregamento acontecer uma vez só. Sem ela,
-       uma gravação nossa dispararia hidratação, diferença e recarga de
-       novo — a página entraria em laço. */
-    if (!sessionStorage.getItem(MARCA_RELOAD)) {
-      sessionStorage.setItem(MARCA_RELOAD, '1');
-      try {
-        if (await hidratar(sb, uid)) { location.reload(); return; }
-      } catch (e) {
-        console.error('[central] não consegui buscar o estado:', e.message);
-      }
+    if (mudou) {
+      /* Cinto de segurança: se por algum motivo a comparação nunca casar,
+         o contador impede a página de recarregar sem parar. */
+      const n = +(sessionStorage.getItem(MARCA_RELOAD) || 0);
+      if (n < 3) { sessionStorage.setItem(MARCA_RELOAD, String(n + 1)); location.reload(); return; }
+      console.warn('[central] o estado local não estabiliza; seguindo sem recarregar');
+    } else {
+      sessionStorage.removeItem(MARCA_RELOAD);
     }
   }
 
