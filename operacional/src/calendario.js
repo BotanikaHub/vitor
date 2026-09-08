@@ -258,28 +258,14 @@
     /* o rótulo dizia "principais marcos", que descrevia a linha do tempo de
        bolinhas; sobrando ali, passa a mentir sobre o que está embaixo */
     const rot = document.querySelector('.timeline-card .timeline-head span');
-    if (rot) rot.textContent = 'campanhas e prazos da semana';
+    if (rot) rot.textContent = 'campanhas da semana';
     alvo.classList.add('cal-grade');
     const s = { a: new Date(2026, 8, 7), b: new Date(2026, 8, 13) };
-    grade(alvo, visiveis(), tarefas(), [s], null, true);
-
-    const ts = tarefas();
-    if (!ts.length) return;
-    const dias = [...Array(7)].map((_, k) => {
-      const d = new Date(s.a); d.setDate(s.a.getDate() + k);
-      const dia = isoDe(d);
-      const rows = ts.filter((t) => t.due === dia);
-      return `<section class="cal-col ${dia === '2026-09-07' ? 'cal-hoje' : ''}">` +
-        `<div class="cal-col-cab"><b>${['seg','ter','qua','qui','sex','sáb','dom'][k]}</b>` +
-        `<span>${String(d.getDate()).padStart(2, '0')}/09</span></div>` +
-        (rows.length
-          ? rows.slice(0, 4).map((t) => `<div class="cal-tarefa"><b>${esc(t.title)}</b>` +
-              `<span>${esc((t.assignees || [])[0] || 'sem responsável')}</span></div>`).join('') +
-            (rows.length > 4 ? `<div class="cal-nada">+${rows.length - 4} no dia</div>` : '')
-          : '<div class="cal-nada">sem prazo</div>') +
-        `</section>`;
-    }).join('');
-    alvo.insertAdjacentHTML('beforeend', `<div class="cal-cols">${dias}</div>`);
+    /* Só as campanhas. As tarefas com prazo já têm o cartão "Tarefas que
+       pedem atenção" logo abaixo nesta mesma página; repetir a mesma lista
+       duas vezes na mesma tela é ruído, não informação. O detalhe por dia
+       fica no Planejamento, que é onde se vai para planejar. */
+    grade(alvo, visiveis(), [], [s], null, true);
   }
 
   /* ---------- o calendário da aba Campanhas ----------

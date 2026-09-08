@@ -80,7 +80,32 @@ conf('sem moldura dupla: o cartão da home já é a moldura',
     return g && getComputedStyle(g).borderTopWidth === '0px';
   }));
 conf('o rótulo do cartão acompanha o que passou a mostrar',
-  (await pag.locator('.timeline-card .timeline-head span').textContent()).includes('prazos da semana'));
+  (await pag.locator('.timeline-card .timeline-head span').textContent()).includes('campanhas da semana'));
+conf('a home não repete a lista de tarefas que já está logo abaixo',
+  await pag.locator('.timeline-card .cal-tarefa').count() === 0
+  && await pag.locator('.timeline-card .cal-cols').count() === 0);
+/* clicar na barra da home tem que abrir a campanha */
+await pag.evaluate(() => {
+  [...document.querySelectorAll('.timeline-card .cal-barra')]
+    .find((b) => b.textContent.includes('Dia D'))?.click();
+});
+await pag.waitForTimeout(900);
+conf('clicar na campanha pela home abre a campanha',
+  await pag.locator('#campaignWorkspace.active').count() === 1
+  && (await pag.locator('#campaignWorkspace .cw-title h2').textContent()).includes('Dia D'));
+/* as duas marcas têm uma "Dia D — 09/09": o nome sozinho não identifica, e
+   sem a marca as abas ficavam com o conteúdo antigo, sem avisar */
+conf('e as abas abrem enriquecidas mesmo com nome repetido nas duas marcas',
+  await pag.locator('[data-cw-pane="summary"] .cp').count() === 1);
+await pag.screenshot({ path: 'teste/20-abriu.png' });
+
+/* e voltar para a home mantém a semana */
+await pag.evaluate(() => {
+  const b = [...document.querySelectorAll('button,a,[role="button"]')]
+    .find(x => /início|inicio/i.test(x.textContent + ' ' + (x.title||'')) && x.offsetParent);
+  b?.click();
+});
+await pag.waitForTimeout(900);
 await pag.screenshot({ path: 'teste/19-inicio.png' });
 
 await pag.evaluate(() => {

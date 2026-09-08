@@ -837,10 +837,15 @@
      seria ambíguo, e nesse caso prefiro não fazer nada a regerar a errada. */
   function campanhaAberta() {
     const ws = document.getElementById('campaignWorkspace');
-    const nome = ws?.querySelector('h2')?.textContent?.trim();
+    const nome = ws?.querySelector('.cw-title h2')?.textContent?.trim();
     if (!nome) return null;
-    const iguais = lerCampanhas().filter((c) => c.name.trim() === nome);
-    return iguais.length === 1 ? iguais[0].id : null;
+    /* nome sozinho não identifica: "Dia D — 09/09" existe nas duas marcas.
+       O cabeçalho mostra a marca junto, e as duas resolvem. */
+    const marca = (ws.querySelector('.cw-title small')?.textContent || '').split('·')[0].trim();
+    const porNome = lerCampanhas().filter((c) => c.name.trim() === nome);
+    if (porNome.length === 1) return porNome[0].id;
+    const porMarca = porNome.filter((c) => (c.brand || '').toLowerCase() === marca.toLowerCase());
+    return porMarca.length === 1 ? porMarca[0].id : null;
   }
 
   new MutationObserver(porBotaoRegerar).observe(document.documentElement, { childList: true, subtree: true });

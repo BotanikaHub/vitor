@@ -336,12 +336,23 @@
   }
 
   /* ---------- tomar as abas ---------- */
+  /* O app guarda a campanha aberta numa variável fechada, então descubro
+     pelo cabeçalho. Só o nome não basta: "Dia D — 09/09" existe na Botanika
+     e na VermeFree, e as duas juntas deixavam a busca sem resposta — as
+     abas ficavam com o conteúdo antigo, calada. O cabeçalho também mostra
+     a marca, e as duas juntas identificam. */
   function campanhaAberta() {
     const ws = document.getElementById('campaignWorkspace');
     const nome = ws?.querySelector('.cw-title h2')?.textContent?.trim();
     if (!nome) return null;
-    const iguais = ler(chaveCamp()).filter((x) => x.name.trim() === nome);
-    return iguais.length === 1 ? iguais[0] : null;
+    const acima = ws.querySelector('.cw-title small')?.textContent || '';
+    const marca = acima.split('·')[0].trim();
+    const todas = ler(chaveCamp());
+    const porNome = todas.filter((x) => x.name.trim() === nome);
+    if (porNome.length === 1) return porNome[0];
+    const porMarca = porNome.filter((x) =>
+      (x.brand || '').toLowerCase() === marca.toLowerCase());
+    return porMarca.length === 1 ? porMarca[0] : null;
   }
 
   function enriquecer() {
@@ -352,9 +363,10 @@
     /* O app remonta as abas a cada clique de aba, e isso apaga o que eu
        escrevi. Então a trava não pode ser só o nome da campanha: tem que
        olhar se o meu conteúdo ainda está lá. */
+    const marca = `${c.brand}·${c.name}`;
     const meu = ws.querySelector('[data-cw-pane="summary"] .cp');
-    if (meu && ws.dataset.cp === c.name) return;
-    ws.dataset.cp = c.name;
+    if (meu && ws.dataset.cp === marca) return;
+    ws.dataset.cp = marca;
     const põe = (nome, html) => {
       const p = ws.querySelector(`[data-cw-pane="${nome}"]`);
       if (p) { p.innerHTML = `<div class="cp">${html}</div>` }
