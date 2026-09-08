@@ -7,3 +7,8 @@ dist/
 !dist/site/api/tarefas.mjs
 node_modules/
 .DS_Store
+
+# Fotos que os testes tiram para eu conferir a tela. São conferência, não
+# fonte: a que vale está sempre a um `node teste/<x>.mjs` de distância, e
+# versionar imagem grande a cada rodada só engorda o repositório.
+teste/*.png
