@@ -429,6 +429,60 @@
     if (ws) { delete ws.dataset.cp; enriquecer() }
   });
 
+  /* ---------- excluir campanha ----------
+     O app não tinha como excluir: dava para criar e editar, e a campanha
+     errada ficava lá para sempre. O botão fica ao lado de "Editar
+     campanha", que é onde a pessoa procura.
+
+     Excluir a campanha não apaga o nó dela no mapa — a ideia continua
+     valendo mesmo quando a ação é cancelada. O que se perde é o vínculo,
+     senão o nó ficaria apontando para uma campanha que não existe mais. */
+  function desvincularNoMapa(c) {
+    const id = (window.user && window.user.id) || 'vitor-gutierrez';
+    const chaves = [`central.planning.map.${id}`, `central.planning.map.${id}.${c.brand}`];
+    for (const k of chaves) {
+      let m; try { m = JSON.parse(localStorage.getItem(k) || 'null') } catch { continue }
+      if (!m || !Array.isArray(m.nos)) continue;
+      let mexeu = false;
+      m.nos.forEach((n) => {
+        if (String(n.campId) === String(c.id)) { delete n.campId; mexeu = true }
+      });
+      if (mexeu) localStorage.setItem(k, JSON.stringify(m));
+    }
+  }
+
+  function excluir(c) {
+    const ts = tarefasDa(c);
+    const aviso = ts.length
+      ? `\n\nAs ${ts.length} tarefas ligadas a ela continuam no ClickUp — só perdem o vínculo aqui.`
+      : '';
+    if (!confirm(`Excluir "${c.name}" da ${c.brand}?\n\nO TAP, a oferta e o cronograma vão junto.` +
+                 `\nO nó no mapa continua, sem vínculo.${aviso}`)) return;
+    const todas = ler(chaveCamp()).filter((x) => String(x.id) !== String(c.id));
+    localStorage.setItem(chaveCamp(), JSON.stringify(todas));
+    desvincularNoMapa(c);
+    window.MapaMental?.recarregar?.();
+    /* volta para a lista: ficar na tela de uma campanha que não existe mais
+       é o tipo de coisa que deixa a pessoa achando que não funcionou */
+    document.getElementById('cwBack')?.click();
+    window.RecarregarCampanhas?.();
+  }
+
+  function porBotaoExcluir() {
+    const ws = document.getElementById('campaignWorkspace');
+    if (!ws || !ws.classList.contains('active')) return;
+    const cx = ws.querySelector('.cw-status');
+    if (!cx || cx.querySelector('[data-excluir]')) return;
+    const bt = document.createElement('button');
+    bt.type = 'button';
+    bt.dataset.excluir = '1';
+    bt.className = 'cp-excluir';
+    bt.textContent = 'Excluir';
+    bt.title = 'Excluir esta campanha';
+    bt.onclick = () => { const c = campanhaAberta(); if (c) excluir(c) };
+    cx.appendChild(bt);
+  }
+
   /* ---------- a lista de campanhas, separada ----------
      Perpétuo e pontual são duas leituras diferentes: uma é o que roda
      sempre e a outra é o que tem data e prazo. Misturadas numa lista só,
@@ -472,9 +526,9 @@
     lista.dataset.sep = '1';
   }
 
-  new MutationObserver(() => { enriquecer(); separarLista() })
+  new MutationObserver(() => { enriquecer(); separarLista(); porBotaoExcluir() })
     .observe(document.documentElement, { childList: true, subtree: true });
-  const comecar = () => { enriquecer(); separarLista() };
+  const comecar = () => { enriquecer(); separarLista(); porBotaoExcluir() };
   if (document.readyState === 'loading') addEventListener('DOMContentLoaded', comecar, { once: true });
   else comecar();
 })();

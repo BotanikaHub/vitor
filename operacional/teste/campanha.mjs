@@ -200,6 +200,33 @@ conf('e tirar, com confirmação',
   (await gravado()).tap.find(s => s.title.includes('OFERTA')).rows.length === antes);
 await pag.screenshot({ path: 'teste/18-editar.png' });
 
+/* ---------- excluir ---------- */
+const todas = () => pag.evaluate(() =>
+  JSON.parse(localStorage.getItem('central.campaigns.vitor-gutierrez') || '[]'));
+
+/* um nó do mapa apontando para ela, para conferir o desvínculo */
+await pag.evaluate(() => {
+  localStorage.setItem('central.planning.map.vitor-gutierrez.Botanika', JSON.stringify({
+    v: 2, layout: 'direita', prox: 3, proxItem: 1, itens: [],
+    nos: [{ id: 1, pai: null, t: 'Setembro', cor: 0, x: 4500, y: 3000 },
+          { id: 2, pai: 1, t: 'Dia D — 09/09', campId: 'c-diad', cor: 0, x: 4500, y: 3000 }],
+  }));
+});
+
+conf('o botão de excluir aparece ao lado de editar',
+  await pag.locator('#campaignWorkspace [data-excluir]').count() === 1);
+
+await pag.locator('#campaignWorkspace [data-excluir]').click();
+await pag.waitForTimeout(900);
+conf('a campanha some da lista', (await todas()).length === 0);
+conf('e volta para a visão geral, sem ficar numa tela órfã',
+  await pag.locator('#campaignWorkspace.active').count() === 0);
+const mapa = await pag.evaluate(() =>
+  JSON.parse(localStorage.getItem('central.planning.map.vitor-gutierrez.Botanika')));
+conf('o nó do mapa continua', mapa.nos.length === 2);
+conf('mas sem o vínculo com a campanha que não existe mais',
+  !mapa.nos.some((n) => n.campId));
+
 console.log(ok.map(s => '  ✓ ' + s).join('\n'));
 console.log(`\ncampanha: ${ok.length} checagens passaram`);
 await nav.close(); srv.close();
