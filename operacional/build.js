@@ -32,6 +32,22 @@ let html = estilos
 if (fs.existsSync(path.join(src, 'cilo-design-v6.js')))
   html = html.replace('</body>', `<script>\n${leia('cilo-design-v6.js').trim()}\n</script>\n</body>`);
 
+/* A ponte com o Supabase entra no <head>, e não antes do </body>, porque o
+   app lê o localStorage assim que o próprio script roda: a sessão precisa
+   estar resolvida antes disso. A chave anônima vem do ambiente quando
+   houver, e cai na que já está publicada no repositório quando não houver —
+   é a mesma que o navegador recebe de qualquer jeito. */
+const ANON = process.env.SUPABASE_ANON_KEY ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqa3V5c2RtaXhmemVlcnh1dWRuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExMTMxNDQsImV4cCI6MjA5NjY4OTE0NH0.oMbvy25V6-W7YvF70zNb1xVfRwH_tGBWp3NPHGtpOtM';
+
+if (fs.existsSync(path.join(src, 'supabase.js'))) {
+  const ponte =
+    `<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>\n` +
+    `<script>window.__SB_ANON__=${JSON.stringify(ANON)}</script>\n` +
+    `<script>\n${leia('supabase.js').trim()}\n</script>\n`;
+  html = html.replace('</head>', `${ponte}</head>`);
+}
+
 const saida = path.join(__dirname, 'dist');
 fs.rmSync(saida, { recursive: true, force: true });
 fs.mkdirSync(saida, { recursive: true });
