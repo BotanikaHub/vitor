@@ -58,6 +58,8 @@ conf('o nome já vem do tema',
 const ini = await pag.inputValue('#as-ini'), fim = await pag.inputValue('#as-fim');
 const dias = Math.round((new Date(fim) - new Date(ini)) / 86400000) + 1;
 conf('o formato já sugeriu as datas (' + dias + ' dias)', dias === 5);
+conf('o resumo conta os dias de preparação antes da ação',
+  (await pag.locator('#as-resumo').textContent()).includes('de preparação antes'));
 
 /* o resumo recalcula ao vivo, e entende "120 mil" */
 await pag.fill('#as-meta', '120 mil');
@@ -131,9 +133,32 @@ conf('as seções são as do planejador',
   c.tap.map(s => s.title).join('|').includes('SOBRE O EVENTO')
   && c.tap.map(s => s.title).join('|').includes('CANAIS · CRONOGRAMA'));
 const canais = c.tap.find(s => s.title.includes('CANAIS'));
-conf('o cronograma tem uma coluna por dia (' + (canais.columns.length - 3) + ' dias)',
-  canais.columns.length === 3 + 5 - 1 + 1);
+/* semana temática: 5 dias de ação + 2 de preparação = 7 colunas,
+   mais Canal, Base e Quem faz */
+conf('o cronograma abre a janela com a preparação (' + (canais.columns.length - 3) + ' colunas)',
+  canais.columns.length === 3 + 7);
 conf('o TAP lista os dez canais', canais.rows.length === 10);
+
+/* e o ponto todo: nasce preenchido, não uma grade de traços */
+const linhaEmail = canais.rows.find(r => r[0] === 'E-mails base antiga');
+const celulas = linhaEmail.slice(2, -1);
+conf('o cronograma nasce preenchido, não com traços',
+  celulas.filter(v => v !== '—').length === celulas.length);
+conf('o primeiro dia da janela é de antecipação', celulas[0] === '1 sem CTA');
+conf('a véspera avisa que é amanhã', celulas[1] === '1 é amanhã');
+conf('o dia de abertura tem o disparo de venda', celulas[2] === '2 vendas');
+conf('o último dia é de última chance', celulas[celulas.length - 1] === '2 última chance');
+const site = canais.rows.find(r => r[0] === 'Alteração no site');
+conf('o site sobe na abertura e sai no fim',
+  site[4] === '00h no ar' && site[site.length - 2] === '23h59 tira do ar');
+const captada = canais.rows.find(r => r[0] === 'E-mails base captada');
+conf('canal sem ritmo padrão nasce vazio de propósito',
+  captada.slice(2, -1).every(v => v === '—'));
+
+const ticket = c.tap.find(s => s.title === 'AUMENTO DE TICKET MÉDIO');
+conf('o ticket médio traz orderbump e desconto por volume',
+  ticket.rows.some(r => r[0] === 'Orderbump') &&
+  ticket.rows.some(r => r[0] === 'Desconto por volume' && r[2] === 'até 20%'));
 const fases = c.tap.find(s => s.title === 'FASES');
 conf('as fases nasceram preenchidas', fases.rows.length >= 4);
 

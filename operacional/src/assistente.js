@@ -34,12 +34,12 @@
   };
 
   const PADRAO = {
-    diaD:     { desconto: '8% OFF',  cupom: '8% OFF geral (já embutido no preço no dia)',        frete: 'Sim — para todos, sem piso mínimo neste dia', produtos: 'Todos os SKUs',                     bump: 'Definir SKU complementar no carrinho' },
-    semana:   { desconto: '10% OFF', cupom: '10% OFF na linha do tema (já embutido no preço)',   frete: 'Grátis acima de R$ 199',                      produtos: 'SKUs da linha do tema',             bump: 'SKU complementar ao tema no carrinho' },
-    gap:      { desconto: '—',       cupom: 'Sem cupom — o ganho vem do combo e do frete',       frete: 'Grátis a partir de R$ 349',                   produtos: 'SKUs que fecham a faixa de ticket', bump: 'Item de baixo valor que empurra o carrinho' },
-    recompra: { desconto: '12% OFF', cupom: '12% OFF exclusivo para quem já comprou',            frete: 'Grátis acima de R$ 199',                      produtos: 'Reposição do que a pessoa já comprou', bump: 'Item de manutenção junto' },
-    perpetuo: { desconto: '—',       cupom: 'Sem cupom — preço de tabela',                       frete: 'Grátis acima de R$ 199',                      produtos: 'Catálogo inteiro',                  bump: 'Order bump padrão do carrinho' },
-    outro:    { desconto: '—',       cupom: 'A definir',                                          frete: 'A definir',                                   produtos: 'A definir',                         bump: 'A definir' },
+    diaD:     { prep: 2, desconto: '8% OFF',  cupom: '8% OFF geral (já embutido no preço no dia)',        frete: 'Sim — para todos, sem piso mínimo neste dia', produtos: 'Todos os SKUs',                     bump: 'Definir SKU complementar no carrinho' },
+    semana:   { prep: 2, desconto: '10% OFF', cupom: '10% OFF na linha do tema (já embutido no preço)',   frete: 'Grátis acima de R$ 199',                      produtos: 'SKUs da linha do tema',             bump: 'SKU complementar ao tema no carrinho' },
+    gap:      { prep: 0, desconto: '—',       cupom: 'Sem cupom — o ganho vem do combo e do frete',       frete: 'Grátis a partir de R$ 349',                   produtos: 'SKUs que fecham a faixa de ticket', bump: 'Item de baixo valor que empurra o carrinho' },
+    recompra: { prep: 0, desconto: '12% OFF', cupom: '12% OFF exclusivo para quem já comprou',            frete: 'Grátis acima de R$ 199',                      produtos: 'Reposição do que a pessoa já comprou', bump: 'Item de manutenção junto' },
+    perpetuo: { prep: 0, desconto: '—',       cupom: 'Sem cupom — preço de tabela',                       frete: 'Grátis acima de R$ 199',                      produtos: 'Catálogo inteiro',                  bump: 'Order bump padrão do carrinho' },
+    outro:    { prep: 1, desconto: '—',       cupom: 'A definir',                                          frete: 'A definir',                                   produtos: 'A definir',                         bump: 'A definir' },
   };
 
   const EQUIPE = [
@@ -119,6 +119,29 @@
     return l;
   }
 
+  /* O que cada canal faz em cada papel do dia. É esta tabela que faz o
+     cronograma nascer preenchido em vez de uma grade de traços — a pessoa
+     ajusta o que for diferente, não escreve do zero. Canal com objeto
+     vazio nasce vazio de propósito: não tem ritmo padrão. */
+  const RITMO = {
+    'E-mails base antiga':         { antecipacao:'1 sem CTA', amanha:'1 é amanhã', abertura:'2 vendas',
+                                     venda:'1 vendas', penultimo:'1 amanhã acaba', ultimo:'2 última chance' },
+    'E-mails base captada':        {},
+    'WhatsApp grupos antigos':     { antecipacao:'2', amanha:'2', abertura:'8',
+                                     venda:'4', penultimo:'4', ultimo:'8' },
+    'WhatsApp grupos da campanha': {},
+    'WhatsApp API':                { antecipacao:'0', amanha:'1 sem CTA', abertura:'2 08h e 20h',
+                                     venda:'1', penultimo:'1', ultimo:'2 08h e 20h' },
+    'Criativos em vídeo':          { antecipacao:'0', amanha:'0', abertura:'4',
+                                     venda:'2', penultimo:'2', ultimo:'4' },
+    'Criativos em imagem':         { antecipacao:'0', amanha:'0', abertura:'4 com desconto',
+                                     venda:'2', penultimo:'2', ultimo:'4 última chance' },
+    'Instagram feed':              {},
+    'Instagram stories':           { abertura:'09h / 13h / 19h + CTA', venda:'09h / 19h',
+                                     penultimo:'09h / 19h', ultimo:'09h / 13h / 19h + contagem' },
+    'Alteração no site':           { abertura:'00h no ar', ultimo:'23h59 tira do ar' },
+  };
+
   const DOW = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
   const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho',
                  'agosto','setembro','outubro','novembro','dezembro'];
@@ -173,14 +196,47 @@
     return f;
   }
 
-  /* Até duas semanas, uma coluna por dia. Acima disso vira faixa semanal —
-     um TAP com trinta colunas ninguém lê. */
-  function colunasDe(ini, fim) {
-    const dias = diasEntre(ini, fim);
-    if (dias.length <= 14) return dias.map((d) => `${DOW[d.getDay()]} ${dBR(d)}`);
+  /* A janela do cronograma começa antes da ação: um Dia D precisa dos dois
+     dias de antecipação, senão o TAP não conta a preparação. */
+  function janelaDe(tipo, ini, fim) {
+    const prep = (PADRAO[tipo] || PADRAO.outro).prep || 0;
+    const a = new Date(ini); a.setDate(a.getDate() - prep);
+    return diasEntre(a, fim);
+  }
+
+  /* Que papel cada dia da janela cumpre — é o que decide o ritmo dos canais. */
+  function papeisDe(tipo, ini, fim) {
+    const dias = janelaDe(tipo, ini, fim);
+    const iAb = dias.findIndex((d) => iso(d) === iso(ini));
+    const n = dias.length;
+    return dias.map((d, i) => {
+      if (i < iAb) return i === iAb - 1 ? 'amanha' : 'antecipacao';
+      if (i === iAb) return 'abertura';
+      if (tipo === 'recompra' || tipo === 'perpetuo') return 'venda';
+      if (i === n - 1) return 'ultimo';
+      if (i === n - 2) return 'penultimo';
+      return 'venda';
+    });
+  }
+
+  /* Até dezesseis dias o cronograma é dia a dia; acima disso vira bloco de
+     semana, senão a tabela de um perpétuo teria trinta colunas. O número é
+     dezesseis e não catorze porque a janela de uma semana temática é 8 + 2
+     de preparação, e catorze colapsava justamente ela. */
+  const DIAS_A_DIA = 16;
+  function colunasDe(ini, fim, tipo) {
+    const dias = tipo ? janelaDe(tipo, ini, fim) : diasEntre(ini, fim);
+    if (dias.length <= DIAS_A_DIA) return dias.map((d) => `${DOW[d.getDay()]} ${dBR(d)}`);
     const out = [];
     for (let i = 0; i < dias.length; i += 7)
       out.push(`${dBR(dias[i])}–${dBR(dias[Math.min(i + 6, dias.length - 1)])}`);
+    return out;
+  }
+  /* um papel por coluna; quando as colunas viram semanas, vale o do 1º dia */
+  function papeisPorColuna(tipo, ini, fim) {
+    const ps = papeisDe(tipo, ini, fim);
+    if (ps.length <= DIAS_A_DIA) return ps;
+    const out = []; for (let i = 0; i < ps.length; i += 7) out.push(ps[i]);
     return out;
   }
 
@@ -189,7 +245,8 @@
     const ini = dISO(c.start), fim = dISO(c.end);
     const T = TIPOS[tipo], P = PADRAO[tipo] || PADRAO.outro;
     const periodo = c.start === c.end ? dBR(ini) : `${dBR(ini)} a ${dBR(fim)}`;
-    const cols = colunasDe(ini, fim);
+    const cols = colunasDe(ini, fim, tipo);
+    const papeis = papeisPorColuna(tipo, ini, fim);
 
     /* As duas fontes que consomem verba são tráfego e API; o resto do
        faturamento vem de canal que não se compra. As proporções são as
@@ -218,8 +275,10 @@
         ...(O.extras || []).map((t) => ['Fora do catálogo', t, '—']),
         ...(escolhidos().length || (O.extras || []).length ? [] : [['A definir', P.produtos, P.desconto]])] },
       { title: 'AUMENTO DE TICKET MÉDIO', columns: ['Estratégia', 'Detalhe', 'Desconto'], rows: [
+        ['Orderbump', P.bump, '10% / 15%'],
+        ['Desconto por volume',
+         '3 un = 10% · 5 un = 15% · 8 un = 20% — empilha com o desconto da ação', 'até 20%'],
         ['Frete grátis', O.frete || P.frete, '—'],
-        ['Order bump', P.bump, '—'],
         ...(O.brinde ? [['Brinde', O.brinde, '—']] : [])] },
       { title: 'METAS', columns: ['Item', 'Valor', 'Responsável'], rows: (() => {
         /* a divisão por canal é a que a pessoa acabou de conferir no passo
@@ -237,7 +296,10 @@
       })() },
       { title: 'CANAIS · CRONOGRAMA',
         columns: ['Canal', 'Base', ...cols, 'Quem faz'],
-        rows: CANAIS.map(([n, base, quem]) => [n, base, ...cols.map(() => '—'), quem]) },
+        rows: CANAIS.map(([n, base, quem]) => {
+          const r = RITMO[n] || {};
+          return [n, base, ...papeis.map((pa) => r[pa] ?? '—'), quem];
+        }) },
     ];
   }
 
@@ -401,12 +463,15 @@
       return;
     }
     const dias = diasEntre(ini, fim).length;
-    const cols = colunasDe(ini, fim).length;
+    const janela = janelaDe(A.tipo, ini, fim).length;
+    const cols = colunasDe(ini, fim, A.tipo).length;
     const roas = A.verba ? (A.meta / A.verba).toFixed(1).replace('.', ',') : '—';
     const somaAntes = somaDaMarca(A.marca);
     el.className = 'as-resumo';
     el.innerHTML =
-      `<span><b>${dias}</b> dia${dias > 1 ? 's' : ''} · <b>${cols}</b> coluna${cols > 1 ? 's' : ''} no cronograma</span>` +
+      `<span><b>${dias}</b> dia${dias > 1 ? 's' : ''} de ação` +
+      (janela > dias ? ` · <b>${janela - dias}</b> de preparação antes` : '') +
+      ` · <b>${cols}</b> coluna${cols > 1 ? 's' : ''} no cronograma</span>` +
       `<span>ROAS implícito <b>${roas}</b></span>` +
       `<span>${esc(A.marca || 'A marca')} passa de <b>${brl(somaAntes)}</b> para <b>${brl(somaAntes + A.meta)}</b> no mês</span>`;
   }
