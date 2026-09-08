@@ -144,6 +144,62 @@ conf('e o link para o ClickUp', await pag.locator('[data-cw-pane="tasks"] a[href
 conf('tarefa de outro projeto não entra', !t.includes('Outra coisa'));
 await pag.screenshot({ path: 'teste/17-tarefas.png' });
 
+/* ---------- editar no lugar ---------- */
+const gravado = () => pag.evaluate(() =>
+  JSON.parse(localStorage.getItem('central.campaigns.vitor-gutierrez'))[0]);
+
+/* uma célula do cronograma */
+await aba('schedule');
+const cel = pag.locator('[data-cw-pane="schedule"] [data-ed]').nth(4);
+await cel.click();
+await pag.keyboard.press('Control+a');
+await pag.keyboard.type('3 disparos');
+await pag.keyboard.press('Enter');
+await pag.waitForTimeout(500);
+conf('editar uma célula do cronograma grava no TAP',
+  JSON.stringify(await gravado()).includes('3 disparos'));
+
+/* com investimento por canal no TAP, a verba do cartão é a soma deles e
+   não se edita ali — edita-se o canal, e a conta acompanha */
+await aba('summary');
+conf('a verba vira a soma dos canais quando eles existem',
+  await pag.locator('[data-cw-pane="summary"] [data-campo="budget"]').count() === 0);
+const invTraf = pag.locator('[data-cw-pane="summary"] .cp-tab tbody tr').first().locator('[data-ed]').nth(1);
+await invTraf.click();
+await pag.keyboard.press('Control+a');
+await pag.keyboard.type('R$ 8.010');
+await pag.keyboard.press('Enter');
+await pag.waitForTimeout(700);
+const t2 = (await pag.locator('[data-cw-pane="summary"]').innerText()).replace(/\s+/g,' ');
+conf('editar o investimento de um canal grava', /R\$ 8\.010/.test(t2));
+conf('e a verba e o ROAS acompanham', /VERBA R\$ 9\.990/i.test(t2) && /ROAS ALVO 6,0/i.test(t2));
+
+/* a meta da ação continua editável, porque é decisão e não soma */
+const metaCard = pag.locator('[data-cw-pane="summary"] [data-campo="goal"]');
+await metaCard.click();
+await pag.keyboard.press('Control+a');
+await pag.keyboard.type('80 mil');
+await pag.keyboard.press('Enter');
+await pag.waitForTimeout(600);
+conf('a meta da ação é editável e entende "80 mil"', (await gravado()).goal === 80000);
+
+/* acrescentar e tirar produto */
+await aba('offer');
+const antes = (await gravado()).tap.find(s => s.title.includes('OFERTA')).rows.length;
+await pag.locator('[data-cw-pane="offer"] .cp-bloco').first()
+  .locator('[data-linha^="mais"]').first().click();
+await pag.waitForTimeout(500);
+conf('dá para acrescentar produto',
+  (await gravado()).tap.find(s => s.title.includes('OFERTA')).rows.length === antes + 1);
+/* a aba tem duas tabelas com "×"; a dos produtos é o primeiro bloco */
+pag.on('dialog', (d) => d.accept());
+await pag.locator('[data-cw-pane="offer"] .cp-bloco').first()
+  .locator('[data-linha^="menos"]').last().click();
+await pag.waitForTimeout(500);
+conf('e tirar, com confirmação',
+  (await gravado()).tap.find(s => s.title.includes('OFERTA')).rows.length === antes);
+await pag.screenshot({ path: 'teste/18-editar.png' });
+
 console.log(ok.map(s => '  ✓ ' + s).join('\n'));
 console.log(`\ncampanha: ${ok.length} checagens passaram`);
 await nav.close(); srv.close();

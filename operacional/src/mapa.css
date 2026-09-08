@@ -489,3 +489,40 @@
 .cp-aviso{margin:0 0 12px;padding:10px 13px;background:#fdf6e8;color:#8a6a1f;
   border-radius:10px;font-size:12.5px;line-height:1.5}
 .cp-aviso b{color:#6b520f;font-weight:650}
+
+/* ---------- editar no lugar ---------- */
+.cp-ed{
+  display:inline-block;min-width:26px;padding:1px 5px;margin:-1px -5px;
+  border-radius:6px;outline:none;cursor:text;
+  border-bottom:1px dashed transparent;transition:background .1s,border-color .1s;
+}
+.cp-ed:hover{background:#f6f6f4;border-bottom-color:#d5d8da}
+.cp-ed:focus{background:#fff;box-shadow:0 0 0 2px #151718;border-bottom-color:transparent}
+.cp-ed:empty::before{content:'escrever…';color:#c0c4c7}
+.cp-ed.cp-forte{font-weight:600}
+.cp-ed.cp-peca{font-weight:600}
+.cp-ed.cp-off{color:#c9ccce}
+.cp-ed.cp-ed-num{font-weight:650;font-variant-numeric:tabular-nums}
+.cp-num .cp-ed{font-size:22px;letter-spacing:-.02em}
+.cp-texto .cp-ed{display:block;min-height:22px}
+
+.cp-x{
+  width:22px;height:22px;padding:0;border:0;border-radius:6px;cursor:pointer;
+  background:none;color:#c9ccce;font-size:15px;line-height:1;
+}
+.cp-x:hover{background:#fdecea;color:#b03a2e}
+.cp-mais{padding:10px 13px;border-top:1px solid #f2f2f0}
+.cp-mais button{
+  padding:5px 12px;font:inherit;font-size:11.5px;font-weight:600;cursor:pointer;
+  background:#fff;border:1px dashed #d5d8da;border-radius:8px;color:#5c6166;
+}
+.cp-mais button:hover{border-style:solid;border-color:#151718;color:#151718}
+
+/* ---------- pontuais e contínuas na lista ---------- */
+.camp-grupo{
+  display:flex;align-items:baseline;gap:9px;
+  padding:14px 4px 8px;
+  font-family:"Geist Variable","Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.camp-grupo b{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#151718}
+.camp-grupo span{font-size:11.5px;color:#a4a8ac}
