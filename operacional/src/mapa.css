@@ -1,0 +1,174 @@
+/* ======================================================================
+   Mapa mental — a mesma ferramenta do planejador, na linguagem daqui.
+
+   O que veio de lá é o comportamento: árvore que se arruma sozinha, nós
+   com pai e filho, notas adesivas e formas soltas, zoom ancorado no
+   cursor. O que mudou é a pele: em vez das cores berrantes de quadro
+   branco, os tons desta casa — tinta #151718, linha #dedfdd, fundo
+   #f6f6f4, canto de 14px.
+
+   As cores de ramo continuam existindo porque têm função: é por elas que
+   se distingue um galho do outro num mapa grande. Só que dessaturadas,
+   para conviverem com o resto do sistema em vez de gritar.
+   ====================================================================== */
+
+.mp-cerca{
+  position:relative;
+  height:min(72vh,700px);
+  background:#fbfbfa;
+  border:1px solid #e4e5e2;
+  border-radius:14px;
+  overflow:hidden;
+  touch-action:none;
+  user-select:none;
+  font-family:"Geist Variable","Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:#151718;
+}
+.mp-cerca.mp-cheio{position:fixed;inset:0;z-index:9500;height:auto;border-radius:0;border:0}
+.mp-cerca.mp-arrasta{cursor:grabbing}
+.mp-cerca.mp-criando{cursor:crosshair}
+
+.mp-grade{position:absolute;inset:0;
+  background-image:radial-gradient(#e2e3e0 1px,transparent 1px)}
+.mp-mundo{position:absolute;top:0;left:0;width:9000px;height:6000px;transform-origin:0 0}
+.mp-fios{position:absolute;top:0;left:0;width:9000px;height:6000px;pointer-events:none;overflow:visible}
+
+/* ---------- peças ---------- */
+.mp-el{position:absolute;color:#151718}
+.mp-el .mp-txt{outline:none;word-break:break-word;white-space:pre-wrap}
+.mp-el.mp-sel{box-shadow:0 0 0 2px #151718}
+.mp-el.mp-alvo{box-shadow:0 0 0 3px #c9a227}
+.mp-el.mp-apagado{opacity:.22}
+.mp-el.mp-achado{box-shadow:0 0 0 3px #c9a227}
+
+.mp-no{
+  transform:translate(-50%,-50%);
+  background:#fff;
+  border:1.5px solid #7a6cc4;
+  border-radius:14px;
+  padding:9px 15px;
+  font-size:13px;
+  line-height:1.35;
+  max-width:280px;
+  display:flex;align-items:center;gap:8px;
+  box-shadow:0 1px 2px rgba(0,0,0,.04);
+}
+.mp-no.mp-raiz{
+  font-size:16px;font-weight:650;letter-spacing:-.01em;
+  padding:13px 22px;border-width:2px;max-width:330px;
+  flex-wrap:wrap;row-gap:8px;
+}
+.mp-no.mp-raiz .mp-txt,.mp-no.mp-comselo .mp-txt{flex:1 0 100%}
+.mp-no.mp-feito .mp-txt{text-decoration:line-through;opacity:.42}
+.mp-no .mp-ok{color:#2f7d5d;font-size:12px;flex-shrink:0}
+.mp-no .mp-selo{
+  font-size:10px;padding:2px 7px;border-radius:20px;
+  background:#f0f0ee;color:#5c6166;font-weight:600;
+  white-space:nowrap;flex-shrink:0;
+}
+
+.mp-no .mp-fecho,.mp-no .mp-mais{
+  position:absolute;top:50%;transform:translateY(-50%);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  padding:0;cursor:pointer;line-height:1;
+}
+.mp-no .mp-fecho{
+  width:19px;height:19px;background:#fff;border:1px solid #dedfdd;
+  font-size:10px;color:#6b7075;font-variant-numeric:tabular-nums;font-weight:600;
+}
+.mp-no .mp-fecho:hover{border-color:#151718;color:#151718}
+.mp-no .mp-mais{
+  width:20px;height:20px;background:#151718;color:#fff;border:0;
+  font-size:14px;display:none;
+}
+.mp-no.mp-sel .mp-mais{display:flex}
+.mp-no .mp-dir{right:-10px}.mp-no .mp-esq{left:-10px}
+.mp-no .mp-mais.mp-dir{right:-27px}.mp-no .mp-mais.mp-esq{left:-27px}
+
+.mp-nota{
+  transform:translate(-50%,-50%);
+  width:168px;min-height:168px;padding:14px;border-radius:4px;
+  box-shadow:0 2px 6px rgba(0,0,0,.11);
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;font-weight:500;font-size:13px;line-height:1.4;
+}
+.mp-texto{transform:translate(-50%,-50%);font-size:18px;font-weight:550;padding:4px 6px;min-width:60px}
+.mp-forma{
+  transform:translate(-50%,-50%);
+  width:150px;height:100px;background:#fff;border:1.5px solid #7a6cc4;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;font-size:13px;padding:10px;
+}
+.mp-forma.mp-ret{border-radius:8px}
+.mp-forma.mp-oval{border-radius:50%}
+.mp-forma.mp-losango{transform:translate(-50%,-50%) rotate(45deg);border-radius:8px}
+.mp-forma.mp-losango .mp-txt{transform:rotate(-45deg)}
+
+/* ---------- painéis flutuantes ---------- */
+.mp-fer,.mp-zoom,.mp-topo,.mp-paleta,.mp-formas{
+  position:absolute;z-index:40;background:#fff;
+  border:1px solid #e4e5e2;border-radius:12px;
+  box-shadow:0 4px 14px rgba(0,0,0,.07);
+}
+.mp-fer{left:14px;top:50%;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:4px;padding:5px}
+.mp-fer .mp-grupo{display:flex;flex-direction:column;gap:4px}
+.mp-fer .mp-risco{height:1px;background:#ececea;margin:3px 2px}
+.mp-cerca button{
+  background:none;border:0;font:inherit;cursor:pointer;color:#151718;
+  display:flex;align-items:center;justify-content:center;
+}
+.mp-fer button,.mp-zoom button,.mp-paleta button{
+  width:32px;height:32px;border-radius:8px;
+}
+.mp-fer button:hover,.mp-zoom button:hover,.mp-paleta button:hover{background:#f2f2f0}
+.mp-fer button.mp-on{background:#151718;color:#fff}
+.mp-fer button[disabled]{opacity:.3;cursor:default}
+/* vale para toda a cerca, não só para a barra da esquerda: sem isto os
+   ícones da barra de zoom saem preenchidos de preto */
+.mp-cerca svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+
+.mp-zoom{right:14px;bottom:14px;display:flex;align-items:center;gap:2px;padding:4px}
+.mp-zoom .mp-pc{font-size:11px;font-weight:600;padding:0 8px;min-width:46px;text-align:center;
+  cursor:pointer;font-variant-numeric:tabular-nums}
+.mp-zoom .mp-risco{width:1px;height:20px;background:#ececea;margin:0 3px}
+
+.mp-topo{left:14px;top:14px;display:flex;align-items:center;gap:8px;padding:6px 8px}
+.mp-topo input{
+  border:1px solid #e4e5e2;border-radius:8px;padding:6px 9px;font:inherit;
+  font-size:12px;color:#151718;background:#fff;outline:none;
+}
+.mp-topo input:focus{border-color:#151718}
+.mp-topo .mp-nome{width:230px;font-weight:600;border-color:transparent;background:transparent}
+.mp-topo .mp-nome:focus{border-color:#151718;background:#fff}
+.mp-topo .mp-busca{width:130px}
+
+.mp-formas{left:56px;display:none;flex-direction:column;padding:5px;min-width:132px}
+.mp-formas.mp-on{display:flex}
+.mp-formas button{justify-content:flex-start;padding:7px 9px;border-radius:8px;font-size:12px;width:100%}
+.mp-formas button:hover{background:#f2f2f0}
+
+.mp-paleta{display:none;padding:5px;gap:2px;align-items:center}
+.mp-paleta.mp-on{display:flex}
+.mp-paleta .mp-cor{width:19px;height:19px;border-radius:50%;border:1px solid rgba(0,0,0,.14)}
+.mp-paleta .mp-risco{width:1px;height:20px;background:#ececea;margin:0 3px}
+
+.mp-menu{
+  position:fixed;z-index:9600;display:none;min-width:216px;padding:5px;
+  background:#fff;border:1px solid #e4e5e2;border-radius:12px;
+  box-shadow:0 10px 34px rgba(0,0,0,.14);
+  font-family:"Geist Variable","Geist",system-ui,sans-serif;font-size:13px;color:#151718;
+}
+.mp-menu.mp-on{display:block}
+.mp-menu button{
+  width:100%;justify-content:space-between;padding:7px 10px;border-radius:8px;
+  background:none;border:0;font:inherit;color:inherit;cursor:pointer;display:flex;
+}
+.mp-menu button:hover{background:#f2f2f0}
+.mp-menu button.mp-perigo{color:#b03a2e}
+.mp-menu .mp-atalho{color:#a4a8ac;font-size:11px}
+.mp-menu hr{border:0;border-top:1px solid #ececea;margin:4px 0}
+
+.mp-dica{margin-top:10px;font-size:12px;color:#7e8389}
+.mp-dica b{color:#151718;font-weight:600}
