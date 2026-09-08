@@ -68,20 +68,31 @@
   const F = 'https://cdn.shopify.com/s/files/1/0780/7238/1672/files/';
   const CATALOGOS = {
     Botanika: [
-      { curto:'Tri[Mg]',       sku:'80.1.1',  preco:87.50,  nome:'Tri[Mg] Complex — Magnésio 3 em 1 de Rápida Absorção' },
-      { curto:'Vit C',         sku:'80.1.2',  preco:89.52,  nome:'Super Vitamina C — Vitamina C + Quercetina + Própolis' },
-      { curto:'Ômega 3',       sku:'80.1.3',  preco:163.12, nome:'Super Ômega 3 + CoQ10 — Concentrado' },
-      { curto:'Hair',          sku:'80.1.5',  preco:99.40,  nome:'Hair Botanika — Cabelos, Unhas e Pele' },
-      { curto:'Sleep',         sku:'80.1.6',  preco:119.70, nome:'Sleep Inositol — Relaxamento e Rotina do Sono' },
-      { curto:'Creatina',      sku:'80.1.7',  preco:128.30, nome:'Creatina Monohidratada + Magnésio Taurato' },
-      { curto:'Whey',          sku:'80.1.8',  preco:147.30, nome:'Whey Balance Chocolate — Whey + Colágeno C-PURE®' },
-      { curto:'TetraVit D',    sku:'80.1.9',  preco:117.12, nome:'TetraVit D — Vitaminas A, D, E e K em Gotas' },
-      { curto:'Whey s/ sabor', sku:'80.1.20', preco:147.30, nome:'Whey Balance Sem Sabor — Whey Concentrado + Colágeno C-PURE®' },
-      { curto:'Kit Imunidade', sku:'kitimu',  preco:361.71, nome:'Kit Imunidade — TetraVit D + Ômega 3 + Vit C', kit:true },
+      { curto:'Tri[Mg]',       sku:'80.1.1', foto:F+'hf_20260831_001724_6d9f444b-0b2a-47db-b598-0174d70f35da_300x300.png?v=1788140235',  preco:87.50,  nome:'Tri[Mg] Complex — Magnésio 3 em 1 de Rápida Absorção' },
+      { curto:'Vit C',         sku:'80.1.2', foto:F+'hf_20260831_140355_ecfcb375-7dee-46e9-8055-24a934ab890e_300x300.png?v=1788186842',  preco:89.52,  nome:'Super Vitamina C — Vitamina C + Quercetina + Própolis' },
+      { curto:'Ômega 3',       sku:'80.1.3', foto:F+'hf_20260831_040137_c0b4c41d-86dd-4df3-bffc-bfab6960bfa6_300x300.png?v=1788149560',  preco:163.12, nome:'Super Ômega 3 + CoQ10 — Concentrado' },
+      { curto:'Hair',          sku:'80.1.5', foto:F+'hf_20260831_015943_a7df23dd-86f6-4d6d-ace1-b86157f1dd82_300x300.png?v=1788142206',  preco:99.40,  nome:'Hair Botanika — Cabelos, Unhas e Pele' },
+      { curto:'Sleep',         sku:'80.1.6', foto:F+'01-principal_300x300.png?v=1781566957',  preco:119.70, nome:'Sleep Inositol — Relaxamento e Rotina do Sono' },
+      { curto:'Creatina',      sku:'80.1.7', foto:F+'hf_20260830_184404_172a0541-20c1-47fe-bb80-cc2bf1d31bfa_300x300.png?v=1788117425',  preco:128.30, nome:'Creatina Monohidratada + Magnésio Taurato' },
+      { curto:'Whey',          sku:'80.1.8', foto:F+'hf_20260830_192912_8ab2f4ee-b8c0-4326-bae6-7da4552792fc_300x300.png?v=1788120748',  preco:147.30, nome:'Whey Balance Chocolate — Whey + Colágeno C-PURE®' },
+      { curto:'TetraVit D',    sku:'80.1.9', foto:F+'hf_20260831_025348_50f9c075-c3b8-49ef-b998-a62a63a764ed_300x300.png?v=1788145495',  preco:117.12, nome:'TetraVit D — Vitaminas A, D, E e K em Gotas' },
+      { curto:'Whey s/ sabor', sku:'80.1.20', foto:F+'hf_20260830_230810_610a30bf-6221-48a9-ac19-9616ed27abe5_300x300.png?v=1788132393', preco:147.30, nome:'Whey Balance Sem Sabor — Whey Concentrado + Colágeno C-PURE®' },
+      { curto:'Kit Imunidade', sku:'kitimu', foto:F+'kitsemana_300x300.png?v=1784419178',  preco:361.71, nome:'Kit Imunidade — TetraVit D + Ômega 3 + Vit C', kit:true },
     ],
     VermeFree: [],
   };
   const catalogo = (marca) => CATALOGOS[marca] || [];
+
+  /* A foto vem da Shopify. Quando ela não carrega — rede da pessoa, ou um
+     visualizador que bloqueia imagem de fora — cai nas iniciais em vez de
+     deixar um quadrado quebrado na lista. */
+  function miniatura(p) {
+    const ini = p.curto.replace(/[^A-Za-zÀ-ÿ0-9]/g, ' ').trim().split(/\s+/)
+      .slice(0, 2).map((x) => x[0]).join('').toUpperCase();
+    return `<span class="as-mini" data-ini="${esc(ini)}">` +
+      (p.foto ? `<img src="${p.foto}" alt="" loading="lazy"
+                     onerror="this.remove()">` : '') + '</span>';
+  }
 
   const BONUS = { universal: 'Manual da Suplementação (PDF)',
                   influencer: 'Guia da Imunidade Infantil (PDF)' };
@@ -506,6 +517,7 @@
         const on = A.produtos.includes(p.sku);
         return `<label class="as-lin ${on ? '' : 'as-off'}" data-sku="${p.sku}">
           <input type="checkbox" data-prod="${p.sku}" ${on ? 'checked' : ''}>
+          ${miniatura(p)}
           <span class="as-nm">${esc(p.curto)}${p.kit ? ' · kit' : ''}
             <small>${esc(p.nome)} · SKU ${esc(p.sku)}</small></span>
           <span class="as-preco">R$ ${p.preco.toFixed(2).replace('.', ',')}</span>
@@ -643,6 +655,9 @@
       tap: null,
     };
     c.tap = montarTap(c, A.tipo, A.tema);
+    /* a geração de agora fica guardada: é contra ela que a fusão vai saber,
+       depois, qual célula alguém escreveu à mão */
+    c.tapBase = JSON.parse(JSON.stringify(c.tap));
 
     const todas = lerCampanhas();
     todas.push(c);
@@ -656,12 +671,179 @@
     aviso(`"${c.name}" criada — nó no mapa e TAP montado.`);
   }
 
+  /* ======================================================================
+     Regerar o cronograma sem jogar fora o que a equipe escreveu.
+
+     Estender uma semana em dois dias custava o TAP inteiro: ou o
+     cronograma ficava com os dias velhos, ou "regerar" apagava tudo que a
+     equipe tinha preenchido. A fusão é a três — o que o gerador produziu
+     quando a campanha nasceu (base), o que está lá agora (atual) e o que o
+     gerador produz com as datas novas.
+
+     A regra, célula a célula: quem ninguém tocou acompanha o gerador; quem
+     foi escrita à mão fica como está; e o dia que entrou nasce preenchido
+     pelo ritmo padrão.
+     ====================================================================== */
+  const chaveLinha = (l) => String((l && l[0]) || '').trim().toLowerCase();
+
+  function fundirSecao(sa, sb, sn) {
+    /* Colunas: base↔novo casam pelo rótulo, que é onde o gerador escreve o
+       dia; base↔atual casam pela posição, porque são a mesma geração.
+       Coluna renomeada à mão mantém o nome; dia que saiu da janela
+       desaparece; dia que entrou vem preenchido. */
+    const usados = new Set();
+    const mapa = sn.columns.map((rot) => {
+      const j = sb.columns.findIndex((r, i) => r === rot && !usados.has(i));
+      if (j >= 0) usados.add(j);
+      return j;
+    });
+    const cols = mapa.map((j, k) => (j >= 0 && sa.columns[j] !== undefined ? sa.columns[j] : sn.columns[k]));
+
+    const celulas = (la, lb, ln, daPessoa) => mapa.map((j, k) => {
+      const va = j >= 0 ? (la[j] ?? '') : undefined;
+      if (daPessoa) return va === undefined ? '' : va;
+      const vb = j >= 0 && lb ? (lb[j] ?? '') : undefined;
+      const vn = ln ? (ln[k] ?? '') : undefined;
+      if (va === undefined) return vn ?? '';   // coluna nova
+      if (va !== vb) return va;                // escrita à mão: fica
+      return vn !== undefined ? vn : va;       // intocada: acompanha o gerador
+    });
+
+    const emB = new Map(), emN = new Map();
+    sb.rows.forEach((l, i) => { const k = chaveLinha(l); if (!emB.has(k)) emB.set(k, i) });
+    sn.rows.forEach((l, i) => { const k = chaveLinha(l); if (!emN.has(k)) emN.set(k, i) });
+
+    /* Linhas geradas voltam na ordem do gerador; as escritas à mão ficam
+       ancoradas na gerada que vinha antes delas, para o produto novo não
+       aparecer depois do frete. */
+    const fundidas = new Map(), soltas = [];
+    let ancora = -1;
+    sa.rows.forEach((la) => {
+      const k = chaveLinha(la);
+      const ib = emB.has(k) ? emB.get(k) : -1, inn = emN.has(k) ? emN.get(k) : -1;
+      if (ib >= 0) {
+        if (inn < 0) return;   // o gerador não faz mais essa linha: canal desmarcado
+        fundidas.set(inn, celulas(la, sb.rows[ib], sn.rows[inn], false));
+        ancora = inn; return;
+      }
+      soltas.push({ l: celulas(la, null, null, true), apos: ancora });
+    });
+
+    const linhas = [];
+    const derramar = (a) => soltas.forEach((x) => { if (x.apos === a) linhas.push(x.l) });
+    derramar(-1);
+    sn.rows.forEach((ln, inn) => {
+      if (fundidas.has(inn)) linhas.push(fundidas.get(inn));
+      /* linha nova do gerador — canal recém-ligado. Se ela existia na base
+         e sumiu daqui, foi a pessoa que apagou: não volta. */
+      else if (!emB.has(chaveLinha(ln))) linhas.push(ln.slice());
+      derramar(inn);
+    });
+    return { title: sa.title, columns: cols, rows: linhas };
+  }
+
+  function fundirSecoes(atual, base, novo) {
+    const A = atual || [];
+    const paresB = new Map(), paresN = new Map();
+    const livresB = base.map((_, i) => i), livresN = novo.map((_, i) => i);
+    A.forEach((sa, ia) => {
+      const ib = base.findIndex((x, i) => x.title === sa.title && livresB.includes(i));
+      const inn = novo.findIndex((x, i) => x.title === sa.title && livresN.includes(i));
+      if (ib >= 0 && inn >= 0) {
+        paresB.set(ia, ib); paresN.set(ia, inn);
+        livresB.splice(livresB.indexOf(ib), 1); livresN.splice(livresN.indexOf(inn), 1);
+      }
+    });
+    /* Sobrou o mesmo tanto dos três lados: são as mesmas seções com outro
+       nome, e casam na ordem. Se as contas não batem — alguém criou uma
+       seção à mão — não arrisca: a renomeada só para de se atualizar. */
+    const soltasA = A.map((_, i) => i).filter((i) => !paresB.has(i));
+    if (soltasA.length && soltasA.length === livresB.length && livresB.length === livresN.length) {
+      const b2 = livresB.slice(), n2 = livresN.slice();
+      soltasA.forEach((ia, k) => {
+        paresB.set(ia, b2[k]); paresN.set(ia, n2[k]);
+        livresB.splice(livresB.indexOf(b2[k]), 1); livresN.splice(livresN.indexOf(n2[k]), 1);
+      });
+    }
+    const saida = A.map((sa, ia) => (paresB.has(ia)
+      ? fundirSecao(sa, base[paresB.get(ia)], novo[paresN.get(ia)])
+      : sa));   // seção criada à mão, ou que o gerador não faz mais: intocada
+    livresN.forEach((i) => { if (!A.some((sa) => sa.title === novo[i].title)) saida.push(novo[i]) });
+    return saida;
+  }
+
+  /* Recria o TAP com as datas de agora e funde com o que está na tela. */
+  function regerar(campId) {
+    const todas = lerCampanhas();
+    const c = todas.find((x) => String(x.id) === String(campId));
+    if (!c) return;
+    const tipo = Object.keys(TIPOS).find((k) => TIPOS[k].app === c.type) || 'outro';
+    /* montarTap lê a oferta do estado do assistente; aqui reconstruo esse
+       estado a partir da própria campanha, para regerar não depender de
+       ninguém ter acabado de passar pelo formulário */
+    const guardado = A;
+    A = { marca: c.brand, tipo, tema: null,
+          produtos: (c.products || []).map((p) =>
+            (catalogo(c.brand).find((x) => x.curto === p.name) || {}).sku).filter(Boolean),
+          modoDesc: 'todos', descGeral: 0, descPorSku: {}, extras: [],
+          frete: (c.benefits || [])[0], brinde: (c.benefits || [])[1],
+          bonusUniversal: (c.benefits || [])[2], bonusInfluencer: (c.benefits || [])[3],
+          receita: c.receita || null, meta: c.goal, verba: c.budget };
+    const novo = montarTap(c, tipo, null);
+    A = guardado;
+
+    const base = Array.isArray(c.tapBase) && c.tapBase.length ? c.tapBase : novo;
+    c.tap = fundirSecoes(c.tap || [], base, novo);
+    c.tapBase = novo;                     // a próxima fusão compara com esta
+    localStorage.setItem(CHAVE_CAMP(), JSON.stringify(todas));
+    window.RecarregarCampanhas?.();
+    aviso('Cronograma regerado — o que foi escrito à mão continua lá.');
+  }
+  window.RegerarCronograma = regerar;
+
   function aviso(texto) {
     const t = document.createElement('div');
     t.className = 'as-aviso'; t.textContent = texto;
     document.body.appendChild(t);
     setTimeout(() => t.remove(), 4200);
   }
+
+  /* O botão aparece no cabeçalho da seção de cronograma, que é onde a
+     pessoa está olhando quando percebe que as datas mudaram. Fico de olho
+     porque o app remonta essa área a cada troca de campanha. */
+  function porBotaoRegerar() {
+    for (const sec of document.querySelectorAll('.tap-section')) {
+      const cab = sec.querySelector('.tap-section-head');
+      if (!cab || cab.querySelector('[data-regerar]')) continue;
+      if (!/CANAIS|CRONOGRAMA/i.test(cab.textContent || '')) continue;
+      const bt = document.createElement('button');
+      bt.type = 'button';
+      bt.dataset.regerar = '1';
+      bt.className = 'as-regerar';
+      bt.textContent = 'Regerar cronograma';
+      bt.title = 'Refaz a grade com as datas de agora, mantendo o que foi escrito à mão';
+      bt.onclick = (e) => {
+        e.preventDefault(); e.stopPropagation();
+        const id = campanhaAberta();
+        if (id) regerar(id);
+        else aviso('Não consegui identificar a campanha aberta.');
+      };
+      cab.appendChild(bt);
+    }
+  }
+  /* Qual campanha está aberta. O app guarda isso numa variável fechada, à
+     qual não tenho acesso, então descubro pelo nome no cabeçalho — que é
+     justamente o que a pessoa está vendo. Nome repetido na mesma marca
+     seria ambíguo, e nesse caso prefiro não fazer nada a regerar a errada. */
+  function campanhaAberta() {
+    const ws = document.getElementById('campaignWorkspace');
+    const nome = ws?.querySelector('h2')?.textContent?.trim();
+    if (!nome) return null;
+    const iguais = lerCampanhas().filter((c) => c.name.trim() === nome);
+    return iguais.length === 1 ? iguais[0].id : null;
+  }
+
+  new MutationObserver(porBotaoRegerar).observe(document.documentElement, { childList: true, subtree: true });
 
   window.AssistenteCampanha = comecar;
 
