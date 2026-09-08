@@ -274,7 +274,7 @@
       if (!visivel(n)) continue;
       if (n.x === undefined) { n.x = RAIZ_X; n.y = RAIZ_Y }
       const d = document.createElement('div');
-      const temSelo = !!(n.nota || n.feito);
+      const temSelo = !!(n.nota || n.feito || n.campId);
       d.className = 'mp-el mp-no' + (nivel(n) === 0 ? ' mp-raiz' : '')
         + (n.feito ? ' mp-feito' : '') + (temSelo ? ' mp-comselo' : '')
         + (sel.t === 'no' && sel.id === n.id ? ' mp-sel' : '');
@@ -287,6 +287,11 @@
       if (n.feito) { const o = document.createElement('span'); o.className = 'mp-ok'; o.textContent = '✓'; d.appendChild(o) }
       const t = document.createElement('span'); t.className = 'mp-txt'; t.textContent = n.t; d.appendChild(t);
       if (n.nota) { const b = document.createElement('span'); b.className = 'mp-selo'; b.textContent = 'nota'; b.title = n.nota; d.appendChild(b) }
+      if (n.campId) {
+        const b = botao('mp-selo mp-camp', 'campanha ↗', 'Abrir esta campanha',
+          () => window.AbrirCampanha?.(n.campId));
+        d.appendChild(b);
+      }
 
       const s = lado(n) > 0 ? 'mp-dir' : 'mp-esq';
       if (filhos(n.id).length) {
@@ -294,8 +299,16 @@
           n.fech ? 'Abrir o ramo' : 'Fechar o ramo',
           () => { guardar(); n.fech = !n.fech; organizar({ enquadrar: false }); salvar() }));
       }
-      d.appendChild(botao('mp-mais ' + s, '+', 'Novo filho',
-        () => { sel = { t: 'no', id: n.id }; novoFilho() }));
+      const ehRaizAqui = !n.pai;
+      d.appendChild(botao('mp-mais ' + s, '+',
+        ehRaizAqui ? 'Nova campanha' : 'Novo filho',
+        () => {
+          sel = { t: 'no', id: n.id };
+          /* na raiz o + é o começo de uma campanha, não um nó qualquer —
+             é o gesto que o Vitor já tem no dedo, vindo do planejador */
+          if (ehRaizAqui && window.AssistenteCampanha) window.AssistenteCampanha(null);
+          else novoFilho();
+        }));
 
       ligar(d, n, 'no'); mundo.appendChild(d);
     }
@@ -561,6 +574,20 @@
     } else {
       const a = acharNo(sel.id); if (!a) return;
       const ehRaiz = !a.pai, nf = filhos(a.id).length;
+      if (window.AssistenteCampanha) {
+        if (ehRaiz) {
+          menu.appendChild(item('+ Nova campanha do mês', '', () => window.AssistenteCampanha(null)));
+          menu.appendChild(document.createElement('hr'));
+        } else if (a.campId) {
+          menu.appendChild(item('Abrir a campanha', '', () => window.AbrirCampanha?.(a.campId)));
+          menu.appendChild(document.createElement('hr'));
+        } else {
+          /* a ideia foi rascunhada antes de virar campanha: o atalho existe
+             no planejador e é como o Vitor trabalha */
+          menu.appendChild(item('Transformar em campanha…', '', () => window.AssistenteCampanha(a.id)));
+          menu.appendChild(document.createElement('hr'));
+        }
+      }
       menu.appendChild(item('Novo filho', 'Tab', novoFilho));
       if (!ehRaiz) menu.appendChild(item('Novo irmão', 'Enter', novoIrmao));
       menu.appendChild(item('Renomear', 'F2', () => editar()));
@@ -877,5 +904,29 @@
     addEventListener('DOMContentLoaded', vigiar, { once: true });
   else vigiar();
 
-  window.MapaMental = { abrir, recarregar: () => { if (cerca?.isConnected) abrir(cerca.parentElement) } };
+  /* O assistente de campanha mora noutro arquivo e conversa por aqui. Ele
+     precisa de pouco: saber quem está selecionado, a marca aberta, e poder
+     pendurar um nó de campanha na raiz. */
+  window.MapaMental = {
+    abrir,
+    recarregar: () => { if (cerca?.isConnected) abrir(cerca.parentElement) },
+    marca: () => marcaAtual(),
+    selecionado: () => ({ ...sel }),
+    no: (id) => acharNo(id),
+    campanhasNoMapa: () => nos().filter((n) => n.campId).map((n) => n.campId),
+    /* noId preenchido = a ideia já existia e vira campanha; vazio = nasce
+       pendurada na raiz, como o + faz */
+    virarCampanha(noId, { nome, cor, campId }) {
+      guardar();
+      const n = noId ? acharNo(noId) : null;
+      if (n) { n.t = nome; n.campId = campId; n.cor = cor; }
+      else {
+        const r = raiz();
+        if (!r) return;
+        nos().push({ id: M.prox++, pai: r.id, t: nome, campId, cor, x: r.x, y: r.y });
+      }
+      organizar({ enquadrar: false });
+      salvar();
+    },
+  };
 })();
