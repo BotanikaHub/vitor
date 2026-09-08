@@ -1,0 +1,633 @@
+/* ===== CENTRAL DESIGN SYSTEM V5 — Cilo-inspired operational UI =====
+   Goal: native operational product, dense but calm, with neutral surfaces,
+   thin borders, compact controls, readable hierarchy and a perfectly centered rail.
+   This layer intentionally overrides legacy visual styling without changing behavior.
+*/
+
+:root{
+  --ds-bg:#f5f5f3;
+  --ds-surface:#ffffff;
+  --ds-surface-2:#fafaf9;
+  --ds-ink:#111314;
+  --ds-ink-2:#2e3135;
+  --ds-muted:#73777f;
+  --ds-muted-2:#9a9da3;
+  --ds-line:#e4e5e2;
+  --ds-line-strong:#d6d8d4;
+  --ds-black:#111314;
+  --ds-blue:#2f6fd6;
+  --ds-blue-bg:#edf4ff;
+  --ds-red:#db3e45;
+  --ds-red-bg:#fff0f1;
+  --ds-orange:#d47716;
+  --ds-orange-bg:#fff6e9;
+  --ds-green:#18864a;
+  --ds-green-bg:#edf9f2;
+  --ds-purple:#7b4ab8;
+  --ds-purple-bg:#f6efff;
+  --ds-radius-xs:8px;
+  --ds-radius-sm:10px;
+  --ds-radius-md:14px;
+  --ds-radius-lg:18px;
+  --ds-radius-xl:22px;
+  --ds-shadow:0 1px 1px rgba(17,19,20,.025),0 8px 24px rgba(17,19,20,.035);
+  --ds-shadow-float:0 18px 50px rgba(17,19,20,.14);
+}
+
+html,body{
+  background:var(--ds-bg)!important;
+  color:var(--ds-ink)!important;
+  text-rendering:optimizeLegibility;
+  -webkit-font-smoothing:antialiased;
+}
+
+body,button,input,select,textarea{
+  font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;
+}
+
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+
+.main{
+  background:var(--ds-bg)!important;
+  border:1px solid var(--ds-line)!important;
+  box-shadow:none!important;
+}
+
+/* ---------- LEFT RAIL: true geometric centering ---------- */
+.sidebar{
+  border-right:1px solid var(--ds-line)!important;
+}
+
+.brandbox{
+  align-items:center!important;
+  justify-content:flex-start!important;
+}
+
+.brandmark{
+  display:grid!important;
+  place-items:center!important;
+  background:var(--ds-black)!important;
+  border:1px solid var(--ds-black)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}
+
+.side-select{
+  appearance:auto!important;
+  -webkit-appearance:auto!important;
+  background:#fff!important;
+  color:var(--ds-ink)!important;
+  border:1px solid var(--ds-line-strong)!important;
+  outline:none!important;
+  box-shadow:none!important;
+  font-weight:650!important;
+  letter-spacing:-.01em!important;
+}
+.side-select:hover{border-color:#bfc2bd!important}
+.side-select:focus,.side-select:focus-visible{
+  outline:none!important;
+  border-color:#bfc2bd!important;
+  box-shadow:0 0 0 3px rgba(17,19,20,.055)!important;
+}
+
+.nav{
+  align-items:center!important;
+  justify-content:flex-start!important;
+}
+
+.navitem{
+  position:relative!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  background:#fff!important;
+  color:var(--ds-ink)!important;
+  border:1px solid var(--ds-line-strong)!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+  line-height:0!important;
+}
+.navitem:hover{
+  background:#f7f7f6!important;
+  border-color:#c8cac6!important;
+}
+.navitem.active{
+  background:var(--ds-black)!important;
+  color:#fff!important;
+  border-color:var(--ds-black)!important;
+}
+
+/* The wrapper is removed from normal flow and pinned to the exact center.
+   This prevents inherited margins, line-height and old flex rules from shifting SVGs. */
+.navitem .icon{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  right:auto!important;
+  bottom:auto!important;
+  transform:translate(-50%,-50%)!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  margin:0!important;
+  line-height:0!important;
+  font-size:0!important;
+  box-sizing:border-box!important;
+  pointer-events:none!important;
+}
+.navitem .icon svg{
+  position:static!important;
+  inset:auto!important;
+  display:block!important;
+  margin:0!important;
+  padding:0!important;
+  transform:none!important;
+  transform-origin:50% 50%!important;
+  overflow:visible!important;
+  flex:none!important;
+  stroke:currentColor!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+.navitem .icon svg *{
+  vector-effect:non-scaling-stroke;
+}
+
+.navcount,.badge{
+  position:absolute!important;
+  z-index:4!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:#f54a4f!important;
+  color:#fff!important;
+  border:2px solid #fff!important;
+  box-shadow:none!important;
+  font-weight:750!important;
+  line-height:1!important;
+}
+
+.profile{align-items:center!important;justify-content:center!important}
+.avatar{
+  display:grid!important;
+  place-items:center!important;
+  padding:0!important;
+  margin:0 auto!important;
+  background:#ececea!important;
+  color:var(--ds-ink)!important;
+  border:1px solid var(--ds-line-strong)!important;
+  box-shadow:none!important;
+  font-weight:750!important;
+  line-height:1!important;
+}
+
+@media (min-width:900px){
+  .app{grid-template-columns:84px minmax(0,1fr)!important}
+  .sidebar{width:84px!important;padding:14px 7px 12px!important}
+  .brandbox{width:70px!important;gap:8px!important;padding-bottom:12px!important}
+  .brandmark{width:48px!important;height:48px!important;border-radius:15px!important}
+  .side-select{width:70px!important;height:40px!important;border-radius:13px!important;padding:0 7px!important;font-size:9px!important}
+  .nav{width:60px!important;gap:7px!important}
+  .navitem{width:50px!important;height:50px!important;min-height:50px!important;flex:0 0 50px!important;border-radius:15px!important}
+  .navitem .icon{width:23px!important;height:23px!important}
+  .navitem .icon svg{width:23px!important;height:23px!important;stroke-width:1.85!important}
+  .navitem:after{left:59px!important}
+  .navcount,.badge{top:-5px!important;right:-5px!important;min-width:20px!important;height:20px!important;padding:0 5px!important;font-size:8px!important}
+  .profile{width:60px!important;padding-top:9px!important}
+  .avatar{width:44px!important;height:44px!important;border-radius:14px!important}
+}
+
+@media (min-width:900px) and (max-width:1199px){
+  .app{grid-template-columns:80px minmax(0,1fr)!important}
+  .sidebar{width:80px!important}
+  .brandbox,.side-select{width:66px!important}
+  .nav{width:58px!important}
+  .navitem{width:48px!important;height:48px!important;min-height:48px!important;flex-basis:48px!important;border-radius:14px!important}
+  .navitem .icon,.navitem .icon svg{width:22px!important;height:22px!important}
+}
+
+@media (min-width:640px) and (max-width:899px){
+  .app{grid-template-columns:76px minmax(0,1fr)!important}
+  .sidebar{width:76px!important}
+  .brandbox,.side-select{width:62px!important}
+  .nav{width:56px!important}
+  .navitem{width:46px!important;height:46px!important;min-height:46px!important;flex-basis:46px!important;border-radius:14px!important}
+  .navitem .icon,.navitem .icon svg{width:21px!important;height:21px!important}
+}
+
+/* ---------- CILO-LIKE GLOBAL TOOLBAR ---------- */
+.global-toolbar{
+  background:rgba(255,255,255,.94)!important;
+  border-bottom:1px solid var(--ds-line)!important;
+  box-shadow:none!important;
+  backdrop-filter:blur(16px)!important;
+}
+.global-search,.global-people,.global-icon-btn{
+  background:#fff!important;
+  border:1px solid var(--ds-line-strong)!important;
+  box-shadow:none!important;
+}
+.global-search:focus-within{
+  border-color:#b9bcb7!important;
+  box-shadow:0 0 0 3px rgba(17,19,20,.045)!important;
+}
+.global-search input{color:var(--ds-ink)!important}
+.global-search input::placeholder{color:var(--ds-muted-2)!important}
+.global-icon-btn:hover{background:#f6f6f5!important}
+
+/* ---------- TYPOGRAPHY / PAGE HEADERS ---------- */
+.hero-copy h1,.taskspage-title h1,.deliveries-titlebar h1,.plan-titlebar h1,.camp-titlebar h1{
+  color:var(--ds-ink)!important;
+  font-weight:720!important;
+  letter-spacing:-.045em!important;
+}
+.hero-copy p,.taskspage-title p,.deliveries-titlebar p,.plan-titlebar p,.camp-titlebar p{
+  color:var(--ds-muted)!important;
+}
+
+.datechip,.customize-btn,
+.taskspage-actions button,.plan-actions button,.camp-actions button,
+.cu-btn,.delivery-btn,.camp-btn,.plan-btn{
+  background:#fff!important;
+  color:var(--ds-ink)!important;
+  border:1px solid var(--ds-line-strong)!important;
+  box-shadow:none!important;
+  font-weight:650!important;
+}
+.datechip:hover,.customize-btn:hover,
+.taskspage-actions button:hover,.plan-actions button:hover,.camp-actions button:hover,
+.cu-btn:hover,.delivery-btn:hover,.camp-btn:hover,.plan-btn:hover{
+  background:#f7f7f6!important;
+  border-color:#c6c8c3!important;
+}
+
+/* ---------- ONE SURFACE LANGUAGE ACROSS THE PRODUCT ---------- */
+.module,.card,.timeline-card,.stat,
+.cu-panel,.cu-column,.cu-col,.cu-list,.cu-board-wrap,
+.delivery-panel,.delivery-card,.delivery-workspace,.delivery-list,.delivery-detail,
+.plan-card,.plan-panel,.month-shell,.week-shell,
+.camp-card,.camp-panel,.campaign-card,
+.process-card,.tool-card,.team-card,
+.tdrawer-panel{
+  background:var(--ds-surface)!important;
+  border:1px solid var(--ds-line)!important;
+  box-shadow:var(--ds-shadow)!important;
+}
+
+.module,.card,.timeline-card,.stat,
+.cu-panel,.cu-column,.cu-col,.cu-board-wrap,
+.delivery-panel,.delivery-card,.delivery-list,.delivery-detail,
+.plan-card,.plan-panel,.month-shell,.week-shell,
+.camp-card,.camp-panel,.campaign-card,
+.process-card,.tool-card,.team-card{
+  border-radius:var(--ds-radius-lg)!important;
+}
+
+/* Remove old decorative gradients / oversized shadows from operational UI. */
+.module:before,.module:after,.card:before,.card:after,
+.cu-card:before,.task-card:before,.delivery-card:before,.camp-card:before{
+  box-shadow:none!important;
+}
+
+/* ---------- TASKS: Cilo density + cards + controls ---------- */
+.taskspage-head{
+  padding-bottom:6px!important;
+}
+.taskspage-title{
+  align-items:flex-end!important;
+  gap:18px!important;
+}
+.taskspage-title h1{font-size:30px!important;line-height:1.05!important}
+.taskspage-title p{font-size:11px!important;line-height:1.45!important}
+
+.cu-toolbar{
+  display:flex!important;
+  align-items:center!important;
+  flex-wrap:wrap!important;
+  gap:8px!important;
+  padding:9px!important;
+  background:#fff!important;
+  border:1px solid var(--ds-line)!important;
+  border-radius:16px!important;
+  box-shadow:var(--ds-shadow)!important;
+}
+
+.cu-search,.cu-filter{
+  min-height:40px!important;
+  height:40px!important;
+  background:#fff!important;
+  color:var(--ds-ink)!important;
+  border:1px solid var(--ds-line-strong)!important;
+  border-radius:11px!important;
+  box-shadow:none!important;
+}
+.cu-search{padding:0 12px!important}
+.cu-search:focus-within,.cu-filter:focus-within{
+  border-color:#b8bbb5!important;
+  box-shadow:0 0 0 3px rgba(17,19,20,.045)!important;
+}
+.cu-search input,.cu-filter select,.cu-filter input{
+  color:var(--ds-ink)!important;
+  font-size:10.5px!important;
+}
+
+.cu-views,.camp-tabs,.plan-tabs{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:3px!important;
+  padding:3px!important;
+  background:#efefed!important;
+  border:0!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+}
+.cu-view,.camp-tab,.plan-tab{
+  min-height:34px!important;
+  height:34px!important;
+  padding:0 11px!important;
+  border:0!important;
+  border-radius:9px!important;
+  background:transparent!important;
+  color:#64686f!important;
+  font-size:9.5px!important;
+  font-weight:650!important;
+  box-shadow:none!important;
+}
+.cu-view.active,.camp-tab.active,.plan-tab.active{
+  background:var(--ds-black)!important;
+  color:#fff!important;
+}
+
+.cu-board,.tasks-board,.kanban-board{
+  gap:12px!important;
+  align-items:start!important;
+}
+
+.cu-column,.cu-col,.task-column,.kanban-column{
+  background:#f8f8f7!important;
+  border:1px solid var(--ds-line)!important;
+  border-radius:16px!important;
+  padding:8px!important;
+  box-shadow:none!important;
+}
+.cu-column-head,.cu-col-head,.task-column-head,.kanban-column-head{
+  min-height:42px!important;
+  padding:6px 6px 8px!important;
+  color:var(--ds-ink)!important;
+  font-size:10px!important;
+  font-weight:700!important;
+  letter-spacing:-.015em!important;
+}
+
+.cu-card,.task-card,.kanban-card{
+  position:relative!important;
+  background:#fff!important;
+  border:1px solid var(--ds-line)!important;
+  border-radius:13px!important;
+  padding:11px!important;
+  margin-bottom:7px!important;
+  box-shadow:none!important;
+  transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease!important;
+}
+.cu-card:hover,.task-card:hover,.kanban-card:hover{
+  transform:translateY(-1px)!important;
+  border-color:#cfd1cd!important;
+  box-shadow:0 8px 20px rgba(17,19,20,.055)!important;
+}
+
+.cu-card-title,.task-card-title,.task-title{
+  color:var(--ds-ink)!important;
+  font-size:11.5px!important;
+  line-height:1.35!important;
+  font-weight:680!important;
+  letter-spacing:-.012em!important;
+}
+.cu-card-meta,.task-card-meta,.task-meta{
+  color:var(--ds-muted)!important;
+  font-size:8.75px!important;
+  line-height:1.35!important;
+}
+
+.cu-tag,.tag,.chip,.status-pill,.priority-pill,.task-chip,
+.cu-card [class*="tag"],.task-card [class*="tag"]{
+  display:inline-flex!important;
+  align-items:center!important;
+  min-height:20px!important;
+  padding:2px 6px!important;
+  border-radius:6px!important;
+  border:1px solid var(--ds-line)!important;
+  background:#f6f6f5!important;
+  color:#555a61!important;
+  font-size:8px!important;
+  font-weight:650!important;
+  line-height:1!important;
+  box-shadow:none!important;
+}
+
+/* Semantic tags, matching the colored-signal language from the references. */
+[class*="priority"][class*="high"],[class*="urgent"],
+[data-priority="alta"],[data-priority="urgente"]{
+  color:var(--ds-red)!important;background:var(--ds-red-bg)!important;border-color:#ffd1d4!important;
+}
+[class*="status"][class*="doing"],[class*="status"][class*="fazendo"],
+[data-status="fazendo"]{
+  color:var(--ds-blue)!important;background:var(--ds-blue-bg)!important;border-color:#cee0ff!important;
+}
+[class*="status"][class*="review"],[class*="status"][class*="revisar"],
+[data-status="revisar"]{
+  color:var(--ds-orange)!important;background:var(--ds-orange-bg)!important;border-color:#f6d6a8!important;
+}
+[class*="status"][class*="done"],[class*="status"][class*="feito"],
+[data-status="feito"]{
+  color:var(--ds-green)!important;background:var(--ds-green-bg)!important;border-color:#ccebd9!important;
+}
+
+.cu-avatar,.task-avatar,.assignee-avatar{
+  border:2px solid #fff!important;
+  box-shadow:0 0 0 1px var(--ds-line)!important;
+}
+
+/* List mode should read like a professional inbox, not stacked giant cards. */
+.task,.cu-row,.task-row{
+  background:#fff!important;
+  border:0!important;
+  border-bottom:1px solid var(--ds-line)!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+.task:first-child,.cu-row:first-child,.task-row:first-child{border-top:1px solid var(--ds-line)!important}
+.task:hover,.cu-row:hover,.task-row:hover{background:#fafaf9!important}
+.cardhead,.cu-list-head,.task-list-head{
+  background:#fafaf9!important;
+  border-bottom:1px solid var(--ds-line)!important;
+}
+
+/* ---------- TASK DRAWER: same hierarchy as the Cilo conversation/detail panels ---------- */
+.tdrawer-panel{
+  border-radius:20px!important;
+  box-shadow:var(--ds-shadow-float)!important;
+  overflow:hidden!important;
+}
+.tdrawer-head,.tdrawer-header{
+  background:#fff!important;
+  border-bottom:1px solid var(--ds-line)!important;
+  padding:14px 16px!important;
+}
+.tdrawer-body{background:#fff!important}
+.tdetail-grid>*{
+  background:#fafaf9!important;
+  border:1px solid var(--ds-line)!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+}
+.tdrawer-panel input,.tdrawer-panel select,.tdrawer-panel textarea{
+  background:#fff!important;
+  color:var(--ds-ink)!important;
+  border:1px solid var(--ds-line-strong)!important;
+  border-radius:10px!important;
+  box-shadow:none!important;
+}
+.tdrawer-panel input:focus,.tdrawer-panel select:focus,.tdrawer-panel textarea:focus{
+  outline:none!important;
+  border-color:#b8bbb5!important;
+  box-shadow:0 0 0 3px rgba(17,19,20,.045)!important;
+}
+
+/* ---------- DASHBOARD / CAMPAIGNS / PLANNING ---------- */
+.dashboard{gap:12px!important}
+.module{overflow:hidden!important}
+.cardhead,.timeline-head{
+  color:var(--ds-ink)!important;
+  background:#fff!important;
+  border-bottom:1px solid var(--ds-line)!important;
+}
+.stat{
+  box-shadow:none!important;
+  background:#fff!important;
+}
+.stat .label,.stat .note{color:var(--ds-muted)!important}
+.stat .value{color:var(--ds-ink)!important;letter-spacing:-.04em!important}
+
+.timeline-card{box-shadow:none!important}
+.timeline:before{background:#d8d9d6!important}
+.milestone-dot{
+  background:#fff!important;
+  border:2px solid #74787f!important;
+  box-shadow:none!important;
+}
+.milestone.current .milestone-dot{
+  background:var(--ds-black)!important;
+  border-color:var(--ds-black)!important;
+  box-shadow:0 0 0 7px rgba(17,19,20,.07)!important;
+}
+.campaign-pill{
+  background:#f4f4f3!important;
+  border:1px solid var(--ds-line)!important;
+  color:#42464d!important;
+  box-shadow:none!important;
+}
+.campaign-pill.primary,.campaign-pill.active{
+  background:var(--ds-black)!important;
+  color:#fff!important;
+  border-color:var(--ds-black)!important;
+}
+
+.delivery-tabs{
+  background:#efefed!important;
+  box-shadow:none!important;
+}
+.delivery-tab{font-weight:650!important}
+
+.camp-card,.campaign-card,.plan-card,.delivery-card,.process-card,.tool-card,.team-card{
+  box-shadow:none!important;
+}
+
+/* ---------- FORM CONTROLS / BUTTONS ---------- */
+input,select,textarea{
+  accent-color:var(--ds-black)!important;
+}
+button[class*="primary"],.primary-btn,.new-task-btn,.add-task-btn{
+  background:var(--ds-black)!important;
+  color:#fff!important;
+  border:1px solid var(--ds-black)!important;
+  box-shadow:none!important;
+}
+button[class*="primary"]:hover,.primary-btn:hover,.new-task-btn:hover,.add-task-btn:hover{
+  background:#272a2c!important;
+  border-color:#272a2c!important;
+}
+
+/* ---------- SMALL-SCREEN CONSISTENCY ---------- */
+@media (max-width:639px){
+  .sidebar{
+    border:1px solid var(--ds-line-strong)!important;
+    background:rgba(255,255,255,.97)!important;
+  }
+  .navitem{
+    background:transparent!important;
+    border:0!important;
+  }
+  .navitem.active{background:var(--ds-black)!important}
+  .navitem .icon{
+    width:21px!important;height:21px!important;
+  }
+  .navitem .icon svg{width:21px!important;height:21px!important}
+  .cu-toolbar{padding:8px!important;border-radius:14px!important}
+  .cu-card,.task-card,.kanban-card{border-radius:12px!important}
+}
+
+/* ---------- DARK MODE: same system, inverted rather than restyled ---------- */
+html[data-theme="dark"]{
+  --ds-bg:#0f1010;
+  --ds-surface:#151616;
+  --ds-surface-2:#1a1b1b;
+  --ds-ink:#f3f4f2;
+  --ds-ink-2:#d9dbd7;
+  --ds-muted:#979b9f;
+  --ds-muted-2:#6f7377;
+  --ds-line:#292b2a;
+  --ds-line-strong:#353736;
+  --ds-black:#f4f4f2;
+  --ds-shadow:0 1px 1px rgba(0,0,0,.2),0 8px 24px rgba(0,0,0,.16);
+}
+html[data-theme="dark"] body,
+html[data-theme="dark"] .main{background:var(--ds-bg)!important;color:var(--ds-ink)!important}
+html[data-theme="dark"] .sidebar,
+html[data-theme="dark"] .global-toolbar,
+html[data-theme="dark"] .module,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .timeline-card,
+html[data-theme="dark"] .stat,
+html[data-theme="dark"] .cu-toolbar,
+html[data-theme="dark"] .cu-card,
+html[data-theme="dark"] .task-card,
+html[data-theme="dark"] .tdrawer-panel{
+  background:var(--ds-surface)!important;
+}
+html[data-theme="dark"] .side-select,
+html[data-theme="dark"] .global-search,
+html[data-theme="dark"] .global-people,
+html[data-theme="dark"] .global-icon-btn,
+html[data-theme="dark"] .cu-search,
+html[data-theme="dark"] .cu-filter{
+  background:#111212!important;
+  color:var(--ds-ink)!important;
+  border-color:var(--ds-line-strong)!important;
+}
+html[data-theme="dark"] .navitem{background:#151616!important;color:var(--ds-ink)!important;border-color:var(--ds-line-strong)!important}
+html[data-theme="dark"] .navitem.active{background:#f3f4f2!important;color:#111314!important;border-color:#f3f4f2!important}
+html[data-theme="dark"] .cu-column,
+html[data-theme="dark"] .cu-col,
+html[data-theme="dark"] .task-column,
+html[data-theme="dark"] .kanban-column{background:#111212!important;border-color:var(--ds-line)!important}
+html[data-theme="dark"] .task,
+html[data-theme="dark"] .cu-row,
+html[data-theme="dark"] .task-row{background:var(--ds-surface)!important}
+html[data-theme="dark"] .task:hover,
+html[data-theme="dark"] .cu-row:hover,
+html[data-theme="dark"] .task-row:hover{background:#1a1b1b!important}
+
+/* END CENTRAL DESIGN SYSTEM V5 */

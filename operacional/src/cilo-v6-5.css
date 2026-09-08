@@ -1,0 +1,112 @@
+  color:#34383d!important;
+  font-size:8px!important;
+  font-weight:700!important;
+}
+.attachment-drop{
+  padding:16px!important;
+  border:1px dashed #cfd2cd!important;
+  border-radius:12px!important;
+  background:#fafaf9!important;
+  color:#7f848a!important;
+  font-size:8.5px!important;
+}
+.file-pill{border-color:var(--v6-line)!important;border-radius:9px!important;background:#fff!important}
+.comment-body{background:#f6f6f4!important;border:1px solid #eeeeeb!important;border-radius:11px!important}
+.activity{color:#6f747a!important}
+
+/* New-task popup follows the same product language. */
+.new-task-back{background:rgba(15,17,18,.55)!important;backdrop-filter:blur(2px)!important}
+.new-task-box{
+  width:min(680px,calc(100vw - 40px))!important;
+  padding:20px!important;
+  border:1px solid #d8dad6!important;
+  border-radius:20px!important;
+  background:#fff!important;
+  box-shadow:0 24px 75px rgba(0,0,0,.2)!important;
+}
+.new-task-box h2{font-size:22px!important;font-weight:700!important;letter-spacing:-.035em!important}
+.newfield label{font-size:8px!important;color:#858a90!important;text-transform:none!important;letter-spacing:0!important}
+.newfield input,.newfield select,.newfield textarea{
+  border:1px solid var(--v6-line-strong)!important;
+  border-radius:10px!important;
+  background:#fff!important;
+  box-shadow:none!important;
+}
+.new-actions button{height:40px!important;border-radius:10px!important}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1180px){
+  .cu-toolbar-controls{flex-wrap:wrap!important}
+  .cu-search{max-width:none!important;flex:1 1 100%!important}
+  .cu-filter{flex:1 1 calc(25% - 6px)!important;max-width:none!important}
+  .tdrawer-panel{width:calc(100vw - 32px)!important;height:calc(100vh - 32px)!important;max-height:calc(100vh - 32px)!important}
+}
+@media (max-width:899px){
+  .brand-context{min-width:118px!important;height:44px!important}
+  .global-toolbar .brand-context .side-select{width:70px!important;font-size:9.5px!important}
+  .taskspage-head{padding:20px 18px 0!important}
+  .tasks-canvas{padding:10px 18px 80px!important}
+  .cu-toolbar-top{overflow-x:auto!important}
+  .cu-views{flex:0 0 auto!important}
+  .cu-summary{display:none!important}
+  .cu-filter{flex:1 1 calc(50% - 4px)!important}
+  .tdetail-layout{grid-template-columns:1fr!important;overflow:auto!important}
+  .tdetail-main{overflow:visible!important}
+  .tdetail-side{overflow:visible!important;border-left:0!important;border-top:1px solid var(--v6-line)!important}
+  .tdrawer-body{overflow:auto!important}
+}
+@media (max-width:639px){
+  .global-toolbar{gap:7px!important}
+  .brand-context{min-width:72px!important;width:72px!important;padding:4px 7px!important}
+  .brand-context-label{display:none!important}
+  .global-toolbar .brand-context .side-select{width:58px!important;font-size:8px!important}
+  .taskspage-title{align-items:flex-start!important;flex-wrap:wrap!important}
+  .taskspage-actions{width:100%!important;margin-left:0!important}
+  .taskspage-actions .cu-btn{flex:1!important}
+  .cu-toolbar-top{padding-bottom:8px!important}
+  .cu-view{padding:0 9px!important}
+  .cu-filter{flex:1 1 calc(50% - 4px)!important;min-width:0!important}
+  .tdrawer-panel{width:calc(100vw - 12px)!important;height:calc(100vh - 12px)!important;max-height:calc(100vh - 12px)!important;border-radius:18px!important}
+  .tdrawer-head{grid-template-columns:38px minmax(0,1fr) auto!important;padding:9px 10px!important;gap:8px!important}
+  .tdrawer-close{width:36px!important;height:36px!important;border-radius:10px!important}
+  .tdrawer-title{font-size:18px!important}
+  .tdrawer-save{height:36px!important;min-width:58px!important;padding:0 9px!important}
+  .tdetail-main{padding:18px 14px 42px!important}
+  .tdetail-side{padding:18px 14px 32px!important}
+}
+
+/* ---------- Dark mode ---------- */
+html[data-theme="dark"]{
+  --v6-bg:#0f1010;
+  --v6-panel:#151616;
+  --v6-soft:#191a1a;
+  --v6-soft-2:#1d1e1e;
+  --v6-ink:#f3f4f2;
+  --v6-muted:#979b9f;
+  --v6-muted-2:#74787c;
+  --v6-line:#2a2c2b;
+  --v6-line-strong:#363836;
+  --v6-black:#f3f4f2;
+}
+html[data-theme="dark"] .brand-context,
+html[data-theme="dark"] .cu-search,
+html[data-theme="dark"] .cu-filter,
+html[data-theme="dark"] .cu-card,
+html[data-theme="dark"] .cu-week-card,
+html[data-theme="dark"] .cu-list-group,
+html[data-theme="dark"] .tdrawer-panel,
+html[data-theme="dark"] .tdetail-main,
+html[data-theme="dark"] .new-task-box{
+  background:#151616!important;
+  color:var(--v6-ink)!important;
+  border-color:var(--v6-line-strong)!important;
+}
+html[data-theme="dark"] .global-toolbar .brand-context .side-select,
+html[data-theme="dark"] .cu-search input,
+html[data-theme="dark"] .tdrawer-title{color:var(--v6-ink)!important;background:transparent!important}
+html[data-theme="dark"] .cu-toolbar-top,
+html[data-theme="dark"] .tdetail-side,
+html[data-theme="dark"] .cu-group-head{background:#191a1a!important;border-color:var(--v6-line)!important}
+html[data-theme="dark"] .cu-column,
+html[data-theme="dark"] .cu-day{background:#1c1d1d!important;border-color:#303230!important}
+html[data-theme="dark"] .cu-day.today{background:#202121!important;box-shadow:inset 0 3px 0 #f2f2ef!important}

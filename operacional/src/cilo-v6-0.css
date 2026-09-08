@@ -1,0 +1,190 @@
+/* ======================================================================
+   CENTRAL DESIGN SYSTEM V6 — task workspace + context controls
+   Built from the Cilo references supplied by the user: narrow icon rail,
+   compact segmented controls, one-border search, neutral surfaces, semantic
+   chips and a dense operational detail view.
+   ====================================================================== */
+
+:root{
+  --v6-bg:#f4f4f2;
+  --v6-panel:#fff;
+  --v6-soft:#f8f8f7;
+  --v6-soft-2:#f1f1ef;
+  --v6-ink:#111314;
+  --v6-muted:#747980;
+  --v6-muted-2:#979ba1;
+  --v6-line:#e1e2df;
+  --v6-line-strong:#d2d4d0;
+  --v6-black:#121415;
+  --v6-red:#d94a4f;
+  --v6-red-bg:#fff1f1;
+  --v6-orange:#c9791e;
+  --v6-orange-bg:#fff5e8;
+  --v6-blue:#356fc8;
+  --v6-blue-bg:#edf4ff;
+  --v6-green:#248451;
+  --v6-green-bg:#edf8f1;
+  --v6-radius:14px;
+  --v6-shadow:0 1px 2px rgba(17,19,20,.025),0 12px 28px rgba(17,19,20,.04);
+}
+
+/* ---------- Brand is global context, not a giant navigation card ---------- */
+.brandbox{
+  width:60px!important;
+  padding:0 0 10px!important;
+  gap:0!important;
+}
+.brandmark{
+  width:50px!important;
+  height:50px!important;
+  border-radius:15px!important;
+}
+.brand-context{
+  height:46px!important;
+  min-width:132px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  padding:5px 9px 5px 11px!important;
+  background:#fff!important;
+  border:1px solid var(--v6-line-strong)!important;
+  border-radius:14px!important;
+  box-shadow:none!important;
+}
+.brand-context-label{
+  color:var(--v6-muted-2)!important;
+  font-size:8px!important;
+  font-weight:650!important;
+  line-height:1!important;
+  text-transform:uppercase!important;
+  letter-spacing:.055em!important;
+}
+.global-toolbar .brand-context .side-select{
+  appearance:auto!important;
+  -webkit-appearance:menulist!important;
+  width:82px!important;
+  min-width:0!important;
+  height:34px!important;
+  padding:0 2px!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:8px!important;
+  background:transparent!important;
+  color:var(--v6-ink)!important;
+  box-shadow:none!important;
+  outline:0!important;
+  font-size:10.5px!important;
+  font-weight:700!important;
+  text-align:left!important;
+  text-align-last:left!important;
+}
+.global-toolbar .brand-context:focus-within{
+  border-color:#b9bcb7!important;
+  box-shadow:0 0 0 3px rgba(17,19,20,.045)!important;
+}
+
+/* ---------- Task page header ---------- */
+.tasks-view{background:transparent!important}
+.taskspage-head{
+  padding:24px 28px 0!important;
+  background:transparent!important;
+  border:0!important;
+}
+.taskspage-title{
+  align-items:center!important;
+  gap:16px!important;
+  padding-bottom:14px!important;
+}
+.taskspage-title h1{
+  font-size:29px!important;
+  font-weight:680!important;
+  letter-spacing:-.042em!important;
+}
+.taskspage-title p{
+  margin-top:4px!important;
+  font-size:10px!important;
+  color:var(--v6-muted)!important;
+}
+.taskspage-actions{align-self:center!important}
+.taskspage-actions .cu-btn{
+  height:40px!important;
+  padding:0 13px!important;
+  border:1px solid var(--v6-line-strong)!important;
+  border-radius:11px!important;
+  background:#fff!important;
+  color:var(--v6-ink)!important;
+  font-size:9.5px!important;
+  font-weight:700!important;
+}
+.taskspage-actions .cu-btn.primary{
+  background:var(--v6-black)!important;
+  border-color:var(--v6-black)!important;
+  color:#fff!important;
+}
+
+/* ---------- Task toolbar: one clean shell, no nested/double search borders ---------- */
+.cu-toolbar{
+  display:block!important;
+  margin:0!important;
+  padding:0 0 16px!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+.cu-toolbar-top{
+  min-height:46px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:12px!important;
+  padding:7px 0!important;
+  border-top:1px solid var(--v6-line)!important;
+  border-bottom:1px solid var(--v6-line)!important;
+}
+.cu-toolbar-controls{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  padding-top:10px!important;
+  min-width:0!important;
+}
+.cu-views{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:3px!important;
+  padding:3px!important;
+  background:#ececea!important;
+  border:0!important;
+  border-radius:12px!important;
+  box-shadow:none!important;
+  flex:0 0 auto!important;
+}
+.cu-view{
+  height:34px!important;
+  min-height:34px!important;
+  padding:0 11px!important;
+  border:0!important;
+  border-radius:9px!important;
+  background:transparent!important;
+  color:#656a70!important;
+  font-size:9.25px!important;
+  font-weight:680!important;
+  box-shadow:none!important;
+}
+.cu-view:hover{background:rgba(255,255,255,.58)!important;color:var(--v6-ink)!important}
+.cu-view.active{
+  background:#fff!important;
+  color:var(--v6-ink)!important;
+  box-shadow:0 1px 3px rgba(17,19,20,.07)!important;
+}
+.cu-summary{
+  margin-left:auto!important;
+  padding-right:2px!important;
+  color:var(--v6-muted)!important;
+  font-size:9px!important;
+  white-space:nowrap!important;
+}
+.cu-summary b{color:var(--v6-red)!important}
+
+.cu-search{
