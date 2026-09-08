@@ -1,0 +1,128 @@
+/* ===== Conferência — a tranca antes da entrega =====
+   Mesmo vocabulário do resto: caixa branca, borda fina, canto arredondado,
+   preto como cor de ação. O que muda de tom aqui é só o estado: verde
+   discreto quando liberado, vermelho discreto quando travado — a cor diz
+   o que é, e não decora. */
+
+.cf{border:1px solid #e3e3e3;border-radius:14px;background:#fff;padding:14px 15px}
+.cf-travado{border-color:#e8d2d2;background:#fffbfb}
+.cf-liberado{border-color:#d7e6da;background:#fbfefb}
+.cf-secao{border-top:0!important;padding-top:0!important;margin-top:0!important;margin-bottom:18px}
+.cf-pisca{animation:cf-pisca 1.3s ease}
+@keyframes cf-pisca{0%,100%{box-shadow:none}30%,70%{box-shadow:0 0 0 3px rgba(180,60,60,.16)}}
+
+.cf-topo{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.cf-titulo{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1 1 200px}
+.cf-titulo strong{font-size:12px;font-weight:700;color:#121415}
+.cf-titulo span{font-size:9.5px;color:#8a8f94}
+.cf-acoes{display:flex;gap:6px;flex-wrap:wrap}
+
+.cf-bt{min-height:32px;padding:0 11px;border:1px solid #dfdfdf;border-radius:10px;background:#fff;
+  color:#121415;font-size:10px;font-weight:600;cursor:pointer}
+.cf-bt:hover{background:#f6f6f6}
+.cf-bt:disabled{opacity:.55;cursor:progress}
+.cf-bt-fraco{color:#7a7f84}
+.cf-bt-forte{background:#121415;border-color:#121415;color:#fff}
+
+.cf-medidor{height:5px;border-radius:999px;background:#eeeeee;margin:12px 0 10px;overflow:hidden}
+.cf-medidor i{display:block;height:100%;background:#121415;border-radius:999px;transition:width .25s ease}
+
+.cf-selo{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;
+  font-size:9.5px;font-weight:700}
+.cf-selo:before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.cf-ok{background:#eef6ef;color:#3d6b45}
+.cf-trava{background:#fbeeee;color:#8f3b3b}
+
+.cf-itens{margin-top:10px}
+.cf-item{display:flex;align-items:flex-start;gap:9px;padding:9px 4px;border-bottom:1px solid #f1f1f1;cursor:pointer}
+.cf-item:last-child{border-bottom:0}
+.cf-item input[type=checkbox]{width:16px;height:16px;margin-top:1px;flex:0 0 auto;accent-color:#121415}
+.cf-texto{flex:1;min-width:0;font-size:11px;line-height:1.5;color:#2a2d30}
+.cf-item.feito .cf-texto{color:#9aa0a4;text-decoration:line-through}
+.cf-tag{flex:0 0 auto;padding:2px 7px;border-radius:999px;background:#f3ecec;color:#8f5555;
+  font-size:8px;font-weight:700;margin-top:1px}
+.cf-item.feito .cf-tag{background:#f2f2f2;color:#a0a5a9}
+.cf-quem{flex:0 0 auto;font-size:8.5px;color:#a4a9ad;margin-top:2px}
+.cf-x{flex:0 0 auto;border:0;background:transparent;color:#b9bec2;font-size:13px;line-height:1;
+  padding:0 2px;cursor:pointer;opacity:0}
+.cf-item:hover .cf-x,.cf-padrao-linha:hover .cf-x{opacity:1}
+.cf-x:hover{color:#8f3b3b}
+
+.cf-linha-add{display:flex;gap:7px;margin-top:11px}
+.cf-linha-add input{flex:1;min-width:0;height:34px;border:1px solid #e3e3e3;border-radius:10px;
+  padding:0 10px;font:inherit;font-size:10.5px;outline:none;background:#fff;color:#121415}
+.cf-linha-add input:focus{border-color:#c9c9c9}
+.cf-rodape{display:block;margin-top:10px;color:#a4a9ad;font-size:8.5px}
+.cf-vazio{margin:11px 0 0;color:#83888d;font-size:10.5px;line-height:1.6}
+
+/* --- a conferência da campanha --- */
+.cf-camp{margin-top:16px}
+.cf-tarefas{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:11px}
+.cf-tarefa-num{border:1px solid #ececec;border-radius:12px;background:#fafafa;padding:8px 12px;
+  display:flex;flex-direction:column;gap:1px;min-width:78px}
+.cf-tarefa-num b{font-size:16px;font-weight:650;letter-spacing:-.02em;color:#121415}
+.cf-tarefa-num span{font-size:8.5px;color:#8a8f94}
+.cf-tarefa-num.ruim b{color:#8f3b3b}
+.cf-tarefa-num.morno b{color:#8a6a2f}
+
+/* --- o padrão da área --- */
+.cf-modal{position:fixed;inset:0;z-index:120;display:grid;place-items:center}
+.cf-modal-fundo{position:absolute;inset:0;background:rgba(18,20,21,.42);backdrop-filter:blur(2px)}
+.cf-modal-caixa{position:relative;width:min(680px,calc(100vw - 40px));max-height:calc(100vh - 60px);
+  display:flex;flex-direction:column;background:#fff;border:1px solid #dfdfdf;border-radius:22px;
+  box-shadow:0 28px 90px rgba(18,20,21,.18);overflow:hidden}
+.cf-modal-caixa header{display:flex;align-items:flex-start;gap:10px;padding:18px 20px 14px;
+  border-bottom:1px solid #ededed}
+.cf-modal-caixa header strong{display:block;font-size:16px;font-weight:600;letter-spacing:-.02em;color:#121415}
+.cf-modal-caixa header span{display:block;margin-top:3px;font-size:10px;color:#8a8f94}
+.cf-x-grande{margin-left:auto;width:36px;height:36px;border:1.5px solid #dfdfdf;border-radius:12px;
+  background:#fff;color:#121415;font-size:16px;line-height:1;cursor:pointer}
+.cf-x-grande:hover{background:#f6f6f6}
+.cf-abas{display:flex;gap:5px;overflow-x:auto;padding:11px 20px;border-bottom:1px solid #ededed}
+.cf-aba{flex:0 0 auto;min-height:30px;padding:0 11px;border:1px solid #e3e3e3;border-radius:999px;
+  background:#fff;color:#6f7479;font-size:10px;font-weight:600;cursor:pointer;white-space:nowrap}
+.cf-aba:hover{background:#f6f6f6}
+.cf-aba.ativa{background:#121415;border-color:#121415;color:#fff}
+.cf-modal-corpo{flex:1 1 auto;min-height:0;overflow:auto;padding:14px 20px 18px}
+.cf-padrao-linha{display:flex;align-items:flex-start;gap:9px;padding:9px 3px;border-bottom:1px solid #f1f1f1}
+.cf-padrao-linha input[type=checkbox]{width:16px;height:16px;margin-top:1px;flex:0 0 auto;accent-color:#121415}
+.cf-padrao-linha span[contenteditable]{flex:1;min-width:0;font-size:11px;line-height:1.5;color:#2a2d30;
+  border-radius:6px;padding:1px 4px;margin:-1px -4px;outline:none}
+.cf-padrao-linha span[contenteditable]:focus{background:#f6f6f6;box-shadow:0 0 0 1px #e0e0e0}
+.cf-nota{margin:14px 0 0;color:#8a8f94;font-size:9.5px;line-height:1.6}
+.cf-modal-caixa footer{display:flex;gap:8px;justify-content:flex-end;padding:14px 20px;
+  border-top:1px solid #ededed;background:#fbfbfb}
+
+@media(max-width:640px){
+  .cf-modal-caixa{width:calc(100vw - 20px);max-height:calc(100vh - 24px)}
+  .cf-acoes{width:100%}
+  .cf-bt{flex:1 1 auto}
+}
+
+/* --- escuro --- */
+html[data-theme="dark"] .cf{background:#161616;border-color:#333}
+html[data-theme="dark"] .cf-travado{background:#1a1414;border-color:#432c2c}
+html[data-theme="dark"] .cf-liberado{background:#141a15;border-color:#2c4030}
+html[data-theme="dark"] .cf-titulo strong,html[data-theme="dark"] .cf-texto{color:#f0f0f0}
+html[data-theme="dark"] .cf-bt,html[data-theme="dark"] .cf-linha-add input,
+html[data-theme="dark"] .cf-aba,html[data-theme="dark"] .cf-x-grande{background:#0f0f0f;border-color:#333;color:#ededed}
+html[data-theme="dark"] .cf-bt-forte,html[data-theme="dark"] .cf-aba.ativa{background:#ededed;border-color:#ededed;color:#121415}
+html[data-theme="dark"] .cf-item,html[data-theme="dark"] .cf-padrao-linha{border-color:#262626}
+html[data-theme="dark"] .cf-medidor{background:#2a2a2a}
+html[data-theme="dark"] .cf-medidor i{background:#ededed}
+html[data-theme="dark"] .cf-tarefa-num{background:#0f0f0f;border-color:#2b2b2b}
+html[data-theme="dark"] .cf-tarefa-num b{color:#f0f0f0}
+html[data-theme="dark"] .cf-modal-caixa{background:#121212;border-color:#333}
+html[data-theme="dark"] .cf-modal-caixa header,html[data-theme="dark"] .cf-abas,
+html[data-theme="dark"] .cf-modal-caixa footer{border-color:#2b2b2b}
+html[data-theme="dark"] .cf-modal-caixa footer{background:#0f0f0f}
+html[data-theme="dark"] .cf-modal-caixa header strong{color:#f5f5f5}
+
+/* --- abrir e fechar a lista --- */
+.cf-dobra{flex:0 0 auto;width:24px;height:24px;margin-top:-1px;border:1px solid #e3e3e3;border-radius:8px;
+  background:#fff;color:#6f7479;font-size:13px;line-height:1;cursor:pointer;transition:transform .18s ease}
+.cf-dobra:hover{background:#f6f6f6}
+.cf-dobra.aberta{transform:rotate(90deg)}
+.cf-tarefas-rot{margin-bottom:7px;font-size:9px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;color:#8a8f94}
+html[data-theme="dark"] .cf-dobra{background:#0f0f0f;border-color:#333;color:#c9c9c9}
