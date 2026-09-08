@@ -75,6 +75,48 @@ conf('recusa data de fim antes do início',
 await pag.fill('#as-fim', fim);
 await pag.waitForTimeout(200);
 
+/* passo 2: produtos do catálogo da Shopify */
+await pag.locator('[data-adiante]').click();
+await pag.waitForTimeout(350);
+conf('o passo de oferta abre', (await pag.locator('.as-cx h3').textContent()).includes('Produtos'));
+const linhas = await pag.locator('.as-lin[data-sku]').count();
+conf('o catálogo da Shopify aparece (' + linhas + ' produtos)', linhas === 10);
+conf('todos vêm marcados', await pag.locator('.as-lin[data-sku] input:checked').count() === 10);
+await pag.screenshot({ path: 'teste/10-oferta.png' });
+
+/* desmarcar um produto o tira da oferta */
+await pag.locator('.as-lin[data-sku="80.1.5"] input[type=checkbox]').uncheck();
+await pag.waitForTimeout(150);
+
+/* um % por produto */
+await pag.locator('[data-modo="cada"]').click();
+await pag.waitForTimeout(300);
+conf('dá para dar um desconto por produto',
+  await pag.locator('.as-dsku').first().isVisible());
+await pag.locator('.as-dsku[data-sku="80.1.1"]').fill('25');
+await pag.locator('.as-dsku[data-sku="80.1.1"]').dispatchEvent('change');
+
+await pag.fill('#as-extras', 'Combo Fitness · 15% OFF');
+await pag.fill('#as-brinde', 'Coqueteleira acima de R$ 400');
+await pag.waitForTimeout(150);
+
+/* passo 3: canais que faturam */
+await pag.locator('[data-adiante]').click();
+await pag.waitForTimeout(350);
+conf('o passo de canais abre', (await pag.locator('.as-cx h3').textContent()).includes('verba'));
+conf('lista os seis canais de receita', await pag.locator('.as-lin3').count() === 6);
+const somas = await pag.locator('#as-somas').textContent();
+conf('a divisão já fecha com a meta da ação', somas.includes('Fecha com a meta'));
+await pag.screenshot({ path: 'teste/11-canais.png' });
+
+/* desligar um canal deixa a soma abaixo da meta, e a tela avisa */
+await pag.locator('[data-on="1"]').uncheck();
+await pag.waitForTimeout(250);
+conf('desligar um canal avisa que falta para bater a meta',
+  (await pag.locator('#as-somas').textContent()).includes('Faltam'));
+await pag.locator('[data-on="1"]').check();
+await pag.waitForTimeout(250);
+
 await pag.locator('[data-criar]').click();
 await pag.waitForTimeout(700);
 
@@ -94,6 +136,28 @@ conf('o cronograma tem uma coluna por dia (' + (canais.columns.length - 3) + ' d
 conf('o TAP lista os dez canais', canais.rows.length === 10);
 const fases = c.tap.find(s => s.title === 'FASES');
 conf('as fases nasceram preenchidas', fases.rows.length >= 4);
+
+const oferta = c.tap.find(s => s.title === 'SOBRE A OFERTA');
+conf('a oferta lista os 9 produtos marcados mais o de fora do catálogo',
+  oferta.rows.length === 10);
+conf('o produto desmarcado ficou de fora',
+  !oferta.rows.some(r => r[0].startsWith('Hair')));
+conf('o desconto por produto foi respeitado (25%)',
+  oferta.rows.some(r => r[0].startsWith('Tri[Mg]') && r[2] === '25% OFF'));
+conf('o produto escrito à mão entrou',
+  oferta.rows.some(r => r[0] === 'Fora do catálogo' && r[1].includes('Combo Fitness')));
+conf('os produtos também vão para o campo products da campanha',
+  Array.isArray(c.products) && c.products.length === 9);
+
+const evento = c.tap.find(s => s.title === 'SOBRE O EVENTO');
+conf('o brinde entrou no TAP',
+  evento.rows.some(r => r[0] === 'Brinde' && r[1].includes('Coqueteleira')));
+
+const metas = c.tap.find(s => s.title === 'METAS');
+conf('as metas saem canal a canal',
+  metas.rows.filter(r => r[0].startsWith('Meta faturamento —')).length === 6);
+conf('a soma das metas por canal bate com a meta da ação',
+  metas.rows.some(r => r[0] === 'Meta faturamento total' && r[1].includes('120.000')));
 
 /* e no mapa: o nó com o selo de campanha */
 const noCamp = await pag.locator('.mp-no .mp-camp').count();

@@ -61,6 +61,64 @@
     ['Alteração no site',            'Banner + tarja com timer + aviso nas PDPs','Pedro'],
   ];
 
+  /* Catálogo real da loja (Shopify · Botanika Brasil), o mesmo que o
+     planejador usa. A VermeFree é outra conta Shopify e ainda não está
+     cadastrada aqui — em vez de fingir um catálogo, a tela diz isso e
+     abre o campo de produto escrito à mão. */
+  const F = 'https://cdn.shopify.com/s/files/1/0780/7238/1672/files/';
+  const CATALOGOS = {
+    Botanika: [
+      { curto:'Tri[Mg]',       sku:'80.1.1',  preco:87.50,  nome:'Tri[Mg] Complex — Magnésio 3 em 1 de Rápida Absorção' },
+      { curto:'Vit C',         sku:'80.1.2',  preco:89.52,  nome:'Super Vitamina C — Vitamina C + Quercetina + Própolis' },
+      { curto:'Ômega 3',       sku:'80.1.3',  preco:163.12, nome:'Super Ômega 3 + CoQ10 — Concentrado' },
+      { curto:'Hair',          sku:'80.1.5',  preco:99.40,  nome:'Hair Botanika — Cabelos, Unhas e Pele' },
+      { curto:'Sleep',         sku:'80.1.6',  preco:119.70, nome:'Sleep Inositol — Relaxamento e Rotina do Sono' },
+      { curto:'Creatina',      sku:'80.1.7',  preco:128.30, nome:'Creatina Monohidratada + Magnésio Taurato' },
+      { curto:'Whey',          sku:'80.1.8',  preco:147.30, nome:'Whey Balance Chocolate — Whey + Colágeno C-PURE®' },
+      { curto:'TetraVit D',    sku:'80.1.9',  preco:117.12, nome:'TetraVit D — Vitaminas A, D, E e K em Gotas' },
+      { curto:'Whey s/ sabor', sku:'80.1.20', preco:147.30, nome:'Whey Balance Sem Sabor — Whey Concentrado + Colágeno C-PURE®' },
+      { curto:'Kit Imunidade', sku:'kitimu',  preco:361.71, nome:'Kit Imunidade — TetraVit D + Ômega 3 + Vit C', kit:true },
+    ],
+    VermeFree: [],
+  };
+  const catalogo = (marca) => CATALOGOS[marca] || [];
+
+  const BONUS = { universal: 'Manual da Suplementação (PDF)',
+                  influencer: 'Guia da Imunidade Infantil (PDF)' };
+
+  /* De onde vem o faturamento. Tráfego e API são os dois que consomem
+     verba; o resto vem de canal que não se compra. As proporções são as do
+     Dia D de agosto, que é o que o planejador já usava. */
+  const CANAIS_RECEITA = [
+    { n:'Tráfego',               pr:.267, invPr:.67, r:'Gestor' },
+    { n:'Influencer',            pr:.178, invPr:0,   r:'Joinny' },
+    { n:'Instagram Bio/stories', pr:.078, invPr:0,   r:'Italo' },
+    { n:'Atendimento',           pr:.056, invPr:0,   r:'Lissia' },
+    { n:'Grupos antigos',        pr:.156, invPr:0,   r:'Pedro' },
+    { n:'API',                   pr:.267, invPr:.33, r:'Pedro' },
+  ];
+  const PAGAS = ['Tráfego', 'API'];
+
+  /* O que sobra depois de tráfego e API se reparte entre os outros na
+     proporção que eles já tinham entre si. O arredondamento vai para o
+     maior canal livre: o número que a pessoa digitou é o que fica. */
+  function dividirReceita(meta, verba) {
+    const invTraf = Math.round(verba * 0.67);
+    const pagas = { 'Tráfego': { inv: invTraf, meta: Math.round(meta * 0.267) },
+                    'API':     { inv: verba - invTraf, meta: Math.round(meta * 0.267) } };
+    const sobra = Math.max(0, meta - pagas['Tráfego'].meta - pagas['API'].meta);
+    const outros = CANAIS_RECEITA.filter((c) => !PAGAS.includes(c.n));
+    const somaPr = outros.reduce((t, c) => t + c.pr, 0) || 1;
+    const l = CANAIS_RECEITA.map((c) => PAGAS.includes(c.n)
+      ? { n: c.n, r: c.r, on: true, inv: pagas[c.n].inv, meta: pagas[c.n].meta }
+      : { n: c.n, r: c.r, on: true, inv: 0, meta: Math.round(sobra * c.pr / somaPr) });
+    const livres = l.filter((x) => !PAGAS.includes(x.n));
+    const somaM = l.reduce((t, x) => t + x.meta, 0);
+    if (somaM !== meta && livres.length)
+      livres.reduce((x, y) => (y.meta > x.meta ? y : x)).meta += meta - somaM;
+    return l;
+  }
+
   const DOW = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
   const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho',
                  'agosto','setembro','outubro','novembro','dezembro'];
@@ -127,6 +185,7 @@
   }
 
   function montarTap(c, tipo, tema) {
+    const O = A || {};
     const ini = dISO(c.start), fim = dISO(c.end);
     const T = TIPOS[tipo], P = PADRAO[tipo] || PADRAO.outro;
     const periodo = c.start === c.end ? dBR(ini) : `${dBR(ini)} a ${dBR(fim)}`;
@@ -135,39 +194,55 @@
     /* As duas fontes que consomem verba são tráfego e API; o resto do
        faturamento vem de canal que não se compra. As proporções são as
        mesmas que o planejador já usava. */
-    const invTraf = Math.round((c.budget || 0) * 0.67);
-    const invApi  = (c.budget || 0) - invTraf;
-    const metaTraf = Math.round((c.goal || 0) * 0.267);
-    const roas = invTraf ? (metaTraf / invTraf).toFixed(1).replace('.', ',') : '—';
+    const rec0 = (O.receita || dividirReceita(c.goal || 0, c.budget || 0)).filter((x) => x.on !== false);
+    const somaI = rec0.reduce((t, x) => t + x.inv, 0);
+    const somaM = rec0.reduce((t, x) => t + x.meta, 0);
+    const roas = somaI ? (somaM / somaI).toFixed(1).replace('.', ',') : '—';
 
     return [
       { title: 'SOBRE O EVENTO', columns: ['Campo', 'Valor'], rows: [
         ['Nome da Campanha', c.name],
         ['Formato da campanha', `${T.desc}${tema ? ' — tema ' + tema : ''} (${periodo})`],
-        ['Cupom automático', P.cupom],
-        ['Bônus universal', 'A definir — todos que comprarem'],
-        ['Bônus via influencer', 'A definir — só quem comprar pela influencer'],
-        ['Frete', P.frete]] },
+        ['Cupom automático', c.offer],
+        ['Bônus universal', `${O.bonusUniversal || '—'} — todos que comprarem`],
+        ['Bônus via influencer', `${O.bonusInfluencer || '—'} — só quem comprar pela influencer`],
+        ['Frete', O.frete || P.frete],
+        ...(O.brinde ? [['Brinde', O.brinde]] : [])] },
       { title: 'EQUIPE', columns: ['Quem', 'Responsabilidade'], rows: EQUIPE.map((e) => [...e]) },
       { title: 'FASES', columns: ['Fase', 'Tem?', 'Data'], rows: fasesDe(tipo, ini, fim) },
       { title: 'SOBRE A OFERTA', columns: ['Produto', 'Detalhe', 'Desconto'], rows: [
-        ['Produtos participantes', P.produtos, P.desconto],
-        ['Order bump', P.bump, '—']] },
+        ...escolhidos().map((p) => [
+          p.curto + (p.kit ? ' · kit' : ''),
+          `${p.nome} · SKU ${p.sku} · R$ ${p.preco.toFixed(2).replace('.', ',')}`,
+          descDe(p.sku) ? descDe(p.sku) + '% OFF' : '—']),
+        ...(O.extras || []).map((t) => ['Fora do catálogo', t, '—']),
+        ...(escolhidos().length || (O.extras || []).length ? [] : [['A definir', P.produtos, P.desconto]])] },
       { title: 'AUMENTO DE TICKET MÉDIO', columns: ['Estratégia', 'Detalhe', 'Desconto'], rows: [
-        ['Frete grátis', P.frete, '—'],
-        ['Order bump', P.bump, '—']] },
-      { title: 'METAS', columns: ['Item', 'Valor', 'Responsável'], rows: [
-        ['Investimento — Tráfego', brl(invTraf), 'Gestor'],
-        ['Investimento — API', brl(invApi), 'Gestor'],
-        ['ROAS alvo', roas, 'Gestor'],
-        ['Meta faturamento total', brl(c.goal), ''],
-        ['Investimento API e tráfego', brl(c.budget), ''],
-        ['Lucro (aprox.)', brl((c.goal || 0) - (c.budget || 0)), '']] },
+        ['Frete grátis', O.frete || P.frete, '—'],
+        ['Order bump', P.bump, '—'],
+        ...(O.brinde ? [['Brinde', O.brinde, '—']] : [])] },
+      { title: 'METAS', columns: ['Item', 'Valor', 'Responsável'], rows: (() => {
+        /* a divisão por canal é a que a pessoa acabou de conferir no passo
+           3; sem ela, cai na proporção padrão */
+        const rec = (O.receita || dividirReceita(c.goal, c.budget)).filter((x) => x.on !== false);
+        const l = [];
+        rec.filter((x) => x.inv > 0).forEach((x) => l.push([`Investimento — ${x.n}`, brl(x.inv), x.r]));
+        l.push(['ROAS alvo', roas, 'Gestor']);
+        rec.forEach((x) => l.push([`Meta faturamento — ${x.n}`, brl(x.meta), x.r]));
+        const sm = rec.reduce((t, x) => t + x.meta, 0), si = rec.reduce((t, x) => t + x.inv, 0);
+        l.push(['Meta faturamento total', brl(sm || c.goal), ''],
+               ['Investimento API e tráfego', brl(si || c.budget), ''],
+               ['Lucro (aprox.)', brl((sm || c.goal) - (si || c.budget)), '']);
+        return l;
+      })() },
       { title: 'CANAIS · CRONOGRAMA',
         columns: ['Canal', 'Base', ...cols, 'Quem faz'],
         rows: CANAIS.map(([n, base, quem]) => [n, base, ...cols.map(() => '—'), quem]) },
     ];
   }
+
+  const descDe = (sku) => (A.modoDesc === 'cada' ? (A.descPorSku[sku] ?? A.descGeral) : A.descGeral);
+  const escolhidos = () => catalogo(A.marca).filter((p) => A.produtos.includes(p.sku));
 
   /* ---------- guardar ---------- */
   const lerCampanhas = () => {
@@ -201,7 +276,14 @@
     const hoje = new Date();
     const marca = window.MapaMental?.marca?.() || '';
     A = { noId, marca, tipo: null, tema: null, nome: '',
-          inicio: iso(hoje), fim: iso(hoje), meta: 45000, verba: 4500 };
+          inicio: iso(hoje), fim: iso(hoje), meta: 45000, verba: 4500,
+          /* todos os produtos entram até alguém tirar algum — é mais rápido
+             desmarcar dois do que marcar oito */
+          produtos: catalogo(marca).map((p) => p.sku),
+          modoDesc: 'todos', descGeral: 8, descPorSku: {}, descTocado: false,
+          extras: [], frete: undefined, brinde: '',
+          bonusUniversal: undefined, bonusInfluencer: undefined,
+          receita: null };
     passo1();
   }
 
@@ -273,6 +355,7 @@
     const T = TIPOS[A.tipo];
     if (!A.nome) A.nome = `${T.nome} — ${MESES[dISO(A.inicio).getMonth()]}`;
     const cx = abrirModal(`
+      <div class="as-passos">Passo <b>1</b> de 3 · números</div>
       <h3>${T.nome}${A.tema ? ' · ' + esc(A.tema) : ''}</h3>
       <p class="as-sub">Datas, meta e verba. O resto do TAP nasce disso e você ajusta depois.</p>
       <label class="as-campo"><span>Nome da campanha</span>
@@ -291,12 +374,12 @@
       <div class="as-resumo" id="as-resumo"></div>
       <div class="as-bts">
         <button class="as-bt" data-voltar>Voltar</button>
-        <button class="as-bt as-ok" data-criar>Criar campanha</button>
+        <button class="as-bt as-ok" data-adiante>Produtos e oferta →</button>
       </div>`);
     const ids = ['as-nome', 'as-ini', 'as-fim', 'as-meta', 'as-verba'];
     ids.forEach((id) => { cx.querySelector('#' + id).oninput = resumo });
     cx.querySelector('[data-voltar]').onclick = () => (TIPOS[A.tipo].temas ? passoTema() : passo1());
-    cx.querySelector('[data-criar]').onclick = criar;
+    cx.querySelector('[data-adiante]').onclick = () => { lerCampos(); passoOferta() };
     resumo();
   }
 
@@ -328,10 +411,152 @@
       `<span>${esc(A.marca || 'A marca')} passa de <b>${brl(somaAntes)}</b> para <b>${brl(somaAntes + A.meta)}</b> no mês</span>`;
   }
 
+  /* ---------- passo 2: produtos e oferta ---------- */
+  function passoOferta() {
+    const P = PADRAO[A.tipo] || PADRAO.outro;
+    const prods = catalogo(A.marca);
+    if (!A.descTocado) A.descGeral = parseInt(P.desconto) || 8;
+    if (A.frete === undefined) A.frete = P.frete;
+    if (A.bonusUniversal === undefined) A.bonusUniversal = BONUS.universal;
+    if (A.bonusInfluencer === undefined) A.bonusInfluencer = BONUS.influencer;
+
+    const cx = abrirModal(`
+      <div class="as-passos">Passo <b>2</b> de 3 · oferta</div>
+      <h3>Produtos e desconto</h3>
+      <p class="as-sub">${prods.length
+        ? 'O catálogo vem da Shopify. Desmarque o que não entra e escreva o que não está na loja.'
+        : ''}</p>
+      ${prods.length ? '' : `<p class="as-alerta">O catálogo da <b>${esc(A.marca || 'marca')}</b>
+        ainda não está cadastrado aqui — a loja dela é outra conta na Shopify.
+        Escreva os produtos desta ação em <b>Fora do catálogo</b>, com o desconto de cada um.</p>`}
+      <div class="as-radio">
+        <button data-modo="todos" class="${A.modoDesc === 'todos' ? 'as-on' : ''}">Mesmo % para todos</button>
+        <button data-modo="cada"  class="${A.modoDesc === 'cada'  ? 'as-on' : ''}">Um % por produto</button>
+      </div>
+      <label class="as-campo" id="as-cx-desc" style="${A.modoDesc === 'todos' ? '' : 'display:none'}">
+        <span>Desconto da ação (%)</span>
+        <input type="number" id="as-desc" min="0" max="90" step="1" value="${A.descGeral}"></label>
+      ${prods.length ? `<div class="as-cab"><span>Produto</span><span>Preço</span><span>% OFF</span></div>
+      <div class="as-lista">${prods.map((p) => {
+        const on = A.produtos.includes(p.sku);
+        return `<label class="as-lin ${on ? '' : 'as-off'}" data-sku="${p.sku}">
+          <input type="checkbox" data-prod="${p.sku}" ${on ? 'checked' : ''}>
+          <span class="as-nm">${esc(p.curto)}${p.kit ? ' · kit' : ''}
+            <small>${esc(p.nome)} · SKU ${esc(p.sku)}</small></span>
+          <span class="as-preco">R$ ${p.preco.toFixed(2).replace('.', ',')}</span>
+          <input type="number" class="as-dsku" data-sku="${p.sku}" min="0" max="90"
+                 value="${A.descPorSku[p.sku] ?? A.descGeral}"
+                 style="${A.modoDesc === 'cada' ? '' : 'visibility:hidden'}">
+        </label>`; }).join('')}</div>` : ''}
+      <label class="as-campo"><span>Produto fora do catálogo (um por linha)</span>
+        <textarea id="as-extras" rows="2" placeholder="Ex: Combo Fitness · 15% OFF">${esc(A.extras.join('\n'))}</textarea></label>
+      <div class="as-dupla">
+        <label class="as-campo"><span>Frete grátis</span><input id="as-frete" value="${esc(A.frete)}"></label>
+        <label class="as-campo"><span>Brinde (opcional)</span>
+          <input id="as-brinde" value="${esc(A.brinde)}" placeholder="Ex: coqueteleira acima de R$ 400"></label>
+      </div>
+      <div class="as-dupla">
+        <label class="as-campo"><span>Bônus universal</span><input id="as-bu" value="${esc(A.bonusUniversal)}"></label>
+        <label class="as-campo"><span>Bônus via influencer</span><input id="as-bi" value="${esc(A.bonusInfluencer)}"></label>
+      </div>
+      <div class="as-bts">
+        <button class="as-bt" data-voltar>Voltar</button>
+        <button class="as-bt as-ok" data-adiante>Canais e metas →</button>
+      </div>`);
+
+    cx.querySelectorAll('[data-modo]').forEach((b) => {
+      b.onclick = () => { guardaOferta(); A.modoDesc = b.dataset.modo; passoOferta() };
+    });
+    cx.querySelectorAll('[data-prod]').forEach((c) => {
+      c.onchange = () => {
+        const sku = c.dataset.prod;
+        A.produtos = c.checked ? [...new Set([...A.produtos, sku])] : A.produtos.filter((x) => x !== sku);
+        c.closest('.as-lin').classList.toggle('as-off', !c.checked);
+      };
+    });
+    cx.querySelectorAll('.as-dsku').forEach((i) => {
+      i.onchange = () => { A.descPorSku[i.dataset.sku] = +i.value };
+    });
+    const d = cx.querySelector('#as-desc');
+    if (d) d.oninput = () => {
+      A.descGeral = +d.value || 0; A.descTocado = true;
+      /* quem não teve % próprio acompanha o geral; quem teve, fica */
+      cx.querySelectorAll('.as-dsku').forEach((i) => {
+        if (A.descPorSku[i.dataset.sku] === undefined) i.value = A.descGeral;
+      });
+    };
+    cx.querySelector('[data-voltar]').onclick = () => { guardaOferta(); passoDados() };
+    cx.querySelector('[data-adiante]').onclick = () => { guardaOferta(); passoCanais() };
+  }
+
+  function guardaOferta() {
+    const g = (id) => document.getElementById(id);
+    if (!g('as-frete')) return;
+    A.frete = g('as-frete').value;
+    A.brinde = g('as-brinde').value;
+    A.bonusUniversal = g('as-bu').value;
+    A.bonusInfluencer = g('as-bi').value;
+    A.extras = g('as-extras').value.split('\n').map((t) => t.trim()).filter(Boolean);
+  }
+
+  /* ---------- passo 3: canais que faturam ---------- */
+  function passoCanais() {
+    if (!A.receita) A.receita = dividirReceita(A.meta, A.verba);
+    const cx = abrirModal(`
+      <div class="as-passos">Passo <b>3</b> de 3 · canais</div>
+      <h3>Onde entra a verba e de onde vem o faturamento</h3>
+      <p class="as-sub">Já vem dividido na proporção que a operação costuma ter. Mexa no que for diferente desta vez.</p>
+      <div class="as-cab as-cab3"><span>Canal que fatura</span><span>Investimento</span><span>Meta</span></div>
+      <div class="as-lista">${A.receita.map((c, i) => `
+        <label class="as-lin as-lin3 ${c.on ? '' : 'as-off'}" data-i="${i}">
+          <input type="checkbox" data-on="${i}" ${c.on ? 'checked' : ''}>
+          <span class="as-nm">${esc(c.n)}<small>${esc(c.r)}</small></span>
+          <input type="text" inputmode="numeric" data-inv="${i}" value="${Number(c.inv || 0).toLocaleString('pt-BR')}">
+          <input type="text" inputmode="numeric" data-meta="${i}" value="${Number(c.meta || 0).toLocaleString('pt-BR')}">
+        </label>`).join('')}</div>
+      <div class="as-resumo" id="as-somas"></div>
+      <div class="as-bts">
+        <button class="as-bt" data-voltar>Voltar</button>
+        <button class="as-bt as-ok" data-criar>Criar campanha</button>
+      </div>`);
+
+    const ler = () => {
+      A.receita.forEach((c, i) => {
+        c.on = cx.querySelector(`[data-on="${i}"]`).checked;
+        c.inv = lerMoeda(cx.querySelector(`[data-inv="${i}"]`).value);
+        c.meta = lerMoeda(cx.querySelector(`[data-meta="${i}"]`).value);
+      });
+      somas();
+    };
+    cx.querySelectorAll('[data-on],[data-inv],[data-meta]').forEach((e) => {
+      e.oninput = ler;
+      e.onchange = () => { ler(); e.closest('.as-lin')?.classList.toggle('as-off', e.type === 'checkbox' && !e.checked) };
+    });
+    cx.querySelector('[data-voltar]').onclick = passoOferta;
+    cx.querySelector('[data-criar]').onclick = criar;
+    somas();
+
+    function somas() {
+      const on = A.receita.filter((c) => c.on);
+      const sm = on.reduce((t, c) => t + c.meta, 0);
+      const si = on.reduce((t, c) => t + c.inv, 0);
+      const el = cx.querySelector('#as-somas');
+      const sobra = A.meta - sm;
+      el.className = 'as-resumo' + (Math.abs(sobra) > 1 ? ' as-atencao' : '');
+      el.innerHTML =
+        `<span>Somando os canais: <b>${brl(sm)}</b> de meta e <b>${brl(si)}</b> de verba</span>` +
+        `<span>ROAS <b>${si ? (sm / si).toFixed(1).replace('.', ',') : '—'}</b></span>` +
+        (Math.abs(sobra) > 1
+          ? `<span>${sobra > 0 ? 'Faltam' : 'Passa em'} <b>${brl(Math.abs(sobra))}</b> para bater a meta da ação</span>`
+          : '<span>Fecha com a meta da ação</span>');
+    }
+  }
+
   function criar() {
-    lerCampos();
+    /* os números já foram lidos no passo 1; aqui só se confere que ainda
+       fazem sentido antes de gravar */
     const ini = dISO(A.inicio), fim = dISO(A.fim);
-    if (!A.inicio || !A.fim || fim < ini) return resumo();
+    if (!A.inicio || !A.fim || fim < ini) { passoDados(); return }
     const T = TIPOS[A.tipo];
     const hoje = iso(new Date());
     const c = {
@@ -343,9 +568,13 @@
       goal: A.meta, budget: A.verba, progress: 0,
       color: A.marca === 'VermeFree' ? '#4f8a70' : '#121415',
       objective: `${T.desc}${A.tema ? ' — tema ' + A.tema : ''}`,
-      offer: (PADRAO[A.tipo] || PADRAO.outro).cupom,
+      offer: A.modoDesc === 'cada'
+        ? 'Desconto por produto (já embutido no preço) — ver SOBRE A OFERTA'
+        : `${A.descGeral}% OFF geral (já embutido no preço)`,
       channels: CANAIS.map((x) => x[0]),
-      products: [], benefits: [], schedule: [],
+      products: escolhidos().map((p) => ({ name: p.curto, price: p.preco, discount: descDe(p.sku) })),
+      benefits: [A.frete, A.brinde, A.bonusUniversal, A.bonusInfluencer].filter(Boolean),
+      schedule: [],
       tap: null,
     };
     c.tap = montarTap(c, A.tipo, A.tema);
