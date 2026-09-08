@@ -84,10 +84,42 @@
    A caixa de entregas sem nada dentro esticava até o fim da janela, com
    o texto perdido no meio de um campo enorme. Passa a ter altura de
    caixa, não de página. */
-.delivery-empty,.empty-state,.cu-empty,
-.delivery-list:empty,.delivery-detail:empty{
+.delivery-empty,.empty-state,.cu-empty,.camp-empty,.week-empty{
   min-height:0!important;
   height:auto!important;
   padding:56px 24px!important;
 }
-.delivery-workspace{align-items:start!important}
+
+/* ---------------------------------------------------------------------
+   4. Os dois painéis de Entregas eram um par desencontrado.
+
+   Medido: a caixa da esquerda com 245px e a da direita com 237px — oito
+   pixels de desnível, que é o degrau visível na foto. E tratamentos
+   diferentes: a esquerda sem fundo, a direita num bloco cinza. São duas
+   metades da mesma tela e precisam parecer a mesma coisa.
+
+   A área já é um cartão: .delivery-workspace tem borda, canto e fundo
+   branco na fonte. Então a moldura é dela, e as duas metades ficam sendo
+   só metades, separadas por uma linha. Dar borda a cada uma criaria de
+   novo a moldura dentro de moldura que consertei acima.
+
+   O min-height de 580px da fonte era o vazio gigante da foto; com o
+   estado vazio já contido, 420px basta para a caixa não pular de tamanho
+   quando chega a primeira entrega. */
+.delivery-workspace{
+  align-items:stretch!important;
+  min-height:420px!important;
+}
+.delivery-list-panel,.delivery-preview,.delivery-detail{
+  background:#fff!important;
+  border:0!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  min-height:0!important;
+}
+/* a divisa entre as duas metades, uma linha só e do lado certo */
+.delivery-preview,.delivery-detail{border-left:1px solid #ececea!important}
+.delivery-list-head{
+  border-bottom:1px solid #ececea!important;
+  background:#fff!important;
+}
