@@ -32,6 +32,18 @@ const sb = {
   }),
 };
 
+/* O document de mentira só precisa ser suficiente para o caminho de quem
+   já tem sessão: nada de barra na página, nada de tela de entrar. */
+const documento = {
+  querySelector: () => null,
+  querySelectorAll: () => [],
+  getElementById: () => null,
+  createElement: () => ({ style: {}, setAttribute(){}, appendChild(){}, querySelector: () => null }),
+  head: { appendChild(){} },
+  body: {},
+};
+class MutationObserver { observe(){} disconnect(){} }
+
 const janela = {
   supabase: { createClient: () => sb },
   __SB_ANON__: 'chave-de-mentira',
@@ -40,9 +52,13 @@ const janela = {
 };
 
 const fonte = readFileSync(new URL('../src/supabase.js', import.meta.url), 'utf8');
-new Function('window','localStorage','sessionStorage','location','document','console',fonte)(
-  janela, localStorage, sessionStorage, janela.location, { body: {} }, console);
+const roda = () =>
+  new Function('window','localStorage','sessionStorage','location','document','console',
+               'MutationObserver','addEventListener',fonte)(
+    janela, localStorage, sessionStorage, janela.location, documento, console,
+    MutationObserver, () => {});
 
+roda();
 await new Promise((r) => setTimeout(r, 30));   // deixa as promessas resolverem
 
 /* ---- o que tem que valer ---- */
@@ -73,8 +89,7 @@ assert.equal(gravado[0].op.onConflict, 'chave,dono',
 /* segunda visita: a marca já está posta, não pode recarregar de novo */
 recarregou = 0;
 sessionStorage.setItem('central.__hidratado', '1');
-new Function('window','localStorage','sessionStorage','location','document','console',fonte)(
-  janela, localStorage, sessionStorage, janela.location, { body: {} }, console);
+roda();
 await new Promise((r) => setTimeout(r, 30));
 assert.equal(recarregou, 0, 'segunda visita não recarrega — senão a página entra em laço');
 

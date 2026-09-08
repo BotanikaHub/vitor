@@ -1,35 +1,32 @@
 /* ===================================================================
-   Liga o app ao nosso Supabase.
+   Sessão e dados da Central.
 
-   O app foi escrito para guardar tudo em localStorage, e a leitura é
-   síncrona logo no boot. Reescrever os dezesseis pontos onde ele grava
-   exigiria mexer no arquivo inteiro antes das telas estarem aprovadas —
-   caro e arriscado. Então o caminho aqui é outro: o localStorage vira uma
-   vitrine do que está no banco.
+   Duas coisas moram aqui:
 
-   Como funciona, na ordem:
+   1. A tela de entrar. O app foi escrito com o usuário fixo no código
+      ('vitor-gutierrez'), então qualquer pessoa que abrisse era o Vitor.
+      Agora ninguém passa sem sessão.
 
-   1. Sem sessão, aparece a tela de entrar e o app nem começa.
-   2. Com sessão, o estado é buscado no banco e escrito no localStorage.
-      Se o que veio for diferente do que já estava, a página recarrega uma
-      vez — assim o app inicia lendo o dado de todo mundo, e não o que
-      sobrou no navegador desta pessoa.
-   3. Dali em diante, toda gravação do app no localStorage é copiada para
-      o banco.
+   2. A ponte com o banco. O app guarda tudo em localStorage e lê de forma
+      síncrona no boot; reescrever os dezesseis pontos onde ele grava
+      exigiria mexer no arquivo inteiro antes das telas estarem aprovadas.
+      Então o localStorage vira uma vitrine do que está no Supabase:
+      desce no início, sobe a cada gravação.
 
    O que é de todos e o que é de cada um:
-   - o arranjo da tela de início é pessoal (dono preenchido);
-   - o tema fica só no navegador, nem vai para o banco;
    - tarefas, campanhas, entregas e planejamento são da operação inteira
-     (dono nulo) — é justamente o que estava faltando.
+     (dono nulo) — é o que faltava, o Pedro criava e a Sarah não via;
+   - o arranjo da tela de início é de cada pessoa;
+   - o tema fica só no navegador, nem sobe.
    =================================================================== */
 (function () {
   'use strict';
 
-  const URL_SB  = 'https://sjkuysdmixfzeerxuudn.supabase.co';
-  const CHAVE_SB = window.__SB_ANON__ || '';   // preenchida pelo build
-  const TABELA  = 'operacional_estado';
+  const URL_SB   = 'https://sjkuysdmixfzeerxuudn.supabase.co';
+  const CHAVE_SB = window.__SB_ANON__ || '';
+  const TABELA   = 'operacional_estado';
   const MARCA_RELOAD = 'central.__hidratado';
+  const ULTIMO_EMAIL = 'central.__email';
 
   /* Guardado antes de qualquer troca: é por aqui que a hidratação escreve.
      Se ela usasse o localStorage já espelhado, tudo que desce do banco
@@ -39,60 +36,228 @@
   const gravarLocal = localStorage.setItem.bind(localStorage);
 
   const ehNossa   = (k) => typeof k === 'string' && k.startsWith('central.');
-  const soLocal   = (k) => k === 'central.theme' || k === MARCA_RELOAD;
+  const soLocal   = (k) => k === 'central.theme' || k === MARCA_RELOAD || k === ULTIMO_EMAIL;
   const ehPessoal = (k) => k.startsWith('central.home.layout.');
 
-  /* ---------- a tela de entrar ---------- */
-  function telaEntrar(sb, aviso) {
+  const FONTE = '"Geist Variable","Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  /* ================= a tela de entrar ================= */
+
+  /* As mensagens do Supabase vêm em inglês e algumas não dizem nada a quem
+     está do outro lado ("Invalid login credentials"). Traduzidas para o que
+     a pessoa precisa fazer a seguir. */
+  function recado(msg) {
+    const m = String(msg || '');
+    if (/Invalid login credentials/i.test(m)) return 'E-mail ou senha não conferem.';
+    if (/Email not confirmed/i.test(m))       return 'Esse e-mail ainda não foi confirmado. Procure a mensagem de confirmação na caixa de entrada.';
+    if (/rate limit|too many/i.test(m))       return 'Muitas tentativas seguidas. Espere um minuto e tente de novo.';
+    if (/Failed to fetch|NetworkError/i.test(m)) return 'Não consegui falar com o servidor. Verifique a conexão.';
+    return m || 'Não consegui entrar.';
+  }
+
+  function estilos() {
+    if (document.getElementById('entrar-estilo')) return;
+    const s = document.createElement('style');
+    s.id = 'entrar-estilo';
+    s.textContent = `
+      .ent-fundo{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;
+        justify-content:center;padding:24px;background:#f6f6f4;font:14px/1.5 ${FONTE};
+        color:#151718;-webkit-font-smoothing:antialiased}
+      .ent-cx{width:100%;max-width:352px}
+      .ent-marca{font-size:19px;font-weight:700;letter-spacing:-.02em;margin-bottom:3px}
+      .ent-sub{color:#7e8389;margin-bottom:22px}
+      .ent-cartao{background:#fff;border:1px solid #dedfdd;border-radius:14px;padding:24px}
+      .ent-campo{margin-bottom:15px}
+      .ent-campo:last-of-type{margin-bottom:19px}
+      .ent-rot{display:block;font-size:12px;font-weight:600;margin-bottom:6px}
+      .ent-cai{position:relative;display:flex;align-items:center}
+      /* !important porque as onze folhas do app mexem em input global e
+         chegam aqui por cima; sem isso o campo ganha o anel de foco do
+         navegador em volta do nosso e fica com borda dupla. */
+      .ent-fundo input{width:100%!important;box-sizing:border-box!important;
+        padding:10px 12px!important;border:1px solid #dedfdd!important;
+        border-radius:10px!important;font:inherit!important;color:#151718!important;
+        background:#fff!important;outline:none!important;box-shadow:none!important;
+        transition:border-color .12s,box-shadow .12s}
+      .ent-fundo input:focus,.ent-fundo input:focus-visible{
+        border-color:#151718!important;box-shadow:0 0 0 3px rgba(21,23,24,.08)!important;
+        outline:none!important}
+      .ent-fundo input[aria-invalid="true"]{border-color:#c0392b!important}
+      .ent-fundo input[aria-invalid="true"]:focus{box-shadow:0 0 0 3px rgba(192,57,43,.12)!important}
+      .ent-olho{position:absolute;right:6px;background:none;border:0;padding:6px 8px;
+        font:inherit;font-size:11px;font-weight:600;color:#7e8389;cursor:pointer;border-radius:7px}
+      .ent-olho:hover{color:#151718;background:#f6f6f4}
+      .ent-bt{width:100%;padding:11px;border:0;border-radius:10px;background:#151718;color:#fff;
+        font:inherit;font-weight:600;cursor:pointer;transition:opacity .12s}
+      .ent-bt:hover{opacity:.88}
+      .ent-bt[disabled]{opacity:.5;cursor:default}
+      .ent-link{display:block;width:100%;margin-top:14px;background:none;border:0;padding:0;
+        font:inherit;font-size:13px;color:#7e8389;text-align:center;cursor:pointer}
+      .ent-link:hover{color:#151718;text-decoration:underline}
+      .ent-msg{margin-top:13px;font-size:13px;min-height:0}
+      .ent-msg:empty{margin-top:0}
+      .ent-msg.erro{color:#c0392b}
+      .ent-msg.ok{color:#1a7f4b}
+      .ent-msg.indo{color:#7e8389}
+      .ent-pe{margin-top:18px;text-align:center;font-size:12px;color:#a4a8ac}
+      @media (prefers-reduced-motion:reduce){.ent-cx *{transition:none!important}}
+    `;
+    document.head.appendChild(s);
+  }
+
+  function telaEntrar(sb) {
     if (!document.body) {
-      addEventListener('DOMContentLoaded', () => telaEntrar(sb, aviso), { once: true });
+      addEventListener('DOMContentLoaded', () => telaEntrar(sb), { once: true });
       return;
     }
-    document.body.innerHTML = '';
-    document.body.style.cssText =
-      'margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;' +
-      'background:#f6f6f4;font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:#151718';
-    const cx = document.createElement('form');
-    cx.style.cssText =
-      'width:320px;background:#fff;border:1px solid #dedfdd;border-radius:14px;padding:26px';
-    cx.innerHTML =
-      '<div style="font-size:17px;font-weight:700;letter-spacing:-.01em">Central</div>' +
-      '<div style="color:#7e8389;margin:5px 0 20px">Entre para ver a operação.</div>' +
-      '<label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px">E-mail</label>' +
-      '<input name="email" type="email" required autocomplete="email" ' +
-      'style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #dedfdd;border-radius:9px;font:inherit;margin-bottom:13px">' +
-      '<label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px">Senha</label>' +
-      '<input name="senha" type="password" required autocomplete="current-password" ' +
-      'style="width:100%;box-sizing:border-box;padding:9px 11px;border:1px solid #dedfdd;border-radius:9px;font:inherit;margin-bottom:18px">' +
-      '<button type="submit" style="width:100%;padding:10px;border:0;border-radius:9px;background:#151718;' +
-      'color:#fff;font:inherit;font-weight:600;cursor:pointer">Entrar</button>' +
-      '<div data-erro style="color:#c0392b;margin-top:12px;min-height:19px">' + (aviso || '') + '</div>';
-    cx.onsubmit = async (e) => {
+    estilos();
+    /* O app pode já ter começado a desenhar atrás; a tela cobre tudo em vez
+       de apagar o corpo, senão um erro de sessão levaria a página junto. */
+    document.querySelectorAll('.ent-fundo').forEach((e) => e.remove());
+
+    const fundo = document.createElement('div');
+    fundo.className = 'ent-fundo';
+    fundo.innerHTML = `
+      <div class="ent-cx">
+        <div class="ent-marca">Central</div>
+        <div class="ent-sub">A operação da Botanika e da VermeFree.</div>
+        <form class="ent-cartao" novalidate>
+          <div class="ent-campo">
+            <label class="ent-rot" for="ent-email">E-mail</label>
+            <input id="ent-email" name="email" type="email" required
+                   autocomplete="username" autocapitalize="off" spellcheck="false">
+          </div>
+          <div class="ent-campo">
+            <label class="ent-rot" for="ent-senha">Senha</label>
+            <div class="ent-cai">
+              <input id="ent-senha" name="senha" type="password" required
+                     autocomplete="current-password">
+              <button type="button" class="ent-olho" data-olho>mostrar</button>
+            </div>
+          </div>
+          <button type="submit" class="ent-bt">Entrar</button>
+          <button type="button" class="ent-link" data-esqueci>Esqueci minha senha</button>
+          <div class="ent-msg" role="status" aria-live="polite"></div>
+        </form>
+        <div class="ent-pe">Acesso restrito à equipe.</div>
+      </div>`;
+    document.body.appendChild(fundo);
+
+    const f     = fundo.querySelector('form');
+    const email = fundo.querySelector('#ent-email');
+    const senha = fundo.querySelector('#ent-senha');
+    const bt    = fundo.querySelector('.ent-bt');
+    const msg   = fundo.querySelector('.ent-msg');
+    const olho  = fundo.querySelector('[data-olho]');
+
+    const diz = (texto, tipo) => { msg.textContent = texto; msg.className = 'ent-msg ' + (tipo || ''); };
+
+    /* Quem já entrou uma vez não precisa digitar o e-mail de novo. */
+    const lembrado = localStorage.getItem(ULTIMO_EMAIL);
+    if (lembrado) { email.value = lembrado; senha.focus(); } else { email.focus(); }
+
+    olho.onclick = () => {
+      const escondida = senha.type === 'password';
+      senha.type = escondida ? 'text' : 'password';
+      olho.textContent = escondida ? 'ocultar' : 'mostrar';
+      senha.focus();
+    };
+
+    f.onsubmit = async (e) => {
       e.preventDefault();
-      const erro = cx.querySelector('[data-erro]');
-      erro.textContent = 'Entrando…';
-      erro.style.color = '#7e8389';
-      const { error } = await sb.auth.signInWithPassword({
-        email: cx.email.value.trim(),
-        password: cx.senha.value,
-      });
-      if (error) {
-        erro.style.color = '#c0392b';
-        erro.textContent = error.message === 'Invalid login credentials'
-          ? 'E-mail ou senha não conferem.'
-          : error.message;
+      email.setAttribute('aria-invalid', 'false');
+      senha.setAttribute('aria-invalid', 'false');
+      if (!email.value.trim() || !senha.value) {
+        diz('Preencha o e-mail e a senha.', 'erro');
+        (!email.value.trim() ? email : senha).focus();
         return;
       }
+      bt.disabled = true;
+      diz('Entrando…', 'indo');
+      const { error } = await sb.auth.signInWithPassword({
+        email: email.value.trim(), password: senha.value,
+      });
+      if (error) {
+        bt.disabled = false;
+        diz(recado(error.message), 'erro');
+        email.setAttribute('aria-invalid', 'true');
+        senha.setAttribute('aria-invalid', 'true');
+        senha.select();
+        return;
+      }
+      gravarLocal(ULTIMO_EMAIL, email.value.trim());
+      /* A marca sai para a hidratação rodar de novo com a sessão nova: quem
+         entra tem que ver o estado do banco, não o que sobrou no navegador. */
       sessionStorage.removeItem(MARCA_RELOAD);
       location.reload();
     };
-    document.body.appendChild(cx);
+
+    fundo.querySelector('[data-esqueci]').onclick = async () => {
+      const e = email.value.trim();
+      if (!e) { diz('Escreva o e-mail primeiro — o link vai para ele.', 'erro'); email.focus(); return; }
+      diz('Enviando…', 'indo');
+      const { error } = await sb.auth.resetPasswordForEmail(e, { redirectTo: location.origin });
+      diz(error ? recado(error.message)
+                : 'Se esse e-mail estiver cadastrado, o link para trocar a senha já está a caminho.',
+          error ? 'erro' : 'ok');
+    };
   }
 
-  /* ---------- trazer o estado do banco ---------- */
+  /* Fechar a porta quando não dá para autenticar: melhor a pessoa ver que
+     algo quebrou do que ver a operação sem ter entrado. */
+  function semAcesso() {
+    if (!document.body) {
+      addEventListener('DOMContentLoaded', semAcesso, { once: true });
+      return;
+    }
+    estilos();
+    const fundo = document.createElement('div');
+    fundo.className = 'ent-fundo';
+    fundo.innerHTML =
+      '<div class="ent-cx"><div class="ent-marca">Central</div>' +
+      '<div class="ent-cartao"><div style="font-weight:600;margin-bottom:6px">Não consegui verificar quem é você.</div>' +
+      '<div style="color:#7e8389">A conexão com o servidor de acesso falhou. Recarregue a página; ' +
+      'se continuar assim, avise o Vitor.</div>' +
+      '<button type="button" class="ent-bt" style="margin-top:18px">Tentar de novo</button>' +
+      '</div></div>';
+    fundo.querySelector('button').onclick = () => location.reload();
+    document.body.appendChild(fundo);
+  }
+
+  /* ================= quem está logado, e como sair ================= */
+  function marcarSessao(sb, sessao) {
+    const nome = (sessao.user.email || '').split('@')[0];
+    const põe = () => {
+      const barra = document.querySelector('.global-toolbar');
+      if (!barra || document.getElementById('ent-quem')) return;
+      const chip = document.createElement('div');
+      chip.id = 'ent-quem';
+      chip.style.cssText =
+        `margin-left:auto;display:flex;align-items:center;gap:9px;font:12px/1 ${FONTE};color:#7e8389`;
+      chip.innerHTML =
+        `<span title="${sessao.user.email}">${nome}</span>` +
+        `<button type="button" style="background:none;border:1px solid #dedfdd;border-radius:8px;` +
+        `padding:5px 9px;font:inherit;font-weight:600;color:#151718;cursor:pointer">sair</button>`;
+      chip.querySelector('button').onclick = async () => {
+        await sb.auth.signOut();
+        sessionStorage.removeItem(MARCA_RELOAD);
+        location.reload();
+      };
+      barra.appendChild(chip);
+    };
+    põe();
+    /* A barra é montada pelo app depois deste script; se ainda não existe,
+       espera ela aparecer em vez de chutar um tempo. */
+    if (!document.getElementById('ent-quem')) {
+      const obs = new MutationObserver(() => { põe(); if (document.getElementById('ent-quem')) obs.disconnect(); });
+      addEventListener('DOMContentLoaded', () =>
+        obs.observe(document.body, { childList: true, subtree: true }), { once: true });
+    }
+  }
+
+  /* ================= trazer o estado do banco ================= */
   async function hidratar(sb, uid) {
-    const { data, error } = await sb
-      .from(TABELA)
+    const { data, error } = await sb.from(TABELA)
       .select('chave, valor, dono')
       .or(`dono.is.null,dono.eq.${uid}`);
     if (error) throw error;
@@ -100,46 +265,49 @@
     let mudou = false;
     for (const linha of data || []) {
       const texto = JSON.stringify(linha.valor);
-      if (localStorage.getItem(linha.chave) !== texto) {
-        gravarLocal(linha.chave, texto);
-        mudou = true;
-      }
+      if (localStorage.getItem(linha.chave) !== texto) { gravarLocal(linha.chave, texto); mudou = true; }
     }
     return mudou;
   }
 
-  /* ---------- mandar de volta o que o app gravar ---------- */
+  /* ================= mandar de volta o que o app gravar ================= */
   let espelhando = false;
   function espelhar(sb, uid) {
-    if (espelhando) return;            // uma vez por página, não duas
+    if (espelhando) return;
     espelhando = true;
     localStorage.setItem = function (chave, texto) {
       gravarLocal(chave, texto);
       if (!ehNossa(chave) || soLocal(chave)) return;
       let valor;
-      try { valor = JSON.parse(texto); } catch { return; }  // não é JSON, não sobe
-      sb.from(TABELA)
-        .upsert(
-          { chave, dono: ehPessoal(chave) ? uid : null, valor,
-            atualizado_em: new Date().toISOString(), atualizado_por: uid },
-          { onConflict: 'chave,dono' })
-        .then(({ error }) => { if (error) console.error('[central] não salvou:', chave, error.message); });
+      try { valor = JSON.parse(texto); } catch { return; }
+      sb.from(TABELA).upsert(
+        { chave, dono: ehPessoal(chave) ? uid : null, valor,
+          atualizado_em: new Date().toISOString(), atualizado_por: uid },
+        { onConflict: 'chave,dono' }
+      ).then(({ error }) => { if (error) console.error('[central] não salvou:', chave, error.message); });
     };
   }
 
-  /* ---------- a ordem das coisas ---------- */
+  /* ================= a ordem das coisas ================= */
   async function comecar() {
-    if (!CHAVE_SB) { console.error('[central] sem chave do Supabase; seguindo só local'); return; }
+    /* Se a biblioteca não carregou, não dá para saber quem é quem — e
+       seguir assim abriria a operação inteira para qualquer um que chegasse
+       na URL. Então fecha em vez de abrir. */
+    if (!window.supabase || !CHAVE_SB) {
+      console.error('[central] Supabase indisponível');
+      return semAcesso();
+    }
     const sb = window.supabase.createClient(URL_SB, CHAVE_SB);
     const { data: { session } } = await sb.auth.getSession();
     if (!session) return telaEntrar(sb);
 
     const uid = session.user.id;
+    marcarSessao(sb, session);
     espelhar(sb, uid);
 
-    /* A marca no sessionStorage existe para o recarregamento acontecer uma
-       vez só. Sem ela, uma gravação nossa dispararia hidratação, diferença
-       e recarga de novo — a página entraria em laço. */
+    /* A marca existe para o recarregamento acontecer uma vez só. Sem ela,
+       uma gravação nossa dispararia hidratação, diferença e recarga de
+       novo — a página entraria em laço. */
     if (!sessionStorage.getItem(MARCA_RELOAD)) {
       sessionStorage.setItem(MARCA_RELOAD, '1');
       try {
@@ -150,7 +318,5 @@
     }
   }
 
-  /* O app lê o localStorage no boot, então isto tem que resolver antes.
-     O script do Supabase é carregado de forma bloqueante no <head>. */
   comecar();
 })();
