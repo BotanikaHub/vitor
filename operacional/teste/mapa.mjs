@@ -99,8 +99,11 @@ await pag.keyboard.type('lembrete'); await pag.keyboard.press('Enter'); await pa
 conf('a nota adesiva nasce e aceita texto', await pag.locator('.mp-nota').count() === 1);
 
 /* 9. o mapa fica guardado */
+/* a chave leva a marca no fim desde que o mapa passou a ser por marca */
 const guardado = await pag.evaluate(() => {
-  const m = JSON.parse(localStorage.getItem('central.planning.map.vitor-gutierrez') || 'null');
+  const marca = document.getElementById('brandSelect')?.value || '';
+  const k = 'central.planning.map.vitor-gutierrez' + (marca && !/todas/i.test(marca) ? '.' + marca : '');
+  const m = JSON.parse(localStorage.getItem(k) || 'null');
   return m && m.nos && m.nos.length >= 4 && (m.itens || []).length >= 1;
 });
 conf('o mapa é gravado no localStorage (e a ponte leva ao Supabase)', guardado);
