@@ -63,6 +63,26 @@ const barrasDo = (id) => pag.evaluate((g) =>
     return { nome: b.textContent.trim(), larg: Math.round(r.width), topo: Math.round(r.top) };
   }), id);
 
+/* a página inicial abre primeiro: a semana de lá tem que ser a mesma */
+await pag.selectOption('#brandSelect', 'Botanika').catch(() => {});
+await pag.waitForTimeout(700);
+const cabInicio = await pag.locator('.timeline-card .cal-cab div').allTextContents();
+conf('a semana da página inicial vira a mesma grade',
+  cabInicio.join(',') === 'seg,ter,qua,qui,sex,sáb,dom');
+const naHome = await pag.evaluate(() =>
+  [...document.querySelectorAll('.timeline-card .cal-barra')].map((b) => b.textContent.trim()));
+conf('com as campanhas como barra', naHome.some((t) => t.includes('Dia D')));
+conf('e sem a linha do tempo de bolinhas antiga',
+  await pag.locator('.timeline-card .milestone-dot').count() === 0);
+conf('sem moldura dupla: o cartão da home já é a moldura',
+  await pag.evaluate(() => {
+    const g = document.querySelector('.timeline-card .cal-grade');
+    return g && getComputedStyle(g).borderTopWidth === '0px';
+  }));
+conf('o rótulo do cartão acompanha o que passou a mostrar',
+  (await pag.locator('.timeline-card .timeline-head span').textContent()).includes('prazos da semana'));
+await pag.screenshot({ path: 'teste/19-inicio.png' });
+
 await pag.evaluate(() => {
   const b = [...document.querySelectorAll('button,a,[role="button"]')]
     .find(x => /planejamento/i.test(x.textContent + ' ' + (x.title||'')) && x.offsetParent);

@@ -526,3 +526,9 @@
 }
 .camp-grupo b{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#151718}
 .camp-grupo span{font-size:11.5px;color:#a4a8ac}
+
+/* a home já tem o cartão em volta: a grade entra sem moldura própria */
+.cal-grade.cal-sem-moldura{border:0;border-radius:0;background:transparent}
+.cal-sem-moldura .cal-cab{background:transparent;border-bottom:1px solid #ececea}
+.cal-sem-moldura .cal-sem:last-child{border-bottom:1px solid #ececea}
+.cal-sem-moldura .cal-cols{border-top:0}

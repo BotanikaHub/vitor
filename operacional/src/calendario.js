@@ -185,8 +185,9 @@
     return `<div class="cal-sem"><div class="cal-dias">${dias}</div><div class="cal-barras">${barras}</div></div>`;
   }
 
-  function grade(onde, lista, ts, semanas, mes) {
+  function grade(onde, lista, ts, semanas, mes, semMoldura) {
     const hoje = new Date(2026, 8, 7);   // o app inteiro trabalha nesta data
+    onde.classList.toggle('cal-sem-moldura', !!semMoldura);
     onde.innerHTML =
       `<div class="cal-cab">${['seg','ter','qua','qui','sex','sáb','dom']
         .map((d) => `<div>${d}</div>`).join('')}</div>` +
@@ -243,6 +244,44 @@
     faixa(g, campanhas().filter(ehContinua));
   }
 
+  /* ---------- a semana da página inicial ----------
+     Ali havia uma linha do tempo com bolinhas e pílulas, que era um jeito
+     só dela de mostrar a semana. Duas leituras diferentes da mesma semana,
+     em duas telas do mesmo sistema, obrigam a pessoa a aprender duas
+     coisas. Passa a ser a mesma grade do Planejamento e das Campanhas.
+
+     Sem moldura própria: o cartão da home já é a moldura, e somar as duas
+     recriaria a linha dupla que consertei antes. */
+  function desenharInicio() {
+    const alvo = document.querySelector('.timeline-card .timeline-scroll');
+    if (!alvo) return;
+    /* o rótulo dizia "principais marcos", que descrevia a linha do tempo de
+       bolinhas; sobrando ali, passa a mentir sobre o que está embaixo */
+    const rot = document.querySelector('.timeline-card .timeline-head span');
+    if (rot) rot.textContent = 'campanhas e prazos da semana';
+    alvo.classList.add('cal-grade');
+    const s = { a: new Date(2026, 8, 7), b: new Date(2026, 8, 13) };
+    grade(alvo, visiveis(), tarefas(), [s], null, true);
+
+    const ts = tarefas();
+    if (!ts.length) return;
+    const dias = [...Array(7)].map((_, k) => {
+      const d = new Date(s.a); d.setDate(s.a.getDate() + k);
+      const dia = isoDe(d);
+      const rows = ts.filter((t) => t.due === dia);
+      return `<section class="cal-col ${dia === '2026-09-07' ? 'cal-hoje' : ''}">` +
+        `<div class="cal-col-cab"><b>${['seg','ter','qua','qui','sex','sáb','dom'][k]}</b>` +
+        `<span>${String(d.getDate()).padStart(2, '0')}/09</span></div>` +
+        (rows.length
+          ? rows.slice(0, 4).map((t) => `<div class="cal-tarefa"><b>${esc(t.title)}</b>` +
+              `<span>${esc((t.assignees || [])[0] || 'sem responsável')}</span></div>`).join('') +
+            (rows.length > 4 ? `<div class="cal-nada">+${rows.length - 4} no dia</div>` : '')
+          : '<div class="cal-nada">sem prazo</div>') +
+        `</section>`;
+    }).join('');
+    alvo.insertAdjacentHTML('beforeend', `<div class="cal-cols">${dias}</div>`);
+  }
+
   /* ---------- o calendário da aba Campanhas ----------
      Ele mostrava uma coluna por dia com todas as campanhas repetidas — as
      seis contínuas em cada uma das sete colunas. Passa a ser a mesma
@@ -269,10 +308,12 @@
     const mes = document.getElementById('planMonthGrid');
     const sem = document.getElementById('planWeekGrid');
     const cam = document.getElementById('campaignCalendar');
-    if (!mes && !sem && !cam) return null;
+    const ini = document.querySelector('.timeline-card .timeline-scroll');
+    if (!mes && !sem && !cam && !ini) return null;
     return [
       filtro(),
       cam?.querySelector('.cal-sem') ? '1' : '0',
+      ini?.querySelector('.cal-sem') ? '1' : '0',
       document.getElementById('brandSelect')?.value,
       document.getElementById('campaignStatusFilter')?.value,
       document.getElementById('campaignSearch')?.value,
@@ -291,6 +332,7 @@
     desenharMes();
     desenharSemana();
     desenharCampanhas();
+    desenharInicio();
     /* recalculada depois de desenhar, e não remendada: com a marca já posta
        o próximo laço vê o mesmo valor e para aqui. Remendando a string, um
        lado marcado e o outro não deixava a assinatura mentindo — e o
