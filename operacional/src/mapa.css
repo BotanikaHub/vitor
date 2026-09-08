@@ -407,3 +407,85 @@
 }
 .cal-chip:hover{opacity:.88}
 .cal-faixa-chips .cal-chip{width:auto;padding:5px 11px;font-size:11px}
+
+/* ======================================================================
+   As abas de dentro da campanha: resumo, oferta, cronograma e tarefas.
+   ====================================================================== */
+.cp{font-family:"Geist Variable","Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:#151718;display:flex;flex-direction:column;gap:14px}
+
+.cp-numeros{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.cp-num{background:#fff;border:1px solid #e9e9e7;border-radius:12px;padding:14px 15px}
+.cp-rot{display:block;font-size:10.5px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:#a4a8ac;margin-bottom:6px}
+.cp-num b{display:block;font-size:22px;font-weight:650;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums}
+.cp-num small{display:block;margin-top:3px;font-size:11px;color:#8b9095}
+
+.cp-bloco{background:#fff;border:1px solid #e9e9e7;border-radius:12px;overflow:hidden}
+.cp-cab{display:flex;align-items:baseline;gap:9px;padding:13px 15px;border-bottom:1px solid #f2f2f0}
+.cp-cab h3{margin:0;font-size:13.5px;font-weight:650;letter-spacing:-.01em}
+.cp-cab span{font-size:11.5px;color:#a4a8ac}
+.cp-bloco > *:not(.cp-cab){padding:14px 15px}
+.cp-bloco > .cp-tab-cx{padding:0}
+
+.cp-texto{margin:0 0 12px;font-size:13.5px;line-height:1.55;color:#3d4246}
+.cp-vazio{margin:0;font-size:12.5px;color:#a4a8ac;line-height:1.5}
+
+.cp-linhas{display:flex;flex-direction:column;gap:0}
+.cp-linha{display:flex;gap:14px;padding:8px 0;border-bottom:1px solid #f4f4f2;font-size:12.5px}
+.cp-linha:last-child{border-bottom:0}
+.cp-linha span{flex:0 0 150px;color:#8b9095}
+.cp-linha b{font-weight:550;line-height:1.5}
+
+.cp-tab-cx{overflow-x:auto}
+.cp-tab{width:100%;border-collapse:collapse;font-size:12.5px}
+.cp-tab th{
+  padding:9px 13px;text-align:left;font-size:10.5px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:#a4a8ac;
+  background:#fbfbfa;border-bottom:1px solid #ececea;white-space:nowrap;
+}
+.cp-tab td{padding:9px 13px;border-bottom:1px solid #f4f4f2;vertical-align:top;line-height:1.45}
+.cp-tab tr:last-child td{border-bottom:0}
+.cp-menor{font-size:11.5px;color:#8b9095}
+.cp-peca{font-weight:600}
+.cp-off{color:#d2d5d7}
+
+.cp-chips{display:flex;flex-wrap:wrap;gap:5px}
+.cp-chip{padding:4px 10px;background:#f4f4f2;border-radius:20px;font-size:11.5px;
+  font-weight:550;color:#5c6166}
+
+.cp-dias{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+.cp-dia{padding:6px 11px;border:1px solid #ececea;border-radius:9px;font-size:11.5px}
+.cp-dia b{display:block;font-weight:650}
+.cp-dia span{color:#8b9095;font-size:10.5px}
+
+.cp-barra{height:6px;background:#f0f0ee;border-radius:20px;overflow:hidden;margin-bottom:11px}
+.cp-barra i{display:block;height:100%;background:#151718}
+
+.cp-agenda{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.cp-agenda-dia{border:1px solid #ececea;border-radius:11px;overflow:hidden}
+.cp-agenda-cab{display:flex;justify-content:space-between;align-items:baseline;
+  padding:9px 11px;background:#fbfbfa;border-bottom:1px solid #ececea}
+.cp-agenda-cab b{font-size:11.5px;font-weight:700}
+.cp-agenda-cab span{font-size:10.5px;color:#a4a8ac}
+.cp-item{padding:8px 11px;border-bottom:1px solid #f4f4f2}
+.cp-item:last-child{border-bottom:0}
+.cp-item b{display:block;font-size:11.5px;font-weight:600}
+.cp-item span{display:block;font-size:11.5px;color:#3d4246;margin-top:1px}
+.cp-item small{display:block;font-size:10.5px;color:#a4a8ac;margin-top:2px}
+
+.cp-tarefas{display:flex;flex-direction:column;gap:8px}
+.cp-tarefa{border:1px solid #ececea;border-radius:11px;padding:11px 13px}
+.cp-tarefa-topo{display:flex;align-items:flex-start;gap:9px}
+.cp-tarefa-topo b{flex:1;font-size:13px;font-weight:600;line-height:1.4}
+.cp-pri{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.cp-urgent{background:#fdecea;color:#b03a2e}
+.cp-high{background:#fdf3e3;color:#8a6a1f}
+.cp-low{background:#f0f0ee;color:#8b9095}
+.cp-tarefa-pe{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:7px;font-size:11px;color:#8b9095}
+.cp-tarefa-pe a{color:#151718;font-weight:600;text-decoration:none}
+.cp-tarefa-pe a:hover{text-decoration:underline}
+.cp-aviso{margin:0 0 12px;padding:10px 13px;background:#fdf6e8;color:#8a6a1f;
+  border-radius:10px;font-size:12.5px;line-height:1.5}
+.cp-aviso b{color:#6b520f;font-weight:650}
