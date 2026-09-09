@@ -159,6 +159,8 @@ conf('salvar com o status forçado não conclui a tarefa',
 await abrirTarefas();
 await abrirFicha('Subir criativos');
 await pag.locator('#detailPriority').selectOption('low');
+/* a descrição agora é desenhada; para escrever, abre-se a edição */
+await pag.locator('.ds-editar').click();
 await pag.locator('#detailDescription').fill('briefing revisado');
 await pag.locator('#taskSaveBtn').click();
 await pag.waitForTimeout(600);

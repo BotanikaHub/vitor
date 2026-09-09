@@ -43,6 +43,7 @@ as mudanças da tela e repõe o que é seu, com uma assinatura que evita o laço
 | `campanha.js` | as abas de dentro da campanha, editáveis no lugar, e a exclusão |
 | `conferencia.js` | a conferência antes da entrega (abaixo) |
 | `inicio.js` | os cartões, a lista de atenção e as campanhas do mês da página inicial, lidos das tarefas e campanhas de verdade |
+| `descricao.js` | a descrição da tarefa desenhada a partir do Markdown do ClickUp — títulos, tabelas, citações, caixas de marcar — em vez do arquivo cru |
 
 ## A conferência
 
