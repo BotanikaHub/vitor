@@ -44,6 +44,7 @@ as mudanças da tela e repõe o que é seu, com uma assinatura que evita o laço
 | `conferencia.js` | a conferência antes da entrega (abaixo) |
 | `inicio.js` | os cartões, a lista de atenção e as campanhas do mês da página inicial, lidos das tarefas e campanhas de verdade |
 | `descricao.js` | a descrição da tarefa desenhada a partir do Markdown do ClickUp — títulos, tabelas, citações, caixas de marcar — em vez do arquivo cru |
+| `painel.js` | o Painel — visão geral, tráfego, setores e metas, KPIs, estoque, cupons e alertas — lido ao vivo do banco de cada marca por `/api/painel` (abaixo) |
 
 ## A conferência
 
@@ -80,6 +81,40 @@ Variables*, crie:
 e publique de novo. Sem essa variável a função responde 503 e a tela cai nas
 regras — o botão "Gerar com IA" continua existindo e continua entregando lista.
 Não cole a chave em lugar nenhum além do painel.
+
+## O painel
+
+O acompanhamento morava em dois apps do Lovable — o Botanika Analytics e o
+VermeFree Analytics —, cada um com o seu login. Agora ele é uma tela da
+Central (`#painel`), com as mesmas telas: visão geral, tráfego, setores e
+metas, KPIs, estoque, cupons e alertas. Os números continuam sendo os de lá,
+lidos ao vivo: Shopify (pedidos pagos, `is_test = false`, dia em São Paulo),
+Meta Ads, Instagram e as metas por setor. A tela se atualiza sozinha a cada
+45 segundos enquanto está aberta.
+
+    navegador ──► /api/painel ──► painel_marcas (Central)  ──► banco do painel da marca
+      JWT da        confirma o       url, chave publicável,      central_visao, central_trafego,
+      Central       login            token                        central_setores, ... (só com token)
+
+O banco de cada painel é fechado para tudo que não é a chave de serviço, e
+essa chave não mora aqui. A entrada é outra: as funções `central_*` de lá
+(o SQL está em `painel/lovable.sql`) devolvem cada tela já calculada e só
+respondem a um token. O token vive na tabela `painel_marcas` da Central, e a
+função da Vercel o leva de um banco ao outro sem passar pelo navegador. Para
+girar o token de uma marca:
+
+    -- na Central
+    update painel_marcas set token = default, girado_em = now() where marca = 'Botanika' returning token;
+    -- no banco do painel, com o sha256 do token novo
+    update app_config set value = jsonb_build_object('hash', '<sha256>', 'marca', 'Botanika') where key = 'central_token_sha256';
+
+Editar uma meta na tela grava em `metas_kpi` (metas por setor) ou em
+`metas_mensais` (as três metas de faturamento) do banco de lá, pela mesma
+ponte, com a ação `central_gravar`.
+
+Para ligar uma marca nova (a VermeFree, por exemplo): rodar `painel/lovable.sql`
+no banco do painel dela, gravar o sha256 do token em `app_config`, e inserir a
+linha dela em `painel_marcas` com a URL e a chave publicável do projeto.
 
 ## De onde vem o que aparece na tela
 

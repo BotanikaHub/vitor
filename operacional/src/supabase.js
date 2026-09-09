@@ -313,6 +313,8 @@
       return semAcesso();
     }
     const sb = window.supabase.createClient(URL_SB, CHAVE_SB);
+    /* o Painel precisa do token de quem está logado para falar com /api/painel */
+    window.CentralSessao = () => sb.auth.getSession().then((r) => (r.data && r.data.session) || null).catch(() => null);
     const { data: { session } } = await sb.auth.getSession();
     if (!session) return telaEntrar(sb);
 

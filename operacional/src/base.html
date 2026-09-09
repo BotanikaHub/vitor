@@ -591,6 +591,7 @@ html[data-theme="dark"] .new-task-box,html[data-theme="dark"] .campaign-modal-bo
     <nav class="nav">
       <div class="navgroup">Principal</div>
       <button class="navitem active" id="homeNav" data-label="Início" type="button"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.2"></rect><rect x="14" y="4" width="6" height="6" rx="1.2"></rect><rect x="4" y="14" width="6" height="6" rx="1.2"></rect><rect x="14" y="14" width="6" height="6" rx="1.2"></rect></svg></span>Início</button>
+      <button class="navitem" id="painelNav" data-label="Painel" type="button"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19h16"></path><path d="M7 16V10"></path><path d="M12 16V5"></path><path d="M17 16v-4"></path></svg></span>Painel</button>
       <button class="navitem" id="tasksNav" data-label="Tarefas" type="button"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="m8 12 2.4 2.4L16.5 8.5"></path></svg></span>Tarefas<span class="navcount" id="taskNavCount">0</span></button>
       <button class="navitem" id="deliveriesNav" data-label="Entregas" type="button"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h16v9.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8.5Z"></path><path d="M4 9l3-5h10l3 5"></path><path d="M8.5 13h2l1.2 2h.6l1.2-2h2"></path></svg></span>Entregas<span class="navcount" id="deliveryNavCount">0</span></button>
       <button class="navitem" id="planningNav" data-label="Planejamento" type="button"><span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V9"></path><path d="M10 19V5"></path><path d="M15 19v-7"></path><path d="M20 19V3"></path></svg></span>Planejamento</button>
@@ -672,6 +673,8 @@ html[data-theme="dark"] .new-task-box,html[data-theme="dark"] .campaign-modal-bo
         </section>
       </section>
     </div>
+
+    <section class="painel-view" id="painelView"></section>
 
     <section class="tasks-view" id="tasksView">
       <header class="taskspage-head">
