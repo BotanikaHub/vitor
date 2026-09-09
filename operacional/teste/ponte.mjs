@@ -24,11 +24,30 @@ const estadoNoBanco = [
   { chave: 'central.home.layout.vitor-gutierrez', dono: UID, valor: { cols: 2 } },
 ];
 
+/* Um banco de mentira que dá para ler linha a linha, e não só tudo de uma
+   vez: é o que a gravação precisa fazer agora para juntar em vez de
+   atropelar. */
+const acha = (chave, dono) => estadoNoBanco.find((l) => l.chave === chave &&
+  (dono === null ? l.dono === null : l.dono === dono));
+
 const sb = {
   auth: { getSession: async () => ({ data: { session: { user: { id: UID } } } }) },
   from: () => ({
-    select: () => ({ or: async () => ({ data: estadoNoBanco, error: null }) }),
-    upsert: (linha, op) => { gravado.push({ linha, op }); return Promise.resolve({ error: null }) },
+    select: () => ({
+      or: async () => ({ data: estadoNoBanco, error: null }),
+      eq: (_c, chave) => ({
+        is: () => ({ maybeSingle: async () => ({ data: acha(chave, null), error: null }) }),
+        eq: (_d, dono) => ({ maybeSingle: async () => ({ data: acha(chave, dono), error: null }) }),
+        maybeSingle: async () => ({ data: acha(chave, null), error: null }),
+      }),
+    }),
+    upsert: (linha, op) => {
+      gravado.push({ linha, op });
+      const atual = acha(linha.chave, linha.dono ?? null);
+      if (atual) atual.valor = linha.valor;
+      else estadoNoBanco.push({ chave: linha.chave, dono: linha.dono ?? null, valor: linha.valor });
+      return Promise.resolve({ error: null });
+    },
   }),
 };
 
@@ -40,7 +59,9 @@ const documento = {
   getElementById: () => null,
   createElement: () => ({ style: {}, setAttribute(){}, appendChild(){}, querySelector: () => null }),
   head: { appendChild(){} },
-  body: {},
+  body: { appendChild(){} },
+  addEventListener: () => {},
+  hidden: false,
 };
 class MutationObserver { observe(){} disconnect(){} }
 
@@ -54,9 +75,9 @@ const janela = {
 const fonte = readFileSync(new URL('../src/supabase.js', import.meta.url), 'utf8');
 const roda = () =>
   new Function('window','localStorage','sessionStorage','location','document','console',
-               'MutationObserver','addEventListener',fonte)(
+               'MutationObserver','addEventListener','setInterval',fonte)(
     janela, localStorage, sessionStorage, janela.location, documento, console,
-    MutationObserver, () => {});
+    MutationObserver, () => {}, () => 0);
 
 roda();
 await new Promise((r) => setTimeout(r, 30));   // deixa as promessas resolverem
@@ -130,8 +151,8 @@ assert.equal(recarregou, 1, 'dado novo no banco chega mesmo com a aba já aberta
   const jan = { supabase:{ createClient: () => sbLento }, __SB_ANON__:'x',
                 location:{ reload(){} }, addEventListener(){} };
   new Function('window','localStorage','sessionStorage','location','document','console',
-               'MutationObserver','addEventListener',fonte)(
-    jan, ls, ss, jan.location, documento, console, MutationObserver, () => {});
+               'MutationObserver','addEventListener','setInterval',fonte)(
+    jan, ls, ss, jan.location, documento, console, MutationObserver, () => {}, () => 0);
   /* o app "acorda" antes da busca voltar e grava o padrão dele */
   await new Promise((r) => setTimeout(r, 10));
   ls.setItem('central.campaigns.vitor-gutierrez', JSON.stringify([{ id: 'padrao-do-app' }]));
@@ -140,4 +161,64 @@ assert.equal(recarregou, 1, 'dado novo no banco chega mesmo com a aba já aberta
     'nada sobe antes da busca terminar — senão o padrão do app apagaria o que está no banco');
 }
 
-console.log('ponte: 10 checagens passaram');
+/* ================= juntar em vez de atropelar =================
+
+   Enquanto o ClickUp era o original, perder uma gravação custava um
+   "sincroniza de novo". Sem ele, a tarefa só existe aqui — e o vetor
+   inteiro subindo a cada mudança apagaria o trabalho de quem salvou antes.
+   O que tem que valer: só o que EU mudei vai por cima. */
+{
+  const gLocal = new Map();
+  const ls = { getItem:(k)=>gLocal.has(k)?gLocal.get(k):null, setItem:(k,v)=>gLocal.set(k,String(v)) };
+  const ss = { _m:new Map(), getItem(k){return this._m.has(k)?this._m.get(k):null},
+               setItem(k,v){this._m.set(k,v)}, removeItem(k){this._m.delete(k)} };
+  const CHAVE = 'central.tasks.vitor-gutierrez';
+  const banco = [{ chave: CHAVE, dono: null,
+    valor: [{ id:'a', titulo:'A', status:'a fazer' }, { id:'b', titulo:'B', status:'a fazer' }] }];
+  const subidas = [];
+  const achar = () => banco.find((l) => l.chave === CHAVE && l.dono === null);
+  const sbJunta = {
+    auth:{ getSession: async () => ({ data:{ session:{ user:{ id: UID } } } }) },
+    from: () => ({
+      select: () => ({
+        or: async () => ({ data: banco, error: null }),
+        eq: () => ({ is: () => ({ maybeSingle: async () => ({ data: achar(), error: null }) }),
+                     eq: () => ({ maybeSingle: async () => ({ data: achar(), error: null }) }) }),
+      }),
+      upsert: (linha) => { subidas.push(linha.valor); achar().valor = linha.valor; return Promise.resolve({ error:null }) },
+    }),
+  };
+  const jan = { supabase:{ createClient: () => sbJunta }, __SB_ANON__:'x',
+                location:{ reload(){} }, addEventListener(){} };
+  new Function('window','localStorage','sessionStorage','location','document','console',
+               'MutationObserver','addEventListener','setInterval',fonte)(
+    jan, ls, ss, jan.location, documento, console, MutationObserver, () => {}, () => 0);
+  await new Promise((r) => setTimeout(r, 40));
+
+  /* enquanto esta aba estava aberta, outra pessoa fechou a B e criou a C */
+  achar().valor = [{ id:'a', titulo:'A', status:'a fazer' },
+                   { id:'b', titulo:'B', status:'feito' },
+                   { id:'c', titulo:'C', status:'a fazer' }];
+
+  /* e eu, que só sei da A e da B, renomeio a A e salvo a minha lista inteira */
+  ls.setItem(CHAVE, JSON.stringify([{ id:'a', titulo:'A renomeada', status:'a fazer' },
+                                    { id:'b', titulo:'B', status:'a fazer' }]));
+  await new Promise((r) => setTimeout(r, 60));
+
+  const fim = subidas[subidas.length - 1];
+  assert.ok(fim, 'a gravação chegou ao banco');
+  const porId = Object.fromEntries(fim.map((t) => [t.id, t]));
+  assert.equal(porId.a.titulo, 'A renomeada', 'o que eu mudei vale');
+  assert.equal(porId.b.status, 'feito',
+    'o que a outra pessoa fechou continua fechado — antes minha lista velha desfazia');
+  assert.ok(porId.c, 'a tarefa que ela criou não some só porque eu não a tinha');
+
+  /* apagar de propósito continua apagando */
+  ls.setItem(CHAVE, JSON.stringify(fim.filter((t) => t.id !== 'c')));
+  await new Promise((r) => setTimeout(r, 60));
+  const depois = subidas[subidas.length - 1];
+  assert.ok(!depois.some((t) => t.id === 'c'), 'o que eu tiro, sai mesmo');
+  assert.equal(depois.length, 2, 'e só isso sai');
+}
+
+console.log('ponte: 16 checagens passaram');

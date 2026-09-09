@@ -392,6 +392,30 @@ Fica um item que só você pode ligar, no painel do Supabase: **proteção contr
 senha vazada** (Auth → Password, checagem no HaveIBeenPwned). Vale ligar antes
 de a equipe criar as contas.
 
+### Sem ClickUp, a Central é o original
+
+A decisão mudou o risco principal. Enquanto o ClickUp era a fonte, perder uma
+gravação aqui custava um "sincroniza de novo". Agora a tarefa nasce, muda e
+fecha aqui — não há segunda cópia.
+
+E o jeito antigo de gravar não sobrevive a oito pessoas: o app guarda as 70
+tarefas num vetor só, e a ponte subia **o vetor inteiro** a cada mudança. Duas
+abas abertas e a conta é essa — a Sarah fecha a dela às 10h02, o Pedro renomeia
+o dele às 10h03, e o vetor do Pedro, lido às 9h40, volta por cima e desfaz o
+que a Sarah fez. Sem erro, sem aviso.
+
+A gravação passa a **juntar três coisas**: o que eu tinha quando li, o que eu
+tenho agora, e o que está no banco agora. Só o que *eu* mudei vai por cima; o
+resto fica como o banco está. Item novo de outra pessoa não some, item que eu
+apaguei sai mesmo, e duas pessoas na mesma tarefa continuam em "a última
+manda" — como em qualquer ferramenta. As gravações da mesma chave entram em
+fila, para duas seguidas não lerem o banco ao mesmo tempo.
+
+E como ninguém mais recarrega a página por acaso, a ponte olha o banco a cada
+25 segundos e quando a aba volta ao foco. Ela **não escreve por baixo** — trocar
+o estado no meio de uma edição é pior que não avisar. Mostra uma barra dizendo
+onde mexeram e deixa o recarregar com quem está na frente da tela.
+
 ## De onde vem o que aparece na tela
 
 Nada no app é escrito à mão. Os padrões de fábrica são vazios de propósito:

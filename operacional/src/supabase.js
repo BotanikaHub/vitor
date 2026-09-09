@@ -41,6 +41,136 @@
 
   const FONTE = '"Geist Variable","Geist",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
 
+
+  /* ================= juntar em vez de atropelar =================
+
+     Enquanto o ClickUp era o original, o banco daqui era cópia: perder uma
+     gravação custava um "sincroniza de novo". Agora não. A tarefa nasce,
+     muda e fecha aqui — este é o único lugar onde ela existe.
+
+     E o jeito como isto gravava não sobrevive a oito pessoas. O app guarda
+     as 70 tarefas num vetor só, e a ponte subia o vetor inteiro a cada
+     mudança. Duas pessoas com a página aberta: a Sarah fecha a dela às
+     10h02, o Pedro renomeia a dele às 10h03 — e o vetor do Pedro, lido às
+     9h40, volta por cima e desfaz o que a Sarah fez. Sem erro, sem aviso.
+
+     Então a gravação passa a juntar três coisas: o que eu tinha quando li
+     (`base`), o que eu tenho agora (`meu`) e o que está no banco agora
+     (`servidor`). Só o que EU mudei vai por cima; o resto fica como o banco
+     está. Duas pessoas na mesma tarefa ainda dá "a última manda" — como em
+     qualquer ferramenta —, mas duas pessoas em tarefas diferentes param de
+     se atropelar, que é o caso de todo dia.
+     ============================================================== */
+
+  const objeto = (v) => v && typeof v === 'object' && !Array.isArray(v);
+  const comId = (v) => Array.isArray(v) && v.every((x) => objeto(x) && x.id != null);
+  const igual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+  function juntarLista(base, meu, servidor) {
+    const doServidor = new Map(servidor.map((x) => [String(x.id), x]));
+    const daBase = new Map((Array.isArray(base) ? base : []).map((x) => [String(x.id), x]));
+    const meus = new Map(meu.map((x) => [String(x.id), x]));
+
+    /* o que eu apaguei sai; o que outro apagou e eu não toquei, fica fora */
+    for (const id of daBase.keys()) if (!meus.has(id)) doServidor.delete(id);
+
+    const fora = [];
+    for (const item of meu) {
+      const id = String(item.id);
+      const antes = daBase.get(id);
+      const doBanco = doServidor.get(id);
+      /* mudei eu, ou é novo meu: vale o meu. Não mudei: vale o do banco */
+      fora.push(!antes || !igual(antes, item) ? item : (doBanco || item));
+      doServidor.delete(id);
+    }
+    /* o que outra pessoa criou enquanto eu estava com a página aberta */
+    for (const item of doServidor.values()) fora.push(item);
+    return fora;
+  }
+
+  function juntar(base, meu, servidor) {
+    if (servidor === undefined || servidor === null) return meu;
+    if (comId(meu) && comId(servidor)) return juntarLista(base, meu, servidor);
+    if (objeto(meu) && objeto(servidor)) {
+      const b = objeto(base) ? base : {};
+      const fora = {};
+      for (const k of new Set([...Object.keys(servidor), ...Object.keys(meu)])) {
+        const tinha = Object.prototype.hasOwnProperty.call(b, k);
+        const tenho = Object.prototype.hasOwnProperty.call(meu, k);
+        if (tinha && !tenho) continue;                       /* apaguei eu */
+        if (!tenho) { fora[k] = servidor[k]; continue; }      /* nem toquei */
+        fora[k] = !tinha || !igual(b[k], meu[k])
+          ? juntar(b[k], meu[k], servidor[k])                 /* mudei eu */
+          : servidor[k];                                      /* não mudei */
+      }
+      return fora;
+    }
+    return meu;
+  }
+
+
+  /* ================= chegou coisa de outra pessoa =================
+
+     Sem ClickUp por trás, o que o Ítalo cria só existe aqui — e antes o
+     Pedro só veria depois de recarregar a página por acaso. A ponte passa
+     a olhar o banco de tempo em tempo e quando alguém volta para a aba.
+
+     Ela não escreve por baixo: trocar o estado embaixo de quem está no
+     meio de uma edição é pior do que não avisar. Ela mostra uma barra e
+     deixa a decisão de recarregar com quem está na frente da tela. */
+  const NOMES = {
+    'central.tasks': 'nas tarefas',
+    'central.campaigns': 'nas campanhas',
+    'central.conferencia': 'nas conferências',
+    'central.pessoas': 'no cadastro de pessoas',
+    'central.rituais': 'na daily ou na reunião',
+    'central.planning': 'no planejamento',
+  };
+  const ondeFoi = (chaves) => {
+    const lugares = [...new Set(chaves.map((c) => {
+      const p = c.split('.').slice(0, 2).join('.');
+      return NOMES[p] || null;
+    }).filter(Boolean))];
+    if (!lugares.length) return 'na Central';
+    if (lugares.length === 1) return lugares[0];
+    return `${lugares.slice(0, -1).join(', ')} e ${lugares[lugares.length - 1]}`;
+  };
+
+  function barraNovidade(chaves) {
+    if (document.getElementById('central-novidade')) return;
+    const b = document.createElement('div');
+    b.id = 'central-novidade';
+    b.innerHTML = `<span>Alguém mexeu ${ondeFoi(chaves)}.</span>
+      <button type="button" data-atualiza>Atualizar</button>
+      <button type="button" data-depois aria-label="Fechar">×</button>`;
+    b.style.cssText = `position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:99999;
+      display:flex;align-items:center;gap:12px;padding:10px 12px 10px 16px;border-radius:999px;
+      background:#121415;color:#fff;font:500 12px/1 ${FONTE};box-shadow:0 8px 28px rgba(0,0,0,.28)`;
+    b.querySelector('[data-atualiza]').style.cssText = `border:0;border-radius:999px;padding:7px 14px;
+      background:#fff;color:#121415;font:700 12px/1 ${FONTE};cursor:pointer`;
+    b.querySelector('[data-depois]').style.cssText = `border:0;background:transparent;color:#9aa0a5;
+      font-size:16px;line-height:1;cursor:pointer;padding:0 2px`;
+    b.querySelector('[data-atualiza]').onclick = () => location.reload();
+    b.querySelector('[data-depois]').onclick = () => b.remove();
+    document.body.appendChild(b);
+  }
+
+  function vigiar(sb, uid) {
+    let olhando = false;
+    const olhar = async () => {
+      if (olhando || document.hidden) return;
+      olhando = true;
+      try {
+        const chaves = await novidades(sb, uid);
+        if (chaves.length) barraNovidade(chaves);
+      } catch { /* rede oscilando não vira aviso */ }
+      olhando = false;
+    };
+    setInterval(olhar, 25000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) olhar() });
+    window.addEventListener('focus', olhar);
+  }
+
   /* ================= a tela de entrar ================= */
 
   /* As mensagens do Supabase vêm em inglês e algumas não dizem nada a quem
@@ -275,6 +405,10 @@
   }
 
   /* ================= trazer o estado do banco ================= */
+  /* o que o banco tinha da última vez que olhamos, por chave: é o terceiro
+     lado da junção, e sem ele não dá para saber o que fui eu que mudei */
+  const base = new Map();
+
   async function hidratar(sb, uid) {
     const { data, error } = await sb.from(TABELA)
       .select('chave, valor, dono')
@@ -283,14 +417,53 @@
 
     let mudou = false;
     for (const linha of data || []) {
+      base.set(linha.chave, linha.valor);
       const texto = JSON.stringify(linha.valor);
       if (localStorage.getItem(linha.chave) !== texto) { gravarLocal(linha.chave, texto); mudou = true; }
     }
     return mudou;
   }
 
+  /* Olha o banco sem mexer na tela. Serve para avisar que chegou coisa
+     nova de outra pessoa — escrever por baixo enquanto alguém está no meio
+     de uma edição seria pior do que não avisar. */
+  async function novidades(sb, uid) {
+    const { data, error } = await sb.from(TABELA)
+      .select('chave, valor, dono')
+      .or(`dono.is.null,dono.eq.${uid}`);
+    if (error) return [];
+    return (data || [])
+      .filter((l) => !soLocal(l.chave) && localStorage.getItem(l.chave) !== JSON.stringify(l.valor))
+      .map((l) => l.chave);
+  }
+
   /* ================= mandar de volta o que o app gravar ================= */
   let espelhando = false;
+  /* uma fila por chave: duas gravações seguidas da mesma lista não podem
+     ler o banco ao mesmo tempo e escrever uma por cima da outra */
+  const fila = new Map();
+
+  async function subir(sb, uid, chave, valor) {
+    const dono = ehPessoal(chave) ? uid : null;
+    let final = valor;
+    try {
+      const busca = sb.from(TABELA).select('valor').eq('chave', chave);
+      const { data } = await (dono === null ? busca.is('dono', null) : busca.eq('dono', dono)).maybeSingle();
+      if (data) final = juntar(base.get(chave), valor, data.valor);
+    } catch (e) {
+      /* sem conseguir ler, sobe o meu: pior é não salvar */
+      console.info('[central] não li o estado do banco antes de salvar:', (e && e.message) || e);
+    }
+    const { error } = await sb.from(TABELA).upsert(
+      { chave, dono, valor: final,
+        atualizado_em: new Date().toISOString(), atualizado_por: uid },
+      { onConflict: 'chave,dono' });
+    if (error) { console.error('[central] não salvou:', chave, error.message); return }
+    base.set(chave, final);
+    const texto = JSON.stringify(final);
+    if (localStorage.getItem(chave) !== texto) gravarLocal(chave, texto);
+  }
+
   function espelhar(sb, uid) {
     if (espelhando) return;
     espelhando = true;
@@ -299,11 +472,8 @@
       if (!ehNossa(chave) || soLocal(chave)) return;
       let valor;
       try { valor = JSON.parse(texto); } catch { return; }
-      sb.from(TABELA).upsert(
-        { chave, dono: ehPessoal(chave) ? uid : null, valor,
-          atualizado_em: new Date().toISOString(), atualizado_por: uid },
-        { onConflict: 'chave,dono' }
-      ).then(({ error }) => { if (error) console.error('[central] não salvou:', chave, error.message); });
+      const antes = fila.get(chave) || Promise.resolve();
+      fila.set(chave, antes.then(() => subir(sb, uid, chave, valor)).catch(() => {}));
     };
   }
 
@@ -350,6 +520,7 @@
       console.error('[central] não consegui buscar o estado:', e.message);
     }
     espelhar(sb, uid);
+    vigiar(sb, uid);
 
     if (mudou) {
       /* Cinto de segurança: se por algum motivo a comparação nunca casar,
