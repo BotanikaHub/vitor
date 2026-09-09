@@ -251,6 +251,9 @@ conf('com a IA fora do ar, a lista sai pelas regras', c3.geradoPor === 'regras')
 conf('e a área certa foi reconhecida sozinha', c3.area === 'E-mail');
 conf('refazer não apaga o que já tinha sido conferido — nada estava marcado',
   c3.itens.every((i) => !i.feito));
+conf('e o botão "com IA" some, em vez de prometer o que não entrega',
+  await pag.locator('.cf-secao [data-cf-gerar][data-cf-ia]').count() === 0 &&
+  await pag.locator('.cf-secao [data-cf-gerar]:not([data-cf-ia])').count() === 1);
 
 /* refazer preservando o que já foi conferido */
 await pag.locator('.cf-item input[type=checkbox]').first().click();

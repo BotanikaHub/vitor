@@ -68,20 +68,24 @@ sempre** — sem chave, sem rede e sem espera. A IA entra por cima quando existe
 `/api/conferencia` respondendo, e se ela falhar ou demorar a lista das regras
 fica: nunca se entrega sem lista.
 
-### Para ligar a IA
+### A IA está desligada
 
-A chave da Anthropic não pode morar no `src/`: o `dist/index.html` vai inteiro
-para o navegador de quem abrir o link, e este repositório é público. Quem fala
-com a Anthropic é `api/conferencia.mjs`, que roda na Vercel.
+Por decisão do Vitor, a Central roda sem a chave da Anthropic — a conferência
+sai pelo padrão de cada área, que é o mesmo material que a IA usaria de base.
+Na primeira vez que alguém pede "Gerar com IA" e a função responde 503, o botão
+some da ficha e a tela diz de onde a lista veio. Nada quebra por causa disso.
+
+Para ligar um dia, é isto. A chave da Anthropic não pode morar no `src/`: o
+`dist/index.html` vai inteiro para o navegador de quem abrir o link, e este
+repositório é público. Quem fala com a Anthropic é `api/conferencia.mjs`, que
+roda na Vercel.
 
 No painel do projeto `operacional` na Vercel, em *Settings → Environment
 Variables*, crie:
 
     ANTHROPIC_API_KEY = <a chave>
 
-e publique de novo. Sem essa variável a função responde 503 e a tela cai nas
-regras — o botão "Gerar com IA" continua existindo e continua entregando lista.
-Não cole a chave em lugar nenhum além do painel.
+e publique de novo. Não cole a chave em lugar nenhum além do painel.
 
 ## O painel
 

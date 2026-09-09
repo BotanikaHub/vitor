@@ -324,6 +324,12 @@
   /* Gera e guarda. `ia` diz se pode tentar a IA; o que já estava marcado
      é reaproveitado pelo texto, para regenerar não apagar o trabalho de
      quem já conferiu metade. */
+  /* Enquanto não houver chave da Anthropic na Vercel, a função responde 503
+     e a lista sai pelas regras. Na primeira vez que isso acontece o botão
+     "com IA" some: ele prometia uma coisa e entregava outra. Basta recarregar
+     a página depois de ligar a chave para ele voltar. */
+  let iaFora = false;
+
   async function gerar(chave, contexto, ia) {
     const antes = conferencia(chave);
     const marcados = new Map((antes?.itens || []).filter((i) => i.feito)
@@ -334,7 +340,7 @@
 
     if (ia) {
       try { itens = await porIA(contexto.payload); por = 'ia' }
-      catch (e) { console.info('[conferência] IA indisponível, seguindo pelas regras:', e.message) }
+      catch (e) { iaFora = true; console.info('[conferência] IA indisponível, seguindo pelas regras:', e.message) }
     }
 
     for (const i of itens) {
@@ -390,7 +396,7 @@
           <span>${c ? `${b.feitos} de ${b.total} conferidos${b.faltam ? ` · faltam ${b.faltam} obrigatórios` : ''}` : 'ainda não há lista para esta entrega'}</span>
         </div>
         <div class="cf-acoes">
-          <button type="button" class="cf-bt" data-cf-gerar="${esc(chave)}" data-cf-ia="1">${c ? 'Refazer com IA' : 'Gerar com IA'}</button>
+          ${iaFora ? '' : `<button type="button" class="cf-bt" data-cf-gerar="${esc(chave)}" data-cf-ia="1">${c ? 'Refazer com IA' : 'Gerar com IA'}</button>`}
           <button type="button" class="cf-bt" data-cf-gerar="${esc(chave)}">${c ? 'Refazer pelo padrão' : 'Usar o padrão'}</button>
           ${contexto.area ? `<button type="button" class="cf-bt cf-bt-fraco" data-cf-area="${esc(contexto.area)}">Padrão de ${esc(contexto.area)}</button>` : ''}
         </div>
@@ -711,6 +717,7 @@
           const t = tarefaDaFicha();
           if (t) await gerar(chave, contextoTarefa(t), ia);
         }
+        if (ia && iaFora) aviso('A IA está desligada. A lista veio do padrão da área.');
       } finally {
         g.disabled = false; g.textContent = antes;
         redesenhar();
@@ -732,7 +739,7 @@
         await gerar(escopoTarefa(t), contextoTarefa(t), true);
       }
       gt.disabled = false; gt.textContent = antes;
-      aviso(`${faltando.length} lista${faltando.length > 1 ? 's' : ''} de conferência criada${faltando.length > 1 ? 's' : ''}.`);
+      aviso(`${faltando.length} lista${faltando.length > 1 ? 's' : ''} de conferência criada${faltando.length > 1 ? 's' : ''}${iaFora ? ', pelo padrão da área — a IA está desligada' : ''}.`);
       redesenhar();
       return;
     }
