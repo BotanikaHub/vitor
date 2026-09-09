@@ -254,6 +254,22 @@ mensagens) passa a ser calculada sozinha, por período e por semana.
 (quem entrou, quem saiu), não disparo. Até haver uma credencial do SendFlow no
 n8n, os grupos saem de `disparos_manual`.
 
+### Lançar o número que não tem fonte
+
+Atendimento passou meses sem um número sequer — `atendimento_metricas` com zero
+linhas. O motivo não era falta de combinado: **o banco já aceitava guardar
+valor de setor (`valor_setor`), mas nenhuma tela pedia**. Quem quisesse lançar
+teria que abrir o Supabase.
+
+Agora toda métrica marcada como `mao` no catálogo mostra um botão **lançar** no
+lugar do valor, com o campo e a escolha entre **no mês** e **nesta semana** — a
+semana guardada como `AAAAMMDD` da segunda, que é o número que `central_setores`
+procura. O que foi lançado na semana entra na tabela da reunião de quinta junto
+do que a API mediu.
+
+E **o medido manda sobre o digitado**: se um dia a integração existir, o número
+dela cobre o lançamento à mão sozinho, sem ninguém ter que apagar nada.
+
 ### O filtro de cada setor
 
 `central_setores` passou a receber o período da barra do painel e devolve

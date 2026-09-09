@@ -400,10 +400,14 @@
     }
     const anterior = (d.semanas || []).find((s) => s.fim === somaDias(seg, -1)) || null;
     const metasMes = ctx.metasCom ? ctx.metasCom(d) : (d.metas || {});
-    if (sem && ctx.comDerivadas) sem.realizados = ctx.comDerivadas(sem.realizados, null);
+    /* o que foi lançado à mão naquela semana entra junto do que a API mediu,
+       e o medido manda por cima */
+    if (sem && ctx.comDerivadas) sem.realizados = ctx.comDerivadas({ ...(sem.manuais || {}), ...(sem.realizados || {}) }, null);
     /* conversão por canal e atendimento por pedido saem de uma conta entre o
        que a API traz e o que foi lançado à mão — só valem no recorte do mês */
-    const realMes = ctx.comDerivadas ? ctx.comDerivadas(d.realizados, d.manuais) : (d.realizados || {});
+    const realMes = ctx.comDerivadas
+      ? ctx.comDerivadas({ ...(d.manuais || {}), ...(d.realizados || {}) }, d.manuais)
+      : (d.realizados || {});
     const ativaN = (d.meta_geral && +d.meta_geral.meta_ativa) || 1;
     const metaFat = d.meta_geral ? +d.meta_geral[`meta${ativaN}`] || 0 : 0;
     const esperadoFat = metaFat * (+d.dia_hoje || 0) / (+d.dias || 30);

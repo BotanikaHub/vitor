@@ -207,3 +207,14 @@ html[data-theme="dark"] .pn-preset.ativo{background:#f2f2f2;color:#111}
 .pn-metrica-per b{font-size:14px;font-weight:650;letter-spacing:-.01em;color:var(--pn-ink)}
 .pn-metrica-per small{font-size:9px;color:var(--pn-muted)}
 .pn-metrica.com-periodo .pn-metrica-valor{color:var(--pn-muted)}
+
+/* ---------- lançar o número que não tem fonte ----------
+   Atendimento, grupos e o que mais não vier de API. O banco já aceitava
+   guardar; faltava a tela pedir — e por isso ninguém nunca lançou. */
+.pn-valor-btn{min-height:26px;padding:0 9px;border:1px dashed var(--pn-line);border-radius:9px;
+  background:transparent;color:var(--pn-ink);font:inherit;font-size:13px;font-weight:650;
+  letter-spacing:-.01em;cursor:pointer;transition:background .15s ease,border-color .15s ease}
+.pn-valor-btn:hover{background:var(--pn-soft);border-color:var(--pn-muted)}
+.pn-lanca{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pn-lanca select{min-height:30px;padding:0 7px;border:1px solid var(--pn-line);border-radius:9px;
+  background:var(--pn-surface);color:var(--pn-ink);font:inherit;font-size:11px}

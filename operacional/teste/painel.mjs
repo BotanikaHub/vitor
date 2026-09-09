@@ -120,6 +120,7 @@ await pag.route('**/api/painel**', async (rota) => {
     gravacoes.push({ corpo, auth });
     if (corpo.acao === 'meta_kpi') SETORES.metas[`${corpo.dados.escopo}|${corpo.dados.canal}|${corpo.dados.metrica}`] = { valor: corpo.dados.meta_valor, unidade: corpo.dados.unidade };
     if (corpo.acao === 'meta_mensal') Object.assign(SETORES.meta_geral, { meta1: corpo.dados.meta1, meta2: corpo.dados.meta2, meta3: corpo.dados.meta3, meta_ativa: corpo.dados.meta_ativa });
+    if (corpo.acao === 'valor_setor' && corpo.dados.periodo === 'mensal') SETORES.manuais[`${corpo.dados.escopo}|${corpo.dados.canal}|${corpo.dados.metrica}`] = corpo.dados.valor;
     return json(200, { ok: true });
   }
   chamadas.push({ q, auth });
@@ -259,6 +260,7 @@ conf('e a conversão de cada canal passa a ser calculada',
 conf('grupos segue lançado à mão, porque ainda não tem fonte',
   /Grupos · mensagens enviadas/i.test(automTxt) && /lançado à mão/i.test(automTxt));
 
+
 await pag.locator('#painelCorpo [data-meta-edita="trafego||investimento"]').click(); await pag.waitForTimeout(250);
 conf('clicar numa meta abre o campo com o valor atual', (await pag.locator('#painelCorpo [data-meta-form] input').inputValue()) === '100000');
 await pag.locator('#painelCorpo [data-meta-form] input').fill('120000');
@@ -275,6 +277,31 @@ await pag.locator('#painelCorpo [data-meta-geral] [name=meta_ativa]').selectOpti
 await pag.locator('#painelCorpo [data-meta-geral] button[type=submit]').click(); await pag.waitForTimeout(600);
 const g2 = gravacoes[1];
 conf('as metas de faturamento gravam as três e a ativa', g2 && g2.corpo.acao === 'meta_mensal' && g2.corpo.dados.meta1 === 500000 && g2.corpo.dados.meta_ativa === 2);
+/* ---------- lançar o número que não tem fonte ----------
+   O banco já aceitava guardar valor de setor; nenhuma tela pedia. Por isso
+   atendimento passou meses sem um número sequer. */
+const atend = pag.locator('#painelCorpo .pn-setor', { hasText: 'Atendimento' });
+conf('métrica sem fonte automática oferece lançar o número',
+  await atend.locator('[data-valor-edita]').count() >= 3);
+await atend.locator('[data-valor-edita="atendimento||csat"]').click(); await pag.waitForTimeout(300);
+conf('e abre com o campo e onde lançar', await pag.locator('[data-valor-form] select[name=periodo]').count() === 1);
+await pag.locator('[data-valor-form] input[name=valor]').fill('92');
+await pag.locator('[data-valor-form] button[type=submit]').click(); await pag.waitForTimeout(700);
+const gv = gravacoes[gravacoes.length - 1];
+conf('salvar grava o valor do setor no painel de lá',
+  gv && gv.corpo.acao === 'valor_setor' && gv.corpo.dados.escopo === 'atendimento' &&
+  gv.corpo.dados.metrica === 'csat' && gv.corpo.dados.valor === 92 && gv.corpo.dados.periodo === 'mensal');
+conf('e o número lançado passa a aparecer no cartão',
+  (await atend.innerText()).includes('92'));
+
+await atend.locator('[data-valor-edita="atendimento||volume"]').click(); await pag.waitForTimeout(300);
+await pag.locator('[data-valor-form] select[name=periodo]').selectOption('semanal');
+await pag.locator('[data-valor-form] input[name=valor]').fill('310');
+await pag.locator('[data-valor-form] button[type=submit]').click(); await pag.waitForTimeout(700);
+const gs = gravacoes[gravacoes.length - 1];
+conf('dá para lançar na semana, com o número que o banco usa (AAAAMMDD da segunda)',
+  gs && gs.corpo.dados.periodo === 'semanal' && /^\d{8}$/.test(String(gs.corpo.dados.periodo_num)));
+
 await pag.screenshot({ path: 'teste/24-painel-setores.png', fullPage: true });
 
 await pag.locator('#painelCorpo [data-setor="influenciadores"]').click();

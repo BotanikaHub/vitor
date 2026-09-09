@@ -474,6 +474,15 @@
 
   const ORIGEM = { api: '', derivada: '', mao: 'lançado à mão' };
 
+  /* A semana é guardada como AAAAMMDD da segunda-feira — o mesmo número que
+     central_setores procura ao ler metas e lançamentos semanais. */
+  function semanaAtual() {
+    const h = hojeSP();
+    const d = new Date(`${h}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+    return +d.toISOString().slice(0, 10).replace(/-/g, '');
+  }
+
   function metasCom(d) {
     const metas = { ...(d.metas || {}) };
     const mg = d.meta_geral || {};
@@ -483,7 +492,9 @@
   }
   function cartaoSetor(setor, d) {
     const metas = metasCom(d);
-    const real = comDerivadas(d.realizados, d.manuais);
+    /* O que é medido manda sobre o que foi digitado: se um dia a integração
+       existir, o número dela cobre o lançamento à mão sozinho. */
+    const real = comDerivadas({ ...(d.manuais || {}), ...(d.realizados || {}) }, d.manuais);
     const per = comDerivadas(d.realizado_periodo, null);
     const jan = d.periodo || null;
     /* o período só vira coluna quando é outro recorte que não o mês inteiro */
@@ -509,10 +520,28 @@
       const marca = ORIGEM[av.cfg.auto || 'api'];
       const casas = un === 'x' ? 2 : un === '%' ? 1 : 0;
       const noPeriodo = mostraPeriodo
-        ? `<div class="pn-metrica-per"><b>${per[k] == null ? '—' : unidade(un, per[k], casas)}</b><small>no período</small></div>` : '';
+        ? `<div class="pn-metrica-per"><b>${per[k] == null ? '—' : unidade(un, per[k], casas)}</b><small>${av.cfg.auto === 'mao' ? 'só no mês' : 'no período'}</small></div>` : '';
+      /* Métrica sem fonte automática precisa de alguém para lançar. O banco
+         já aceitava (valor_setor), mas nenhuma tela pedia — então ninguém
+         nunca lançou, e atendimento ficou meses sem um número sequer. */
+      const deMao = av.cfg.auto === 'mao';
+      const lancando = st.lancando === k;
+      const valorHtml = deMao
+        ? (lancando
+          ? `<form class="pn-edita pn-lanca" data-valor-form="${esc(k)}">
+              <input name="valor" type="number" step="any" min="0" value="${av.r == null ? '' : av.r}" placeholder="valor" autofocus>
+              <select name="periodo" aria-label="Onde lançar">
+                <option value="mensal">no mês</option>
+                <option value="semanal">nesta semana</option>
+              </select>
+              <button type="submit" class="cu-btn primary">Salvar</button>
+              <button type="button" class="cu-btn" data-valor-cancela>Cancelar</button>
+            </form>`
+          : `<button type="button" class="pn-valor-btn" data-valor-edita="${esc(k)}" title="lançar o número deste mês">${av.r == null ? 'lançar' : unidade(un, av.r, casas)}</button>`)
+        : (av.r == null ? '—' : unidade(un, av.r, casas));
       return `<div class="pn-metrica ${av.cls} ${mostraPeriodo ? 'com-periodo' : ''}"><div class="pn-metrica-nome"><b>${esc(av.cfg.nome)}</b><small>${av.cfg.tipo === 'fluxo' ? 'acumulado no mês' : 'nível atual'}${av.cfg.sentido === 'menor' ? ' · quanto menor, melhor' : ''}${marca ? ` · ${esc(marca)}` : ''}</small>${D ? seletorDono(k, donoMetrica, donoSetor ? `dono: ${donoSetor}` : 'sem dono') : ''}</div>` +
         noPeriodo +
-        `<div class="pn-metrica-valor">${av.r == null ? '—' : unidade(un, av.r, casas)}</div>` +
+        `<div class="pn-metrica-valor">${valorHtml}</div>` +
         `<div class="pn-metrica-meta">${campoMeta}</div>` +
         `<div class="pn-metrica-ritmo">${av.m ? ritmo(av.r, av.m, av.esperado, { un }) : ''}<small class="${av.cls}">${esc(av.texto)}${av.esperado != null ? ` · esperado ${unidade(un, av.esperado, 0)}` : ''}</small></div></div>`;
     }).join('');
@@ -845,7 +874,7 @@
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && st.aberto) carregar(false) });
 
     view.addEventListener('click', async (e) => {
-      const t = e.target.closest('[data-tela],[data-preset],[data-marca],[data-setor],[data-painel-atualiza],[data-meta-edita],[data-meta-cancela],[data-ger],[data-abre-tela]');
+      const t = e.target.closest('[data-tela],[data-preset],[data-marca],[data-setor],[data-painel-atualiza],[data-meta-edita],[data-meta-cancela],[data-valor-edita],[data-valor-cancela],[data-ger],[data-abre-tela]');
       if (!t) return;
       if (t.dataset.tela) { st.tela = t.dataset.tela; st.editando = null; view.querySelector('#painelCorpo').innerHTML = ''; return carregar(false) }
       if (t.dataset.preset) { st.preset = t.dataset.preset; return carregar(false) }
@@ -853,6 +882,8 @@
       if (t.dataset.setor) { st.setor = t.dataset.setor; st.editando = null; return carregar(false) }
       if (t.hasAttribute('data-painel-atualiza')) { st.cache = {}; return carregar(true) }
       if (t.dataset.metaEdita) { st.editando = t.dataset.metaEdita; return carregar(false) }
+      if (t.dataset.valorEdita) { st.lancando = t.dataset.valorEdita; return carregar(false) }
+      if (t.matches('[data-valor-cancela]')) { st.lancando = null; return carregar(false) }
       if (t.hasAttribute('data-meta-cancela')) { st.editando = null; return carregar(false) }
       if (t.dataset.ger) { st.abertos[t.dataset.ger] = !st.abertos[t.dataset.ger]; return carregar(false) }
       if (t.dataset.abreTela) {
@@ -878,11 +909,20 @@
 
     view.addEventListener('submit', async (e) => {
       const f = e.target;
-      if (!f.matches('[data-meta-form],[data-meta-geral]')) return;
+      if (!f.matches('[data-meta-form],[data-meta-geral],[data-valor-form]')) return;
       e.preventDefault();
       const h = hojeSP(), ano = +h.slice(0, 4), mes = +h.slice(5, 7);
       const botao = f.querySelector('[type="submit"]'); if (botao) { botao.disabled = true; botao.textContent = 'Salvando…' }
       try {
+        if (f.dataset.valorForm) {
+          const { escopo, canal, metrica } = partes(f.dataset.valorForm);
+          const periodo = f.periodo.value === 'semanal' ? 'semanal' : 'mensal';
+          const num = periodo === 'semanal' ? semanaAtual() : mes;
+          await gravar('valor_setor', { escopo, canal, metrica, periodo, ano, periodo_num: num, valor: +f.valor.value || 0 });
+          st.lancando = null;
+          window.showToast?.(periodo === 'semanal' ? 'Número lançado nesta semana' : 'Número lançado no mês');
+          return carregar(true);
+        }
         if (f.dataset.metaForm) {
           const { escopo, canal, metrica } = partes(f.dataset.metaForm);
           const bruto = f.valor.value.trim();

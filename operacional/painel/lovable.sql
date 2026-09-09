@@ -531,6 +531,7 @@ declare
   seg date := hoje - (extract(isodow from hoje)::int - 1);
   per_de date := least(coalesce(p_de, m_ini), coalesce(p_ate, ate));
   per_ate date := least(greatest(coalesce(p_ate, ate), per_de), hoje);
+  num_sem int;
 begin
   if not public.central_ok(p_token) then raise exception 'token' using errcode = '28000'; end if;
 
@@ -539,18 +540,25 @@ begin
   ini := m_ini;
   while ini <= m_fim loop
     fim := least(m_fim, ini + (7 - extract(isodow from ini)::int));
+    num_sem := (to_char(ini - (extract(isodow from ini)::int - 1), 'YYYYMMDD'))::int;
     semanas := semanas || jsonb_build_object(
-      'n', n, 'inicio', ini, 'fim', fim, 'dias', fim - ini + 1,
+      'n', n, 'inicio', ini, 'fim', fim, 'dias', fim - ini + 1, 'num', num_sem,
       'em_andamento', fim >= hoje, 'futura', ini > hoje,
       'realizados', case when ini > hoje then '{}'::jsonb else public.central_realizados(ini, least(fim, hoje)) end,
+      -- o que foi lançado à mão naquela semana: atendimento, grupos, e o que
+      -- mais não tiver fonte automática. Sem isto, quem digitava o número
+      -- digitava no vazio: nada relia.
+      'manuais', coalesce((select jsonb_object_agg(escopo || '|' || coalesce(canal,'') || '|' || metrica, valor)
+        from valores_setor where periodo = 'semanal' and ano = extract(year from ini) and periodo_num = num_sem), '{}'::jsonb),
       'metas', coalesce((select jsonb_object_agg(escopo || '|' || coalesce(canal,'') || '|' || metrica, meta_valor)
         from metas_kpi where periodo = 'semanal' and ano = extract(year from ini)
-          and periodo_num = (to_char(ini - (extract(isodow from ini)::int - 1), 'YYYYMMDD'))::int), '{}'::jsonb));
+          and periodo_num = num_sem), '{}'::jsonb));
     ini := fim + 1; n := n + 1;
   end loop;
 
   return jsonb_build_object(
     'ano', p_ano, 'mes', p_mes, 'hoje', hoje, 'inicio', m_ini, 'fim', m_fim, 'dias', dias,
+    'semana_atual', (to_char(seg, 'YYYYMMDD'))::int,
     'dia_hoje', case when hoje < m_ini then 0 when hoje > m_fim then dias else extract(day from hoje) end,
     'metas', coalesce((select jsonb_object_agg(escopo || '|' || coalesce(canal,'') || '|' || metrica,
         jsonb_build_object('valor', meta_valor, 'unidade', unidade))
