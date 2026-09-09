@@ -17,9 +17,20 @@
                contexto (a campanha, o canal, o produto). Esta é a que
                tranca a conclusão.
 
+     Roteiro   o protocolo da área naquela campanha, com um dono. Este é
+               o nível que faltava. As ações de uma campanha são sempre
+               as mesmas — o que muda é a comunicação. Então o que se
+               confere também é sempre o mesmo, e é longo: testar cada
+               desconto e cada combinação entre eles, o limite do brinde,
+               a compra no Pix e no cartão, a home inteira, a página de
+               produto, o carrinho, o checkout, e tudo outra vez no
+               celular. Isso não cabe em cada subtarefa — cabe uma vez
+               só, na tarefa principal daquela área naquela campanha, e
+               tranca ela até o roteiro fechar.
+
      Campanha  a conferência do conjunto: as tarefas todas conferidas,
-               a oferta igual em todo canal, o cronograma cumprido, o
-               resultado registrado.
+               os roteiros de todas as áreas fechados, a oferta igual em
+               todo canal, o cronograma cumprido, o resultado registrado.
 
    A lista pode ser escrita pela IA ou pelas regras daqui. As regras
    funcionam sempre, sem chave, sem rede e sem espera — a IA entra por
@@ -90,6 +101,7 @@
     ['Está entregue por inteiro o que o briefing pediu', true],
     ['A marca do material é a certa — Botanika ou VermeFree, sem trocar', true],
     ['Preço, desconto e cupom batem com a oferta da campanha', true],
+    ['Todo número escrito na peça conferido contra a oferta real: quantidade, limite e prazo', true],
     ['Data e horário de publicação batem com o cronograma', true],
     ['Link testado: abre na página certa e com UTM', true, 'prova'],
     ['Texto lido inteiro, sem erro de português', true],
@@ -135,11 +147,18 @@
       ['Segmento e exclusões conferidos antes do disparo', true],
       ['Remetente, resposta e descadastro funcionando', true],
     ],
+    'Oferta': [
+      ['Desconto criado no painel, com data de início e de fim', true],
+      ['Cupom testado numa compra de verdade, até a tela de pagamento', true, 'prova'],
+      ['Regra escrita: com o que soma e com o que não soma', true],
+      ['Margem conferida no pior caso de soma de descontos', true],
+    ],
     'Site': [
       ['Alterado no tema rascunho e revisado antes de publicar', true, 'revisao'],
       ['Testado no celular e no computador', true],
       ['Preço, frete e cupom aplicando até o checkout', true],
       ['Estoque conferido dos produtos da oferta', true],
+      ['Conferido depois de publicado, abrindo a loja de verdade — não só o editor', true, 'prova'],
       ['Página não ficou mais lenta depois da mudança', false],
     ],
     'Influencer': [
@@ -179,6 +198,230 @@
     ['Aprendizados escritos para a próxima', false],
   ];
 
+
+  /* ---------- o roteiro da área na campanha ----------
+     O Vitor disse assim: "as ações das campanhas são sempre as mesmas, o
+     que muda são só as comunicações". Isso é a chave. Se a ação é sempre
+     a mesma, a conferência dela pode ser escrita uma vez e usada em toda
+     campanha — e ela é longa demais para caber na lista de uma subtarefa.
+
+     Então o roteiro é isto: o protocolo inteiro de uma área, dividido em
+     etapas, feito uma vez por campanha, por uma pessoa só. Enquanto ele
+     não fecha, a tarefa principal daquela área naquela campanha não
+     fecha. As subtarefas seguem com a lista curta delas.
+
+     A ordem das etapas é a ordem de fazer, não a de listar. */
+  const ROTEIROS = {
+    'Oferta': [
+      ['Antes de ligar qualquer coisa', [
+        ['Lista escrita de todo desconto vivo hoje na loja: automático, de frete, por quantidade, de influenciadora, de recompra, de boas-vindas', true, 'prova'],
+        ['Decidido e escrito, um por um, qual soma com esta campanha e qual não soma', true],
+        ['Os que não podem somar já desligados ou limitados dentro do período da campanha', true],
+        ['Cupons da campanha criados com data de início, data de fim e limite de uso', true],
+        ['Produtos fora da oferta marcados como fora — e conferidos', true],
+      ]],
+      ['Testar cada desconto sozinho', [
+        ['Desconto da campanha aplicado sozinho: valor final conferido na conta', true, 'prova'],
+        ['Desconto por quantidade testado nas faixas de 1, 2 e 3 unidades', true, 'prova'],
+        ['Cupom de influenciadora testado — aplica e credita a quem tem que creditar', true],
+        ['Cupom de recompra testado numa conta que já comprou antes', true],
+        ['Frete grátis testado com e sem o valor mínimo, e com CEP de outra região', true, 'prova'],
+      ]],
+      ['Testar as combinações entre eles', [
+        ['Campanha + frete grátis: soma como o combinado, não zera o pedido', true, 'prova'],
+        ['Campanha + desconto por quantidade: o preço final é o que a oferta prometeu', true, 'prova'],
+        ['Campanha + cupom de influenciadora: ou soma, ou o carrinho recusa com mensagem clara', true],
+        ['Campanha + recompra: testado, e a decisão está escrita', true],
+        ['Na pior soma possível, o pedido continua acima do custo — margem conferida', true, 'prova'],
+        ['O que a campanha barra já foi desligado, não só anotado', true],
+      ]],
+      ['Brinde', [
+        ['Brinde entra sozinho quando bate a regra, sem a pessoa ter que procurar', true],
+        ['Limite testado: o carrinho não deixa levar mais brinde do que o combinado', true, 'prova'],
+        ['Brinde sai do carrinho quando o pedido deixa de bater a regra', true],
+        ['Quantidade de brinde que existe conferida contra o número prometido na comunicação', true, 'prova'],
+      ]],
+      ['Fechar uma compra de verdade', [
+        ['Compra real no Pix, do carrinho até a confirmação, com o desconto na tela de pagamento', true, 'prova'],
+        ['Compra real no cartão, do carrinho até a confirmação, com o parcelamento certo', true, 'prova'],
+        ['Pedido de teste chegou no painel com valor, cupom e brinde certos', true, 'prova'],
+        ['Pedido de teste cancelado ou marcado como teste', false],
+      ]],
+      ['Quando acabar', [
+        ['Cupons e descontos da campanha desligados no dia seguinte ao fim', true],
+        ['O que foi desligado por causa da campanha voltou a ligar', true],
+      ]],
+    ],
+
+    'Site': [
+      ['Home, inteira', [
+        ['Banner principal aberto na loja de verdade e lido inteiro: número, prazo e condição batem com a oferta', true, 'prova'],
+        ['Barra de aviso do topo com o texto desta campanha, sem sobra da campanha passada', true],
+        ['Contador regressivo apontando para o fim certo', true],
+        ['Home rolada até o rodapé procurando informação que briga com a campanha', true],
+        ['Nenhum banner nem selo de campanha antiga ainda no ar', true],
+      ]],
+      ['Página de produto', [
+        ['Preço com desconto aparecendo na página, e igual ao do carrinho', true, 'prova'],
+        ['Selo e texto da campanha na página dizendo o mesmo que o banner', true],
+        ['Produto que está fora da oferta não mostra selo de desconto', true],
+        ['Order bump e sugestões apontando para produto que existe e tem estoque', true],
+        ['Descrição, dosagem e tabela nutricional conferidas — nada mudou sem querer', true],
+      ]],
+      ['Carrinho e checkout', [
+        ['Carrinho mostra o desconto separado, com nome que o cliente entende', true, 'prova'],
+        ['Barra de frete grátis do carrinho com o valor certo desta campanha', true],
+        ['Checkout aberto: valor final, frete e prazo iguais aos do carrinho', true, 'prova'],
+        ['Formas de pagamento e parcelamento conferidos na própria tela do checkout', true],
+      ]],
+      ['O resto da loja', [
+        ['Quiz, páginas de coleção e landing da campanha abertos e conferidos', true],
+        ['Busca do site: procurar o produto da campanha e ver o que aparece', true],
+        ['Menu e link da bio apontando para a página certa desta campanha', true, 'prova'],
+      ]],
+      ['Tudo outra vez, no celular', [
+        ['Home no celular: nenhum texto cortado, nenhum botão fora da tela', true, 'prova'],
+        ['Página de produto no celular: preço, selo e botão de compra visíveis sem rolar', true],
+        ['Carrinho e checkout no celular, até a tela de pagamento', true, 'prova'],
+        ['Testado num aparelho de verdade, não só no modo celular do navegador', true],
+      ]],
+    ],
+
+    'Tráfego': [
+      ['Antes de subir', [
+        ['Campanha, conjunto e anúncio nomeados no padrão', true],
+        ['Públicos e exclusões conferidos um a um no gerenciador', true],
+        ['Orçamento diário e total conferidos contra o que o TAP previu', true, 'prova'],
+        ['Datas de início e fim iguais às da campanha', true],
+        ['Pixel e conversão testados com um evento de verdade antes de ligar', true, 'prova'],
+      ]],
+      ['Criativo e destino', [
+        ['Cada anúncio aberto: abre a página certa, com a oferta certa', true, 'prova'],
+        ['UTM completa em todos: source, medium, campaign e content', true],
+        ['Formato certo para cada posicionamento, sem corte', true],
+        ['Texto do anúncio não promete mais do que a oferta entrega', true],
+      ]],
+      ['Depois de ligar', [
+        ['Primeiro gasto conferido na primeira hora — está gastando e entregando', true],
+        ['Anúncio reprovado tratado no mesmo dia', true],
+        ['Nenhum anúncio da campanha passada ainda rodando', true],
+        ['Tudo desligado no dia seguinte ao fim da campanha', true],
+      ]],
+    ],
+
+    'Criativo': [
+      ['As peças', [
+        ['Tudo que o briefing pediu está exportado, sem faltar peça', true],
+        ['Cada peça na proporção do canal onde vai rodar', true],
+        ['Todo número escrito na arte conferido contra a oferta: quantidade, limite, prazo e porcentagem', true, 'prova'],
+        ['O produto que aparece na arte é o produto que está na oferta', true],
+        ['Marca certa — Botanika ou VermeFree, sem trocar', true],
+      ]],
+      ['Antes de entregar', [
+        ['Outra pessoa leu a arte inteira, palavra por palavra', true, 'revisao'],
+        ['Visto no celular, em tamanho real, sem corte nas bordas', true, 'prova'],
+        ['Versão editável salva junto do arquivo final', false],
+      ]],
+    ],
+
+    'Copy': [
+      ['A oferta', [
+        ['A promessa do texto é a oferta real, sem prometer a mais', true],
+        ['Número e limite escritos no texto batem com o que existe', true, 'prova'],
+        ['Prazo escrito bate com o fim da campanha', true],
+        ['Cupom escrito igual em todos os textos, letra por letra', true],
+      ]],
+      ['O que pode ser dito', [
+        ['Nada dito sobre saúde além do que pode ser dito', true],
+        ['Nome do produto e dosagem iguais ao rótulo', true],
+      ]],
+      ['Revisão', [
+        ['Texto lido inteiro em voz alta antes de mandar', true],
+        ['Outra pessoa revisou antes de subir', true, 'revisao'],
+      ]],
+    ],
+
+    'Instagram': [
+      ['Antes', [
+        ['Calendário da campanha fechado: o que sai, em que dia e em que formato', true],
+        ['Legenda, primeiro comentário e hashtags prontos de cada post', true],
+        ['Capa do Reels e primeiro frame conferidos', true],
+        ['Link da bio apontando para a página desta campanha', true, 'prova'],
+      ]],
+      ['Publicação', [
+        ['Agendamento confirmado no dia e na hora do cronograma', true, 'prova'],
+        ['Stories com figurinha de link testada, abrindo a página certa', true],
+        ['Áudio liberado para conta comercial', false],
+      ]],
+      ['Depois', [
+        ['Print do publicado salvo', false],
+        ['Comentários e direct respondidos nas primeiras horas', true],
+      ]],
+    ],
+
+    'E-mail': [
+      ['Antes do disparo', [
+        ['Segmento e exclusões conferidos, com o número de contatos na tela', true, 'prova'],
+        ['Assunto e pré-cabeçalho sem corte no celular', true],
+        ['Teste enviado e aberto no Gmail e no celular', true, 'prova'],
+        ['Todos os links clicados no teste, um por um', true],
+        ['Remetente, endereço de resposta e descadastro funcionando', true],
+      ]],
+      ['Disparo', [
+        ['Horário do disparo conferido contra o cronograma', true],
+        ['Nenhum outro disparo grande no mesmo horário', true],
+      ]],
+      ['Depois', [
+        ['Entrega e retorno olhados uma hora depois do disparo', true],
+        ['Erro de envio e reclamação de spam conferidos', true],
+      ]],
+    ],
+
+    'Grupos': [
+      ['Antes', [
+        ['Mensagem testada em um grupo só antes do disparo geral', true, 'prova'],
+        ['Link e cupom testados dentro da própria mensagem', true],
+        ['Lista de grupos e horário conferidos contra o cronograma', true],
+        ['Não é a mesma mensagem de ontem', true],
+      ]],
+      ['Durante e depois', [
+        ['Primeiros dez minutos acompanhados: está entregando, não está caindo', true],
+        ['Respostas nos grupos atendidas no mesmo dia', true],
+      ]],
+    ],
+
+    'Influencer': [
+      ['Antes', [
+        ['Briefing enviado e confirmado pelo creator', true],
+        ['Cupom e link exclusivos criados e testados numa compra', true, 'prova'],
+        ['Data de publicação combinada e dentro do cronograma', true],
+      ]],
+      ['Na publicação', [
+        ['Entregável aprovado antes de publicar', true, 'revisao'],
+        ['Publicado conferido no ar, com o cupom certo escrito', true, 'prova'],
+        ['Print do publicado salvo', false],
+      ]],
+      ['Depois', [
+        ['Vendas do cupom conferidas e comissão registrada', true],
+      ]],
+    ],
+
+    'Atendimento': [
+      ['Antes de a campanha começar', [
+        ['Respostas prontas da campanha carregadas e testadas', true],
+        ['Equipe avisada da oferta, do cupom e do que soma com o quê', true, 'prova'],
+        ['Regra do brinde explicada: quem tem direito e a quantos', true],
+        ['Escala coberta no horário de pico do dia da campanha', true],
+      ]],
+      ['Durante', [
+        ['Dúvida que apareceu mais de duas vezes virou resposta pronta', true],
+        ['Reclamação sobre a oferta escalada na hora, não no fim do dia', true],
+      ]],
+    ],
+
+    'Geral': [],
+  };
+
   /* ---------- de que área é esta tarefa ----------
      O ClickUp não manda área. Manda canal às vezes, e sempre manda um
      título — e o título de quem trabalha diz a área na primeira palavra:
@@ -189,6 +432,7 @@
     ['Grupos',      /grupo|whats|zap|sendflow|lista de transmiss/i],
     ['Instagram',   /instagram|insta\b|reels?|stories|feed|post\b|social|tiktok/i],
     ['Influencer',  /influen|creator|ugc|permut/i],
+    ['Oferta',      /desconto|cupom|oferta|promo[çc][ãa]o|pre[çc]o|frete gr[áa]tis|brinde|combo|kit\b/i],
     ['Site',        /site|shopify|p[áa]gina|landing|pdp|checkout|banner do site|cole[çc][ãa]o|tema/i],
     ['Criativo',    /criativ|arte|design|v[íi]deo|edi[çc][ãa]o|thumb|capa|export/i],
     ['Copy',        /copy|texto|roteiro|legenda|headline|redac|reda[çc]/i],
@@ -215,8 +459,10 @@
       const e = JSON.parse(localStorage.getItem(chaveConf()) || '{}');
       if (!e.padroes) e.padroes = {};
       if (!e.escopos) e.escopos = {};
+      if (!e.roteiros) e.roteiros = {};
+      if (!e.donos) e.donos = {};
       return e;
-    } catch { return { padroes: {}, escopos: {} } }
+    } catch { return { padroes: {}, escopos: {}, roteiros: {}, donos: {} } }
   }
 
   function gravar(e) {
@@ -261,10 +507,190 @@
 
   const conferencia = (chave) => estado().escopos[chave] || null;
 
+  /* O par chave|item que vai no atributo. A chave tem "|" dentro dela —
+     marca, campanha e área — então quem lê separa pelo último, não pelo
+     primeiro. Ler pelo primeiro fazia a marcação não gravar, e a lista
+     voltava desmarcada logo depois de ser marcada. */
+  const par = (chave, item) => `${chave}|${item}`;
+  const lerPar = (v) => {
+    const t = String(v || '');
+    const n = t.lastIndexOf('|');
+    return n < 0 ? { chave: t, item: '' } : { chave: t.slice(0, n), item: t.slice(n + 1) };
+  };
+
   function gravarConferencia(chave, conf) {
     const e = estado();
     e.escopos[chave] = conf;
     gravar(e);
+  }
+
+
+  /* ---------- o roteiro: escopo, dono e padrão ----------
+     Um roteiro por área por campanha. A chave carrega marca, campanha e
+     área, então dois roteiros de campanhas diferentes nunca se misturam,
+     e a ponte com o Supabase leva os dois do mesmo jeito. */
+  const escopoRoteiro = (c, area) => `roteiro:${c.brand || ''}|${c.name}|${area}`;
+
+  const partesRoteiro = (chave) => {
+    const [, resto] = String(chave).split('roteiro:');
+    const p = String(resto || '').split('|');
+    return { marca: p[0] || '', campanha: p[1] || '', area: p[2] || '' };
+  };
+
+  function campanhaDaChave(chave) {
+    const { marca, campanha } = partesRoteiro(chave);
+    return lerLista(chaveCamp()).find((c) =>
+      c.name === campanha && (c.brand || '') === marca) || null;
+  }
+
+  /* o protocolo da área: o que a operação editou, ou o de fábrica */
+  function roteiroPadrao(area) {
+    const e = estado();
+    const guardado = e.roteiros[area];
+    if (Array.isArray(guardado) && guardado.length) return guardado;
+    return (ROTEIROS[area] || []).map(([etapa, itens]) => ({
+      etapa,
+      itens: itens.map(([texto, obrigatorio, marca]) => ({
+        texto, obrigatorio: !!obrigatorio,
+        prova: /prova/.test(marca || ''), revisao: /revisao/.test(marca || ''),
+      })),
+    }));
+  }
+
+  function gravarRoteiroPadrao(area, etapas) {
+    const e = estado();
+    e.roteiros[area] = etapas;
+    gravar(e);
+  }
+
+  const temRoteiro = (area) => roteiroPadrao(area).some((et) => et.itens.length);
+
+  function porRegrasRoteiro(area) {
+    const fora = [];
+    for (const et of roteiroPadrao(area))
+      for (const i of et.itens)
+        fora.push({ id: id('r'), etapa: et.etapa, texto: i.texto,
+          obrigatorio: !!i.obrigatorio, prova: !!i.prova, revisao: !!i.revisao, feito: false });
+    return fora;
+  }
+
+  /* O roteiro nasce sozinho, como a lista da tarefa: na primeira vez que
+     alguém abre a campanha ou tenta fechar a tarefa principal da área. */
+  function garantirRoteiro(c, area) {
+    const chave = escopoRoteiro(c, area);
+    const jaTem = conferencia(chave);
+    if (jaTem) return jaTem;
+    if (!temRoteiro(area)) return null;
+    const conf = { itens: porRegrasRoteiro(area), area, roteiro: true,
+                   geradoEm: agora(), geradoPor: 'regras', versao: 1, automatica: true };
+    gravarConferencia(chave, conf);
+    return conf;
+  }
+
+  /* De quem é o roteiro. Sai de quem tem mais tarefa daquela área nesta
+     campanha — e pode ser trocado à mão, que é o que manda. */
+  function donoRoteiro(c, area) {
+    const e = estado();
+    const escolhido = e.donos[escopoRoteiro(c, area)];
+    if (escolhido) return escolhido;
+    const conta = new Map();
+    for (const t of tarefasDa(c)) {
+      if (areaDe(t) !== area) continue;
+      for (const a of (t.assignees || [])) conta.set(a, (conta.get(a) || 0) + 1);
+    }
+    let dono = '', n = 0;
+    for (const [a, q] of conta) if (q > n) { dono = a; n = q }
+    return dono;
+  }
+
+  function gravarDono(c, area, quem) {
+    const e = estado();
+    const chave = escopoRoteiro(c, area);
+    if (quem) e.donos[chave] = quem; else delete e.donos[chave];
+    gravar(e);
+  }
+
+  /* Quem pode ser dono: o cadastro de acessos quando existe, senão quem
+     já está com tarefa nesta campanha. */
+  function gentePossivel(c) {
+    const nomes = [];
+    try {
+      const A = window.Acessos;
+      if (A) for (const p of (A.equipe() || [])) {
+        if (p.nomeClickup) nomes.push(p.nomeClickup);
+        else if (p.nome) nomes.push(p.nome);
+      }
+    } catch { /* sem cadastro, vale quem está nas tarefas */ }
+    for (const t of tarefasDa(c)) for (const a of (t.assignees || [])) nomes.push(a);
+    return [...new Set(nomes.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  }
+
+  /* As áreas que esta campanha tem. As tarefas dizem quase todas; oferta
+     e site entram sempre, porque toda campanha mexe em desconto e toda
+     campanha aparece na loja — e foi justamente aí que os erros passaram. */
+  function areasDa(c) {
+    const vistas = new Set();
+    for (const t of tarefasDa(c)) { const a = areaDe(t); if (a !== 'Geral') vistas.add(a) }
+    vistas.add('Oferta'); vistas.add('Site');
+    return [...vistas].filter(temRoteiro).sort((a, b) => AREAS.indexOf(a) - AREAS.indexOf(b));
+  }
+
+  /* A tarefa principal daquela área naquela campanha: a que tem
+     subtarefas penduradas; sem nenhuma assim, a de prazo mais longe. É
+     ela que o roteiro tranca — as subtarefas seguem com a lista curta. */
+  function tarefaPrincipal(c, area) {
+    const dela = tarefasDa(c).filter((t) => areaDe(t) === area);
+    if (!dela.length) return null;
+    const comFilhas = dela.filter((t) => (t.subtasks || []).length);
+    const pool = comFilhas.length ? comFilhas : dela;
+    return pool.slice().sort((a, b) =>
+      String(b.due || '').localeCompare(String(a.due || '')))[0] || null;
+  }
+
+  const ehPrincipal = (t) => {
+    const c = campanhaDaTarefa(t);
+    if (!c) return null;
+    const area = areaDe(t);
+    const p = tarefaPrincipal(c, area);
+    return p && String(p.id) === String(t.id) ? { campanha: c, area } : null;
+  };
+
+  /* Tudo que segura esta tarefa: a lista dela e, se ela for a principal
+     da área, o roteiro da campanha inteiro. */
+  function travas(t) {
+    const fora = [];
+    const daTarefa = pendentes(escopoTarefa(t), t);
+    if (daTarefa.length) fora.push({ tipo: 'tarefa', falta: daTarefa.length });
+    const p = ehPrincipal(t);
+    if (p) {
+      garantirRoteiro(p.campanha, p.area);
+      const chave = escopoRoteiro(p.campanha, p.area);
+      const c = conferencia(chave);
+      const falta = (c?.itens || []).filter((i) => i.obrigatorio && !i.feito).length;
+      if (falta) fora.push({ tipo: 'roteiro', falta, area: p.area, chave });
+    }
+    return fora;
+  }
+
+  const faltamTotal = (t) => travas(t).reduce((n, x) => n + x.falta, 0);
+
+  /* O erro que passou vira linha do roteiro, na etapa do que já escapou.
+     É o mesmo aprendizado do padrão da área, mas no nível onde o erro de
+     verdade mora: o banner que foi ao ar dizendo mil quando eram cem não
+     era uma subtarefa mal feita — era o roteiro do site que ninguém
+     tinha. */
+  function registrarErroRoteiro(area, texto) {
+    const limpo = String(texto || '').trim().slice(0, 200);
+    if (!limpo) return null;
+    const etapas = roteiroPadrao(area).map((et) => ({ etapa: et.etapa, itens: et.itens.slice() }));
+    const jaTem = etapas.some((et) => et.itens.some((i) => limpa(i.texto) === limpa(limpo)));
+    if (jaTem) return { novo: false, area };
+    const NOME = 'Erros que já passaram por aqui';
+    let alvo = etapas.find((et) => et.etapa === NOME);
+    if (!alvo) { alvo = { etapa: NOME, itens: [] }; etapas.push(alvo) }
+    alvo.itens.push({ texto: limpo, obrigatorio: true, prova: true, revisao: false });
+    gravarRoteiroPadrao(area, etapas);
+    return { novo: true, area };
   }
 
   /* ---------- a tranca ----------
@@ -527,6 +953,126 @@
     return isNaN(d) ? '' : `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
   };
 
+
+  /* ---------- a tela do roteiro ----------
+     Um bloco por área da campanha, com dono, com as etapas na ordem de
+     fazer. É longo de propósito: o que ele cobre é longo. Fica fechado
+     quando já passou e aberto enquanto falta. */
+  function roteiroHtml(c, area, comContexto) {
+    const chave = escopoRoteiro(c, area);
+    garantirRoteiro(c, area);
+    const conf = conferencia(chave);
+    if (!conf) return '';
+
+    const b = barra(chave);
+    const pct = b.total ? Math.round((b.feitos / b.total) * 100) : 0;
+    const ok = b.total > 0 && b.faltam === 0;
+    const abrir = aberta(chave, b.faltam);
+    const dono = donoRoteiro(c, area);
+    const gente = gentePossivel(c);
+    const principal = tarefaPrincipal(c, area);
+
+    const etapas = [];
+    for (const i of conf.itens) {
+      const nomeEtapa = i.etapa || 'Conferência';
+      let et = etapas.find((x) => x.etapa === nomeEtapa);
+      if (!et) { et = { etapa: nomeEtapa, itens: [] }; etapas.push(et) }
+      et.itens.push(i);
+    }
+
+    const item = (i) => `
+      <label class="cf-item ${i.feito ? 'feito' : ''} ${i.obrigatorio ? 'obrig' : ''}">
+        <input type="checkbox" data-cf-item="${esc(chave)}|${esc(i.id)}" ${i.feito ? 'checked' : ''}>
+        <span class="cf-texto">${esc(i.texto)}</span>
+        ${i.obrigatorio ? '<span class="cf-tag">obrigatório</span>' : ''}
+        ${i.revisao ? '<span class="cf-tag cf-tag-revisao" title="quem fez não pode marcar">outra pessoa</span>' : ''}
+        ${i.prova ? '<span class="cf-tag cf-tag-prova" title="pede link, print ou o que foi testado">com prova</span>' : ''}
+        ${i.feito && i.por ? `<span class="cf-quem">${esc(i.por)}${i.em ? ' · ' + dBRiso(i.em) : ''}</span>` : ''}
+        <button type="button" class="cf-x" data-cf-tirar="${esc(chave)}|${esc(i.id)}" title="Tirar este item">×</button>
+        ${i.feito && i.provaTexto ? `<span class="cf-prova">${esc(i.provaTexto)}</span>` : ''}
+      </label>`;
+
+    return `<div class="cf cf-rot ${ok ? 'cf-liberado' : 'cf-travado'}">
+      <div class="cf-topo">
+        <button type="button" class="cf-dobra ${abrir ? 'aberta' : ''}" data-cf-dobra="${esc(chave)}"
+          aria-expanded="${abrir}" title="${abrir ? 'Ocultar o roteiro' : 'Mostrar o roteiro'}">›</button>
+        <div class="cf-titulo">
+          <strong>Roteiro de ${esc(area)}</strong>
+          <span>${b.feitos} de ${b.total} conferidos${b.faltam ? ` · faltam ${b.faltam} obrigatórios` : ''}${
+            comContexto ? '' : principal ? ` · tranca "${esc(principal.title)}"` : ' · sem tarefa principal ainda'}</span>
+        </div>
+        <div class="cf-acoes">
+          <label class="cf-dono">
+            <span>Quem confere</span>
+            <select data-cf-dono="${esc(chave)}">
+              <option value="">— escolher —</option>
+              ${gente.map((g) => `<option value="${esc(g)}" ${g === dono ? 'selected' : ''}>${esc(g)}</option>`).join('')}
+              ${dono && !gente.includes(dono) ? `<option value="${esc(dono)}" selected>${esc(dono)}</option>` : ''}
+            </select>
+          </label>
+          <button type="button" class="cf-bt" data-cf-rot-gerar="${esc(chave)}">Refazer pelo protocolo</button>
+          <button type="button" class="cf-bt cf-bt-fraco" data-cf-erro-rot="${esc(chave)}"
+            title="o que passou hoje vira etapa obrigatória do roteiro">Passou um erro</button>
+        </div>
+      </div>
+      <div class="cf-medidor"><i style="width:${pct}%"></i></div>
+      ${ok
+        ? '<span class="cf-selo cf-ok">Roteiro fechado — a área pode entregar</span>'
+        : `<span class="cf-selo cf-trava">Travado — ${b.faltam} item${b.faltam > 1 ? 's' : ''} obrigatório${b.faltam > 1 ? 's' : ''} em aberto</span>`}
+      <div class="cf-corpo" ${abrir ? '' : 'hidden'}>
+        ${etapas.map((et, n) => {
+          const f = et.itens.filter((i) => i.feito).length;
+          return `<div class="cf-etapa ${f === et.itens.length ? 'cf-etapa-ok' : ''}">
+            <div class="cf-etapa-rot"><b>${n + 1}</b>${esc(et.etapa)}<i>${f}/${et.itens.length}</i></div>
+            <div class="cf-itens">${et.itens.map(item).join('')}</div>
+          </div>`;
+        }).join('')}
+        <div class="cf-linha-add">
+          <input type="text" data-cf-novo="${esc(chave)}" placeholder="Acrescentar item ao roteiro desta campanha">
+          <button type="button" class="cf-bt" data-cf-add="${esc(chave)}">Acrescentar</button>
+        </div>
+        <small class="cf-rodape">Protocolo de ${esc(area)}${dono ? ` · conferindo: ${esc(dono)}` : ' · ainda sem dono'} ·
+          o mesmo em toda campanha — o que muda é a comunicação</small>
+      </div>
+    </div>`;
+  }
+
+  /* Refazer não pode apagar o que já foi conferido: o que bate pelo
+     texto volta marcado, com quem marcou e a prova. */
+  function refazerRoteiro(chave) {
+    const { area } = partesRoteiro(chave);
+    const antes = conferencia(chave);
+    const marcados = new Map((antes?.itens || []).filter((i) => i.feito).map((i) => [limpa(i.texto), i]));
+    const itens = porRegrasRoteiro(area);
+    for (const i of itens) {
+      const v = marcados.get(limpa(i.texto));
+      if (v) { i.feito = true; i.por = v.por; i.em = v.em; if (v.provaTexto) i.provaTexto = v.provaTexto }
+    }
+    gravarConferencia(chave, { itens, area, roteiro: true, geradoEm: agora(),
+      geradoPor: 'regras', versao: (antes?.versao || 0) + 1 });
+    return itens;
+  }
+
+  /* assinatura do bloco de roteiros: muda quando algo neles muda */
+  function assinaturaRoteiros(c) {
+    return areasDa(c).map((a) => {
+      const chave = escopoRoteiro(c, a);
+      const b = barra(chave);
+      return `${a}:${b.feitos}/${b.total}:${donoRoteiro(c, a)}:${aberta(chave, b.faltam)}`;
+    }).join(';');
+  }
+
+  function roteirosHtml(c) {
+    const areas = areasDa(c);
+    if (!areas.length) return '';
+    const fechados = areas.filter((a) => barra(escopoRoteiro(c, a)).faltam === 0 &&
+                                         barra(escopoRoteiro(c, a)).total > 0).length;
+    return `<div class="cf-rots">
+      <div class="cf-tarefas-rot">Roteiro de cada área nesta campanha — ${fechados} de ${areas.length} fechados</div>
+      ${areas.map((a) => roteiroHtml(c, a, true)).join('')}
+    </div>`;
+  }
+
   /* ---------- a ficha da tarefa ---------- */
 
   let tarefaAberta = null;
@@ -584,12 +1130,21 @@
        pessoa vê o que vai ser cobrado antes de começar, e não na hora de
        fechar */
     if (t.status !== 'feito') garantirLista(chave, t);
-    const assinatura = `${chave}|${JSON.stringify(barra(chave))}|${aberta(chave, barra(chave).faltam)}`;
+    /* se esta é a tarefa principal da área nesta campanha, o roteiro da
+       campanha vem junto — é ele que segura esta tarefa, e ela é o único
+       lugar onde a pessoa vai olhar */
+    const p = ehPrincipal(t);
+    if (p) garantirRoteiro(p.campanha, p.area);
+    const rot = p ? escopoRoteiro(p.campanha, p.area) : '';
+
+    const assinatura = `${chave}|${JSON.stringify(barra(chave))}|${aberta(chave, barra(chave).faltam)}` +
+      (p ? `|${rot}|${JSON.stringify(barra(rot))}|${donoRoteiro(p.campanha, p.area)}|${aberta(rot, barra(rot).faltam)}` : '');
     const atual = main.querySelector('[data-cf-secao]');
     if (atual && atual.dataset.cfSecao === assinatura) return;
 
     const html = `<section class="tsection cf-secao" data-cf-secao="${esc(assinatura)}">
-      ${listaHtml(chave, contextoTarefa(t))}</section>`;
+      ${listaHtml(chave, contextoTarefa(t))}
+      ${p ? roteiroHtml(p.campanha, p.area, false) : ''}</section>`;
 
     if (atual) atual.outerHTML = html;
     else main.insertAdjacentHTML('afterbegin', html);
@@ -606,7 +1161,9 @@
   function travarSelect(chave) {
     const sel = document.getElementById('detailStatus');
     if (!sel) return;
-    const trancar = pendentes(chave).length > 0 && statusEscolhido(sel) !== 'feito';
+    const t = tarefaDaFicha();
+    const trancar = (t ? faltamTotal(t) : pendentes(chave).length) > 0 &&
+      statusEscolhido(sel) !== 'feito';
 
     for (const o of sel.options) {
       if (statusDaOpcao(o) !== 'feito') continue;
@@ -691,12 +1248,13 @@
 
     const chave = escopoCampanha(c);
     const assinatura = `${chave}|${JSON.stringify(barra(chave))}|${JSON.stringify(contagemDa(c))}` +
-      `|${aberta(chave, barra(chave).faltam)}`;
+      `|${aberta(chave, barra(chave).faltam)}|${assinaturaRoteiros(c)}`;
     const atual = pane.querySelector('[data-cf-camp]');
     if (atual && atual.dataset.cfCamp === assinatura) return;
 
     const html = `<section class="cf-camp" data-cf-camp="${esc(assinatura)}">
       ${resumoTarefasDa(c)}
+      ${roteirosHtml(c)}
       ${listaHtml(chave, contextoCampanha(c))}</section>`;
 
     if (atual) atual.outerHTML = html;
@@ -837,10 +1395,34 @@
       return;
     }
 
+    /* --- refazer o roteiro pelo protocolo da área --- */
+    const rg = alvo.closest?.('[data-cf-rot-gerar]');
+    if (rg) {
+      refazerRoteiro(rg.dataset.cfRotGerar);
+      redesenhar();
+      return;
+    }
+
+    /* --- o erro que passou, no nível do roteiro --- */
+    const erRot = alvo.closest?.('[data-cf-erro-rot]');
+    if (erRot) {
+      const chave = erRot.dataset.cfErroRot;
+      const { area } = partesRoteiro(chave);
+      const dito = window.prompt(
+        `O que passou sem alguém ver?\n\nEscreva como uma coisa a conferir, na forma de quem vai checar.\nEx.: "Número escrito no banner conferido contra a quantidade que existe de verdade".\n\nIsso entra no roteiro de ${area} de todas as próximas campanhas.`, '');
+      const r = registrarErroRoteiro(area, dito);
+      if (r) {
+        if (r.novo) { refazerRoteiro(chave); aviso(`Entrou no roteiro de ${area}. Vale desta campanha em diante.`) }
+        else aviso('Esse item já estava no roteiro da área.');
+      }
+      redesenhar();
+      return;
+    }
+
     /* --- tirar item da lista --- */
     const x = alvo.closest?.('[data-cf-tirar]');
     if (x) {
-      const [chave, item] = x.dataset.cfTirar.split('|');
+      const { chave, item } = lerPar(x.dataset.cfTirar);
       const c = conferencia(chave);
       if (c) {
         c.itens = c.itens.filter((i) => i.id !== item);
@@ -915,11 +1497,23 @@
     }
   });
 
+  /* quem confere este roteiro */
+  document.addEventListener('change', (e) => {
+    const sel = e.target.closest?.('[data-cf-dono]');
+    if (!sel) return;
+    const chave = sel.dataset.cfDono;
+    const c = campanhaDaChave(chave);
+    if (!c) return;
+    const { area } = partesRoteiro(chave);
+    gravarDono(c, area, sel.value);
+    redesenhar();
+  });
+
   /* marcar e desmarcar item */
   document.addEventListener('change', (e) => {
     const cb = e.target.closest?.('[data-cf-item]');
     if (cb) {
-      const [chave, item] = cb.dataset.cfItem.split('|');
+      const { chave, item } = lerPar(cb.dataset.cfItem);
       const c = conferencia(chave);
       if (!c) return;
       const i = c.itens.find((y) => y.id === item);
@@ -928,6 +1522,15 @@
       if (cb.checked) {
         /* segundo par de olhos: quem fez não confere o próprio trabalho */
         if (i.revisao) {
+          if (String(chave).startsWith('roteiro:')) {
+            const c2 = campanhaDaChave(chave);
+            const dono = c2 ? donoRoteiro(c2, partesRoteiro(chave).area) : '';
+            if (dono && meusNomes().includes(dono)) {
+              cb.checked = false;
+              aviso('Este item é de revisão: quem conduz o roteiro não pode marcar. Peça a outra pessoa.');
+              return;
+            }
+          }
           const t = tarefaPorId(String(chave).split(':')[1]);
           if (t && souResponsavel(t)) {
             cb.checked = false;
@@ -990,9 +1593,12 @@
      ==================================================================== */
 
   function recusar(t) {
-    const chave = escopoTarefa(t);
-    const falta = pendentes(chave, t);
-    aviso(`"${t.title}" não pode ser concluída: ${falta.length} item${falta.length > 1 ? 's' : ''} de conferência em aberto.`);
+    const quais = travas(t);
+    const falta = quais.reduce((n, x) => n + x.falta, 0);
+    const doRoteiro = quais.find((x) => x.tipo === 'roteiro');
+    aviso(doRoteiro
+      ? `"${t.title}" não pode ser concluída: ${falta} item${falta > 1 ? 's' : ''} em aberto — ${doRoteiro.falta} no roteiro de ${doRoteiro.area} desta campanha.`
+      : `"${t.title}" não pode ser concluída: ${falta} item${falta > 1 ? 's' : ''} de conferência em aberto.`);
     /* abre a ficha na conferência, para a recusa vir com o caminho junto */
     if (!document.getElementById('taskDetailDrawer')?.classList.contains('open')) {
       const linha = document.querySelector(`[data-task-id="${CSS.escape(String(t.id))}"]`);
@@ -1013,7 +1619,7 @@
     const bt = e.target.closest?.('[data-toggle-done]');
     if (bt) {
       const t = tarefaPorId(bt.dataset.toggleDone);
-      if (t && t.status !== 'feito' && pendentes(escopoTarefa(t), t).length) {
+      if (t && t.status !== 'feito' && faltamTotal(t)) {
         e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
         recusar(t);
       }
@@ -1026,7 +1632,7 @@
     if (e.target.closest?.('#taskSaveBtn')) {
       const sel = document.getElementById('detailStatus');
       const t = tarefaDaFicha();
-      if (sel && statusEscolhido(sel) === 'feito' && t && t.status !== 'feito' && pendentes(escopoTarefa(t), t).length) {
+      if (sel && statusEscolhido(sel) === 'feito' && t && t.status !== 'feito' && faltamTotal(t)) {
         sel.value = t.status;
         recusar(t);
       }
@@ -1039,7 +1645,7 @@
     let idArrastado = '';
     try { idArrastado = e.dataTransfer.getData('text/plain') } catch {}
     const t = tarefaPorId(idArrastado);
-    if (t && t.status !== 'feito' && pendentes(escopoTarefa(t), t).length) {
+    if (t && t.status !== 'feito' && faltamTotal(t)) {
       e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
       recusar(t);
     }
@@ -1075,5 +1681,9 @@
     pendentes, liberado, gerar, porRegras, porRegrasCampanha,
     estado, redesenhar, abrirArea, tarefasDa, campanhaDaTarefa,
     garantirLista, semConferencia, registrarErro, meusNomes, souResponsavel,
+    roteiros: ROTEIROS, roteiroPadrao, gravarRoteiroPadrao, porRegrasRoteiro,
+    escopoRoteiro, garantirRoteiro, refazerRoteiro, registrarErroRoteiro,
+    areasDa, tarefaPrincipal, ehPrincipal, travas, faltamTotal,
+    donoRoteiro, gravarDono, gentePossivel,
   };
 })();

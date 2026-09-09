@@ -99,6 +99,42 @@ Quais itens pedem prova e quais pedem outra pessoa está na terceira coluna do
 padrão de fábrica, em `PADRAO` e `GERAIS`. O padrão de cada área é editável na
 própria tela, e o que estiver guardado manda.
 
+### O roteiro da área na campanha
+
+As ações de uma campanha são sempre as mesmas — o que muda é a comunicação.
+Então o que se confere também é sempre o mesmo, e é longo demais para caber na
+lista de uma subtarefa. O **roteiro** é esse protocolo inteiro: uma vez por
+campanha, por área, com um dono.
+
+- **Oferta.** Listar todo desconto vivo na loja; decidir e escrever o que soma
+  e o que não soma; desligar o que a campanha barra; testar cada desconto
+  sozinho (quantidade, influenciadora, recompra, frete); testar as combinações
+  entre eles e conferir a margem na pior soma; testar o limite do brinde;
+  fechar uma compra de verdade no Pix e no cartão; desligar tudo no dia
+  seguinte ao fim.
+- **Site.** Home inteira, banner e barra de aviso lidos no site de verdade;
+  página de produto; carrinho; checkout; quiz, coleções e busca; e tudo outra
+  vez no celular, num aparelho de verdade.
+- **Tráfego, Criativo, Copy, Instagram, E-mail, Grupos, Influencer,
+  Atendimento** têm o seu, na mesma forma.
+
+Cada roteiro vive em `roteiro:<marca>|<campanha>|<área>` e aparece em dois
+lugares: no resumo da campanha, um bloco por área, e na ficha da **tarefa
+principal** daquela área — a que tem subtarefas ou, sem nenhuma assim, a de
+prazo mais longe. É essa tarefa que o roteiro tranca; as subtarefas seguem com
+a lista curta delas.
+
+O dono sai de quem tem mais tarefa daquela área na campanha, e pode ser trocado
+no próprio bloco. Item de revisão dentro do roteiro não pode ser marcado por
+quem conduz o roteiro.
+
+O botão **"Passou um erro"** do roteiro escreve o item numa etapa
+`Erros que já passaram por aqui`, com prova obrigatória, e ele passa a valer em
+**toda campanha seguinte**. Foi assim que entrou o número escrito na arte: o
+banner do Dia D foi ao ar prometendo o manual "para os 1000 primeiros" quando
+eram 100, e o texto do tema estava certo — o erro estava dentro da imagem, que
+ninguém tinha roteiro para conferir.
+
 ### O furo que sobra
 
 A tranca vale dentro da Central. **Uma tarefa fechada no ClickUp chega aqui já

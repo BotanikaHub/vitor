@@ -236,11 +236,11 @@ conf('e o "feito" volta ao status',
   await pag.locator('#detailStatus option').evaluateAll(
     (os) => os.filter((o) => o.textContent.startsWith('feito')).every((o) => !o.disabled)));
 conf('conferida, a lista se recolhe e devolve a ficha ao briefing',
-  await pag.locator('.cf-secao .cf-corpo[hidden]').count() === 1);
-await pag.locator('.cf-secao [data-cf-dobra]').click();
+  await pag.locator('.cf-secao .cf:not(.cf-rot) > .cf-corpo[hidden]').count() === 1);
+await pag.locator('.cf-secao .cf:not(.cf-rot) [data-cf-dobra]').first().click();
 await pag.waitForTimeout(300);
 conf('e volta a abrir quando alguém quer reler',
-  await pag.locator('.cf-secao .cf-corpo[hidden]').count() === 0);
+  await pag.locator('.cf-secao .cf:not(.cf-rot) > .cf-corpo[hidden]').count() === 0);
 conf('quem conferiu fica registrado no item',
   (await conferencia()).escopos['tarefa:t1'].itens.filter((i) => i.feito).every((i) => !!i.por));
 
@@ -354,6 +354,116 @@ conf('e a tarefa que não é da campanha fica de fora', !depois.escopos['tarefa:
 conf('o botão some quando não falta mais nenhuma',
   await pag.locator('[data-cf-gerar-todas]').count() === 0);
 await pag.screenshot({ path: 'teste/18-conferencia-campanha.png' });
+
+/* ---------- o roteiro da área na campanha ----------
+   O pedido do Vitor: as ações de uma campanha são sempre as mesmas, só a
+   comunicação muda. Então o que se confere é sempre o mesmo, é longo, e
+   não cabe em subtarefa — cabe uma vez, na tarefa principal da área, e
+   tranca ela. */
+const R = (fn, ...a) => pag.evaluate(([f, args]) =>
+  window.Conferencia[f](...args), [fn, a]);
+
+conf('toda campanha tem roteiro de oferta e de site, tenha tarefa ou não',
+  await pag.evaluate(() => {
+    const c = JSON.parse(localStorage.getItem('central.campaigns.vitor-gutierrez'))[0];
+    const a = window.Conferencia.areasDa(c);
+    return a.includes('Oferta') && a.includes('Site') && a.includes('Tráfego') && a.includes('E-mail');
+  }));
+
+conf('o roteiro da oferta testa desconto, combinação, brinde, Pix e cartão',
+  await pag.evaluate(() => {
+    const t = window.Conferencia.porRegrasRoteiro('Oferta').map((i) => i.texto).join(' | ');
+    return /combina/i.test(t) && /brinde/i.test(t) && /Pix/.test(t) && /cart[ãa]o/i.test(t) &&
+           /frete gr[áa]tis/i.test(t) && /influenciadora/i.test(t) && /recompra/i.test(t);
+  }));
+
+conf('e o roteiro do site vai da home ao checkout, e repete no celular',
+  await pag.evaluate(() => {
+    const et = window.Conferencia.roteiroPadrao('Site');
+    const t = et.map((e) => e.itens.map((i) => i.texto).join(' ')).join(' | ');
+    return et.length >= 5 && /barra de aviso/i.test(t) && /checkout/i.test(t) &&
+           /celular/i.test(t) && /quiz/i.test(t);
+  }));
+
+conf('o roteiro é longo de propósito — não é lista de subtarefa',
+  await pag.evaluate(() => window.Conferencia.porRegrasRoteiro('Oferta').length >= 20));
+
+conf('cada roteiro tem um dono, tirado de quem toca a área na campanha',
+  await pag.evaluate(() => {
+    const c = JSON.parse(localStorage.getItem('central.campaigns.vitor-gutierrez'))[0];
+    return window.Conferencia.donoRoteiro(c, 'Tráfego') === 'Ítalo Neves';
+  }));
+
+conf('a tarefa principal da área é quem o roteiro tranca',
+  await pag.evaluate(() => {
+    const c = JSON.parse(localStorage.getItem('central.campaigns.vitor-gutierrez'))[0];
+    return window.Conferencia.tarefaPrincipal(c, 'Site')?.id === 't4';
+  }));
+
+conf('a campanha mostra o roteiro de cada área',
+  await pag.locator('.cf-camp .cf-rot').count() >= 4);
+conf('com as etapas numeradas, na ordem de fazer',
+  await pag.locator('.cf-camp .cf-etapa-rot').count() >= 15);
+
+/* a tranca de verdade: a lista da tarefa t4 está toda conferida (a IA
+   escreveu e o teste marcou), mas o roteiro do site não — e é ele que
+   segura */
+await pag.evaluate(() => {
+  const C = window.Conferencia;
+  const c = C.conferencia('tarefa:t4');
+  c.itens.forEach((i) => { i.feito = true; i.por = 'teste'; i.em = new Date().toISOString() });
+  C.gravarConferencia('tarefa:t4', c);
+});
+conf('com a lista da tarefa toda conferida, o roteiro ainda segura',
+  await pag.evaluate(() => {
+    const ts = JSON.parse(localStorage.getItem('central.tasks.vitor-gutierrez'));
+    const t4 = ts.find((t) => t.id === 't4');
+    const quais = window.Conferencia.travas(t4);
+    return quais.length === 1 && quais[0].tipo === 'roteiro' && quais[0].area === 'Site';
+  }));
+
+await fecharFicha().catch(() => {});
+await abrirTarefas();
+await pag.locator('[data-toggle-done="t4"]').first().click();
+await pag.waitForTimeout(600);
+conf('e o círculo recusa por causa do roteiro, não da lista da tarefa',
+  (await tarefa('t4')).status === 'a fazer');
+conf('a recusa diz que o que falta é o roteiro da área',
+  (await pag.locator('.as-aviso, .toast, body').first().innerText()).includes('roteiro') ||
+  await pag.locator('.cf-secao .cf-rot').count() === 1);
+
+conf('o roteiro do site aparece na ficha da tarefa principal',
+  await pag.locator('.cf-secao .cf-rot').count() === 1);
+
+/* marcar dentro do roteiro grava — a chave tem "|" dentro dela, e era
+   por aí que a marcação se perdia */
+const antesRot = await pag.evaluate(() => {
+  const C = window.Conferencia;
+  const c = JSON.parse(localStorage.getItem('central.campaigns.vitor-gutierrez'))[0];
+  return C.escopoRoteiro(c, 'Site');
+});
+await pag.locator('.cf-secao .cf-rot .cf-item:not(.feito) input[type=checkbox]').first().click();
+await pag.waitForTimeout(400);
+conf('marcar item do roteiro grava mesmo com "|" dentro da chave',
+  ((await conferencia()).escopos[antesRot]?.itens || []).some((i) => i.feito));
+
+/* o erro que passou vira etapa do roteiro, para toda campanha que vier */
+await pag.evaluate(() => window.Conferencia.registrarErroRoteiro('Site',
+  'Número escrito no banner conferido contra a quantidade que existe de verdade'));
+conf('o erro que passou vira item obrigatório do roteiro da área',
+  await pag.evaluate(() => {
+    const et = window.Conferencia.roteiroPadrao('Site');
+    const ultima = et[et.length - 1];
+    return /Erros que j[áa] passaram/.test(ultima.etapa) &&
+      ultima.itens.some((i) => /banner/i.test(i.texto) && i.obrigatorio);
+  }));
+conf('e ele já entra no roteiro desta campanha quando ela é refeita',
+  await pag.evaluate((k) => {
+    window.Conferencia.refazerRoteiro(k);
+    return (window.Conferencia.conferencia(k).itens || []).some((i) => /banner/i.test(i.texto));
+  }, antesRot));
+conf('refazer o roteiro não apaga o que já tinha sido conferido',
+  ((await conferencia()).escopos[antesRot]?.itens || []).some((i) => i.feito));
 
 console.log(ok.map(s => '  ✓ ' + s).join('\n'));
 console.log(`\nconferência: ${ok.length} checagens passaram`);
