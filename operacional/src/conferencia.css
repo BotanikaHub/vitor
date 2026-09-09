@@ -126,3 +126,8 @@ html[data-theme="dark"] .cf-modal-caixa header strong{color:#f5f5f5}
 .cf-tarefas-rot{margin-bottom:7px;font-size:9px;font-weight:700;letter-spacing:.04em;
   text-transform:uppercase;color:#8a8f94}
 html[data-theme="dark"] .cf-dobra{background:#0f0f0f;border-color:#333;color:#c9c9c9}
+
+/* --- página inicial sem invenção --- */
+.ini-vazio{padding:26px 4px;text-align:center;color:#9aa0a5;font-size:10px;line-height:1.6}
+html[data-theme="dark"] .ini-vazio{color:#7d8286}
+.ini-pisca{animation:cf-pisca 1.3s ease}

@@ -42,6 +42,7 @@ as mudanças da tela e repõe o que é seu, com uma assinatura que evita o laço
 | `calendario.js` | o calendário em barras — mês, semana começando segunda, e a faixa da página inicial |
 | `campanha.js` | as abas de dentro da campanha, editáveis no lugar, e a exclusão |
 | `conferencia.js` | a conferência antes da entrega (abaixo) |
+| `inicio.js` | os cartões, a lista de atenção e as campanhas do mês da página inicial, lidos das tarefas e campanhas de verdade |
 
 ## A conferência
 
@@ -78,6 +79,40 @@ Variables*, crie:
 e publique de novo. Sem essa variável a função responde 503 e a tela cai nas
 regras — o botão "Gerar com IA" continua existindo e continua entregando lista.
 Não cole a chave em lugar nenhum além do painel.
+
+## De onde vem o que aparece na tela
+
+Nada no app é escrito à mão. Os padrões de fábrica são vazios de propósito:
+sem banco, a Central abre vazia e diz que está vazia. Antes ela abria com
+tarefas e campanhas inventadas — nomes de gente real em entregas que não
+existem —, e isso é pior do que tela vazia, porque quem abre acredita.
+
+    ClickUp                       Planejador (planejamento_tap)
+    listas Botanika e VermeFree   campanhas, TAP, mapas mentais
+      │  n8n [Botanika] ClickUp        │
+      │  → Planejador, de hora          │
+      ▼  em hora                        ▼
+    tarefas_planejadas ───────►  operacional_estado  ◄──── a Central grava
+                                  (central.*)              o que a equipe edita
+
+As subtarefas entram aninhadas na tarefa mãe, pelo campo `parent` do ClickUp,
+e não como linhas soltas. A campanha de cada tarefa vem do campo personalizado
+**Projeto** — é ele que liga a tarefa à campanha do planejador.
+
+### Refazer a sincronia
+
+Duas chamadas, nesta ordem:
+
+1. no n8n, rode o fluxo **[Botanika] ClickUp → Planejador** — ele traz as
+   listas Botanika e VermeFree para `tarefas_planejadas`;
+2. no Supabase, `select * from public.central_sincronizar();` — ele reconstrói
+   `central.tasks` e `central.campaigns` e conserta os vínculos do mapa.
+
+O fluxo está **desligado** e a função é chamada à mão de propósito. Enquanto a
+Central não souber escrever de volta no ClickUp, uma sincronia automática
+apagaria de hora em hora o que a equipe marcou aqui — inclusive as
+conferências. Ligar o automático é o passo seguinte à escrita de volta, não
+antes dela.
 
 ## Onde ficam os dados
 
