@@ -1,0 +1,29 @@
+/* ======================================================================
+   Acessos — a tela de quem entra. Mesmos tokens do Painel (--pn-*).
+   ====================================================================== */
+.ac-tabela td{vertical-align:middle}
+.ac-tabela select,.ac-tabela input:not([type=checkbox]){height:30px;border:1.5px solid var(--cilo-mid,#dfdfdf);border-radius:8px;padding:0 8px;font:inherit;font-size:11.5px;background:var(--pn-surface);color:var(--pn-ink);max-width:190px}
+.ac-tabela select:disabled,.ac-tabela input:disabled{background:var(--pn-soft);color:var(--pn-muted);border-style:dashed;cursor:not-allowed}
+.ac-tabela tr.ac-bloqueada td{opacity:.55}
+.ac-marca{display:inline-flex;align-items:center;gap:4px;font-size:11px;margin-right:8px;color:var(--pn-ink);white-space:nowrap}
+.ac-eu{margin-left:6px;padding:1px 6px;border-radius:5px;background:var(--pn-ink);color:var(--pn-surface);font-size:9px;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+.ac-so-leitura{border-left:3px solid var(--pn-atencao);padding-left:10px}
+
+.ac-passos{margin-top:14px;padding-top:14px;border-top:1px solid var(--pn-line)}
+.ac-passos p{margin:0 0 8px;font-size:11.5px;line-height:1.55;color:var(--pn-muted);max-width:820px}
+.ac-passos b{color:var(--pn-ink);font-weight:600}
+.ac-passos ol{margin:0 0 10px;padding-left:18px;font-size:11.5px;line-height:1.7;color:var(--pn-muted)}
+.ac-passos li{margin-bottom:2px}
+.ac-passos i{font-style:normal;background:var(--pn-soft);border-radius:5px;padding:1px 5px;color:var(--pn-ink)}
+
+.ac-form{border-top:0;margin-top:0;padding-top:0}
+.ac-form input[name=email]{flex:1 1 220px}
+.ac-form input[name=nome],.ac-form input[name=cargo]{flex:1 1 170px}
+
+.ac-papeis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.ac-papeis>div{border:1px solid var(--pn-line);border-radius:12px;padding:11px 13px}
+.ac-papeis b{display:block;font-size:12px;font-weight:600;color:var(--pn-ink);margin-bottom:3px}
+.ac-papeis span{font-size:10.5px;line-height:1.45;color:var(--pn-muted)}
+
+html[data-theme="dark"] .painel-view .ac-tabela select,html[data-theme="dark"] .painel-view .ac-tabela input:not([type=checkbox]){background:var(--pn-surface);border-color:var(--pn-line);color:var(--pn-ink)}
+html[data-theme="dark"] .painel-view .ac-eu{background:var(--pn-ink);color:#121415}

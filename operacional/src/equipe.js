@@ -43,7 +43,8 @@
     { id: 'social_media', nome: 'Social media' }, { id: 'automacoes', nome: 'Automações' }, { id: 'atendimento', nome: 'Atendimento' },
     { id: 'design', nome: 'Design' }, { id: 'conteudo', nome: 'Conteúdo' }, { id: 'operacao', nome: 'Operação' },
   ];
-  const areaNome = (id) => (AREAS.find((a) => a.id === id) || {}).nome || '';
+  /* a área pode vir da lista daqui (id) ou do banco (já com o nome) */
+  const areaNome = (id) => (AREAS.find((a) => a.id === id) || {}).nome || id || '';
   const primeiroNome = (n) => String(n || '').split('|')[0].trim().split(' ')[0];
   const novoId = () => `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 
@@ -77,14 +78,50 @@
      quem aparece: quem está cadastrado, mais quem assina tarefa ou
      campanha e ainda não foi cadastrado (entra como ativo, sem área — a
      área quem diz é o Vitor) */
+  /* Quem responde por quê: a lista de acessos do banco manda, quando ela
+     responde. Sem banco — teste, sessão caindo — vale o cadastro local
+     mais quem assina tarefa no ClickUp. */
+  function doBanco() {
+    const A = window.Acessos;
+    if (!A || !A.cache || !A.cache.perfis) return null;
+    const gente = A.equipe();
+    if (!gente.length) return null;
+    return gente.map((p) => ({
+      nome: p.nome,
+      nomes: [p.nome, p.nomeClickup].filter(Boolean),
+      email: p.email,
+      area: A.areaNome(p.areaId),
+      funcao: p.cargo,
+      marcas: (p.marcas || []).map((m) => A.marcaNome(m)).filter(Boolean),
+      ativo: p.papel !== 'externo',
+      temAcesso: p.temAcesso && p.ativo,
+      origem: 'banco',
+    }));
+  }
+
   function pessoas() {
+    const doB = doBanco();
+    if (doB) {
+      const vistos = new Map();
+      for (const t of tarefas()) for (const a of (t.assignees || [])) { if (!a) continue; vistos.set(a, (vistos.get(a) || 0) + 1) }
+      const cobertos = new Set(doB.flatMap((p) => p.nomes));
+      /* quem assina tarefa e não está na lista de acessos continua
+         aparecendo: a tarefa é real, e alguém precisa vê-la */
+      const soltos = [...vistos.keys()].filter((n) => !cobertos.has(n)).map((n) => ({
+        nome: n, nomes: [n], email: '', area: '', funcao: '', marcas: [...MARCAS],
+        ativo: true, temAcesso: false, origem: 'clickup',
+      }));
+      return [...doB, ...soltos]
+        .map((p) => ({ ...p, tarefas: p.nomes.reduce((soma, n) => soma + (vistos.get(n) || 0), 0) }))
+        .sort((a, b) => (b.ativo - a.ativo) || (b.tarefas - a.tarefas) || a.nome.localeCompare(b.nome));
+    }
     const lista = ler(K.pessoas(), []);
     const porNome = new Map((Array.isArray(lista) ? lista : []).map((p) => [p.nome, p]));
     const vistos = new Map();
     for (const t of tarefas()) for (const a of (t.assignees || [])) { if (!a) continue; const v = vistos.get(a) || { marcas: new Set(), n: 0 }; v.marcas.add(t.brand); v.n++; vistos.set(a, v) }
     for (const c of campanhas()) if (c.owner) { const v = vistos.get(c.owner) || { marcas: new Set(), n: 0 }; v.marcas.add(c.brand); vistos.set(c.owner, v) }
     for (const [nome, v] of vistos) if (!porNome.has(nome)) porNome.set(nome, { nome, area: '', funcao: '', marcas: [...v.marcas].filter(Boolean), ativo: true, origem: 'clickup' });
-    return [...porNome.values()].map((p) => ({ ...p, marcas: Array.isArray(p.marcas) && p.marcas.length ? p.marcas : [...MARCAS], tarefas: (vistos.get(p.nome) || {}).n || 0 }))
+    return [...porNome.values()].map((p) => ({ ...p, nomes: [p.nome], marcas: Array.isArray(p.marcas) && p.marcas.length ? p.marcas : [...MARCAS], tarefas: (vistos.get(p.nome) || {}).n || 0 }))
       .sort((a, b) => (b.ativo - a.ativo) || (b.tarefas - a.tarefas) || a.nome.localeCompare(b.nome));
   }
   function gravarPessoa(nome, campos) {
@@ -164,6 +201,8 @@
   const area = (id, tipo, ref, caminho, rotulo, placeholder) => `<label class="eq-nota"><span>${esc(rotulo)}</span><textarea data-eq-nota data-tipo="${tipo}" data-ref="${esc(ref)}" data-caminho="${esc(caminho)}" placeholder="${esc(placeholder || '')}">${esc(lerNota(tipo, ref, caminho))}</textarea></label>`;
 
   const vencida = (t, hoje) => t.status !== 'feito' && t.due && t.due < hoje;
+  /* a pessoa pode assinar com um nome no ClickUp e outro no cadastro */
+  const daPessoa = (t, p) => (t.assignees || []).some((a) => (p.nomes || [p.nome]).includes(a));
   const linhaTarefa = (t, hoje) => `<button type="button" class="eq-tarefa ${vencida(t, hoje) ? 'vencida' : ''}" data-eq-abre-tarefa="${esc(t.id)}"><b>${esc(t.title)}</b><small>${esc(t.project || '')} · ${t.due ? dBR(t.due) : 'sem prazo'} · ${esc(t.status)}</small></button>`;
 
   /* ======================= Daily ======================= */
@@ -209,7 +248,7 @@
     const semDono = ts.filter((t) => t.status !== 'feito' && !(t.assignees || []).length && t.due && t.due <= dia);
 
     const cartoes = pess.map((p) => {
-      const minhas = ts.filter((t) => (t.assignees || []).includes(p.nome));
+      const minhas = ts.filter((t) => daPessoa(t, p));
       const hojeVence = minhas.filter((t) => t.status !== 'feito' && t.due === dia);
       const atrasadas = minhas.filter((t) => vencida(t, dia));
       const feitasOntem = minhas.filter((t) => t.status === 'feito' && feitaEm(t) && feitaEm(t) >= ontem && feitaEm(t) <= dia);
@@ -275,7 +314,7 @@
     const ts = tarefas(marca);
     const feitasSemana = ts.filter((t) => t.status === 'feito' && feitaEm(t) && feitaEm(t) >= seg && feitaEm(t) <= dom);
     const atrasadas = ts.filter((t) => vencida(t, hoje));
-    const porPessoa = ativas(marca).map((p) => ({ p, feitas: feitasSemana.filter((t) => (t.assignees || []).includes(p.nome)).length, atrasadas: atrasadas.filter((t) => (t.assignees || []).includes(p.nome)).length, abertas: ts.filter((t) => t.status !== 'feito' && (t.assignees || []).includes(p.nome)).length }));
+    const porPessoa = ativas(marca).map((p) => ({ p, feitas: feitasSemana.filter((t) => daPessoa(t, p)).length, atrasadas: atrasadas.filter((t) => daPessoa(t, p)).length, abertas: ts.filter((t) => t.status !== 'feito' && daPessoa(t, p)).length }));
 
     return `<div class="eq-barra"><div class="eq-dia"><button type="button" class="cu-btn" data-eq-semana="-7">‹</button><input type="date" class="cu-filter" data-eq-semana-input value="${qui}"><button type="button" class="cu-btn" data-eq-semana="7">›</button><b>Semana ${semana.slice(-2)} · ${dBR(seg)} a ${dBR(dom)} · reunião quinta ${dBR(qui)}</b></div><button type="button" class="cu-btn" data-eq-copiar="kpi">Copiar resumo</button></div>` +
       `<p class="pn-nota">Cada setor com dono, meta da semana (quando definida em Setores e metas), realizado da semana contra a anterior, e o acumulado do mês contra o ritmo. Escreva a leitura e as decisões; as ações ficam com dono e prazo, e voltam na próxima quinta até serem fechadas.</p>` +
@@ -309,7 +348,7 @@
       `<form class="eq-form" data-eq-pessoa-nova><input name="nome" placeholder="Nome de quem entra" required><select name="area"><option value="">Área</option>${AREAS.map((a) => `<option value="${a.id}">${a.nome}</option>`).join('')}</select><button type="submit" class="cu-btn primary">Adicionar pessoa</button></form>`;
 
     const cartoes = todas.filter((p) => p.ativo && (p.marcas || []).includes(marca)).map((p) => {
-      const minhas = ts.filter((t) => (t.assignees || []).includes(p.nome));
+      const minhas = ts.filter((t) => daPessoa(t, p));
       const abertas = minhas.filter((t) => t.status !== 'feito'), atrasadas = minhas.filter((t) => vencida(t, hoje));
       const feitasSem = minhas.filter((t) => t.status === 'feito' && feitaEm(t) && feitaEm(t) >= seg);
       const metas = Object.entries(donos()).filter(([ch, nome]) => nome === p.nome && ch.startsWith(`${marca}|`)).map(([ch]) => ch.slice(marca.length + 1));
@@ -328,8 +367,19 @@
         `</div></section>`;
     }).join('');
 
-    return `<p class="pn-nota">Quem assina tarefa no ClickUp entra sozinho na lista. A área, a função e as marcas são definidas aqui; a pessoa some das telas quando fica inativa, sem perder o histórico.</p>` +
-      ui.cartao('Cadastro', `${todas.filter((p) => p.ativo).length} ativas de ${todas.length}`, cadastro) +
+    /* Com o banco respondendo, o cadastro de gente vive em Acessos — aqui
+       ele só mostra o que já está lá, para não existirem duas verdades. */
+    const doBanco = todas.some((p) => p.origem === 'banco');
+    const resumo = `<div class="pn-rolagem"><table class="pn-tabela eq-cadastro"><thead><tr><th>Pessoa</th><th>Área</th><th>Cargo</th><th>Marcas</th><th>Acesso</th><th class="num">Tarefas</th></tr></thead><tbody>${todas.map((p) => `<tr class="${p.ativo ? '' : 'inativa'}"><td><b>${esc(p.nome)}</b><small class="pn-sub">${esc(p.email || (p.origem === 'clickup' ? 'só no ClickUp' : ''))}</small></td>` +
+      `<td>${esc(p.area || '—')}</td><td>${esc(p.funcao || '—')}</td><td>${esc((p.marcas || []).join(', ') || '—')}</td>` +
+      `<td>${p.temAcesso ? '<span class="pn-chip ok">entra</span>' : p.origem === 'clickup' ? '<span class="pn-chip neutro">sem cadastro</span>' : '<span class="pn-chip atencao">falta a conta</span>'}</td>` +
+      `<td class="num">${fmt.num(p.tarefas)}</td></tr>`).join('')}</tbody></table></div>` +
+      `<button type="button" class="cu-btn" data-eq-abre-acessos>Cadastrar e mudar acessos</button>`;
+
+    return `<p class="pn-nota">${doBanco
+      ? 'A lista vem do cadastro de acessos, no banco. Quem assina tarefa no ClickUp e ainda não foi cadastrado também aparece, marcado como sem cadastro.'
+      : 'Quem assina tarefa no ClickUp entra sozinho na lista. A área, a função e as marcas são definidas aqui; a pessoa some das telas quando fica inativa, sem perder o histórico.'}</p>` +
+      ui.cartao('Cadastro', `${todas.filter((p) => p.ativo).length} ativas de ${todas.length}`, doBanco ? resumo : cadastro) +
       `<div class="eq-grid">${cartoes || '<div class="pn-vazio">Nenhuma pessoa ativa nesta marca.</div>'}</div>`;
   }
 
@@ -416,7 +466,7 @@
     const ctx = () => ({ marca: st.marca, st });
 
     view.addEventListener('click', (e) => {
-      const t = e.target.closest('[data-eq-dia],[data-eq-semana],[data-eq-acao-apaga],[data-eq-copiar],[data-eq-abre-tarefa],[data-eq-abre-campanha]');
+      const t = e.target.closest('[data-eq-dia],[data-eq-semana],[data-eq-acao-apaga],[data-eq-copiar],[data-eq-abre-tarefa],[data-eq-abre-campanha],[data-eq-abre-acessos]');
       if (!t) return;
       if (t.dataset.eqDia) { st.eqDia = somaDias(st.eqDia || hojeSP(), +t.dataset.eqDia); return redesenhar() }
       if (t.dataset.eqSemana) { st.eqSemana = somaDias(st.eqSemana || hojeSP(), +t.dataset.eqSemana); return redesenhar() }
@@ -433,6 +483,7 @@
         return;
       }
       if (t.dataset.eqAbreCampanha) window.openCampaignWorkspaceByName?.(t.dataset.eqAbreCampanha);
+      if (t.hasAttribute('data-eq-abre-acessos')) P.abrir('acessos');
     });
 
     view.addEventListener('change', (e) => {

@@ -46,6 +46,7 @@ as mudanças da tela e repõe o que é seu, com uma assinatura que evita o laço
 | `descricao.js` | a descrição da tarefa desenhada a partir do Markdown do ClickUp — títulos, tabelas, citações, caixas de marcar — em vez do arquivo cru |
 | `painel.js` | o Painel — visão geral, tráfego, setores e metas, KPIs, estoque, cupons e alertas — lido ao vivo do banco de cada marca por `/api/painel` (abaixo) |
 | `equipe.js` | as telas do Painel em que gente aparece: Daily, Reunião de KPI, Pessoas e Projetos — e o dono de cada setor, meta, ação e projeto |
+| `acessos.js` | quem entra na Central: a lista de convites, os perfis, papéis, áreas e marcas — a única tela que fala com as tabelas do banco em vez do `localStorage` |
 
 ## A conferência
 
@@ -156,6 +157,45 @@ outra chave `central.*`:
 
 Nenhuma ação vira tarefa no ClickUp por aqui: isso só depois que a escrita de
 volta for liberada.
+
+## Quem entra na Central
+
+Acesso é uma coisa; cadastro de pessoa é outra. As duas moram na tela
+**Acessos**, dentro do Painel.
+
+O banco já tinha a estrutura desde a Etapa 1 — `profiles` (uma linha por
+conta, ligada ao `auth.users`), `areas`, `brands`, `profile_brands` e o papel
+de cada um (`admin`, `gestor`, `membro`, `externo`). O que faltava era a
+lista de quem *pode* entrar, e uma tela para administrar isso. Agora existe
+`equipe_convites`: o e-mail é o convite.
+
+    cadastrar em Acessos ─► criar a conta no Supabase ─► a pessoa entra
+      (e-mail, nome,          (Authentication → Users,     (o gatilho lê a lista
+       papel, área, marcas)     com senha provisória)       e monta o perfil pronto)
+
+O gatilho `app.ao_criar_usuario` faz a terceira parte: quem está na lista
+entra **liberado**, com o papel, a área e as marcas cadastradas; quem não
+está entra bloqueado e não enxerga nada. Criar a conta é o único passo que
+não dá para fazer pela Central — só o painel do Supabase cria senha.
+
+Quem manda no que pode ser salvo é o RLS, não a tela: `admin` edita todo
+mundo, o resto só lê, e ninguém muda o próprio papel. Sem ser admin, a tela
+mostra a lista com os campos travados e diz por quê.
+
+### O nome no ClickUp
+
+O ClickUp assina as tarefas com o nome que a pessoa tem lá — "Sarah |
+Gestora de Automações", "polyana costa ribeiro". O cadastro guarda esse nome
+em `nome_clickup`, e é assim que a tarefa encontra o dono na Daily, na
+reunião de KPI e em Pessoas. Quem assina tarefa e não está cadastrado
+continua aparecendo, marcado como "sem cadastro".
+
+### O estado só para quem tem acesso
+
+As linhas de `operacional_estado` com dono nulo são de todo mundo — mas
+"todo mundo" passou a querer dizer *quem está liberado*. As três regras da
+tabela agora pedem `app.estou_ativo()` e não-externo, o mesmo critério das
+outras. Antes bastava estar logado.
 
 ## De onde vem o que aparece na tela
 

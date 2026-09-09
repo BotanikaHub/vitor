@@ -232,7 +232,11 @@
   async function nomeDe(sb, sessao) {
     try {
       const { data } = await sb.from('profiles')
-        .select('nome').eq('id', sessao.user.id).maybeSingle();
+        .select('id, nome, email, papel, ativo, cargo, area_id')
+        .eq('id', sessao.user.id).maybeSingle();
+      /* Quem está logado, e o que pode: as telas de acesso e de equipe
+         perguntam isto em vez de adivinhar pelo e-mail. */
+      if (data) window.CentralEu = data;
       const n = (data?.nome || '').trim();
       if (n) return n.split(/\s+/)[0];
     } catch { /* segue com o e-mail */ }
@@ -319,6 +323,10 @@
     if (!session) return telaEntrar(sb);
 
     const uid = session.user.id;
+    /* O cliente fica à mão dos módulos que leem tabelas de verdade
+       (equipe, acessos). A sessão manda em tudo: o RLS decide o resto. */
+    window.CentralDB = sb;
+    window.CentralSessaoAtual = session;
     marcarSessao(sb, session);
 
     /* Buscar ANTES de espelhar, e não depois.
