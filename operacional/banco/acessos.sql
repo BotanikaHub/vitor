@@ -116,3 +116,43 @@ create policy operacional_estado_alteracao on public.operacional_estado
     app.estou_ativo() and not app.eh_externo()
     and (dono is null or dono = (select auth.uid()))
   );
+
+-- ======================================================================
+-- Fechar as tabelas que não são da Central  (2026-09-09)
+--
+-- Cinco tabelas estavam com RLS desligado: qualquer um com a chave
+-- pública lia e escrevia nelas. Uma, dados_cliente, tem dado de cliente.
+--
+-- Nenhuma é usada pela Central: são a memória do agente do n8n (chats,
+-- chat_messages, n8n_chat_histories, documents) e a base do SDR
+-- (dados_cliente). Quem escreve nelas é o n8n, com a chave de serviço, e
+-- a chave de serviço passa por cima do RLS. A prova estava ao lado:
+-- compra_aprovada, emails e meta_whatsapp já rodavam com RLS ligado e
+-- zero política, e os fluxos gravavam nelas todo dia.
+--
+-- Então ligar o RLS sem política fecha a porta para anon e authenticated
+-- e não encosta no n8n. No dia em que uma tela precisar ler daqui, a
+-- política entra nominal — e não por descuido.
+-- ======================================================================
+alter table public.chats enable row level security;
+alter table public.chat_messages enable row level security;
+alter table public.n8n_chat_histories enable row level security;
+alter table public.documents enable row level security;
+alter table public.dados_cliente enable row level security;
+
+revoke all on table public.chats from anon, authenticated;
+revoke all on table public.chat_messages from anon, authenticated;
+revoke all on table public.n8n_chat_histories from anon, authenticated;
+revoke all on table public.documents from anon, authenticated;
+revoke all on table public.dados_cliente from anon, authenticated;
+
+-- planejamento_tap_versionar é SECURITY DEFINER e estava com EXECUTE
+-- aberto para anon: dava para chamá-la por /rest/v1/rpc/ sem entrar.
+-- Chamar função de gatilho fora de um gatilho dá erro, então o risco
+-- prático era nenhum — mas porta destrancada não se deixa aberta porque
+-- o cômodo está vazio.
+revoke execute on function public.planejamento_tap_versionar() from public, anon, authenticated;
+
+-- As outras duas rodavam com search_path livre. Fixar é de graça.
+alter function public.tarefas_carimbo() set search_path = public, pg_temp;
+alter function app.convite_atualizado() set search_path = app, public, pg_temp;

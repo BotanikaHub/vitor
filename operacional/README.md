@@ -375,6 +375,23 @@ As linhas de `operacional_estado` com dono nulo são de todo mundo — mas
 tabela agora pedem `app.estou_ativo()` e não-externo, o mesmo critério das
 outras. Antes bastava estar logado.
 
+### O que está trancado, e o que não estava
+
+Cinco tabelas da base da Central rodavam com RLS **desligado** — qualquer um
+com a chave pública lia e escrevia nelas, e uma delas, `dados_cliente`, tem
+dado de cliente. Nenhuma é usada pela Central: são a memória do agente do n8n
+(`chats`, `chat_messages`, `n8n_chat_histories`, `documents`) e a base do SDR.
+
+Quem escreve nelas é o n8n, com a chave de serviço — e a chave de serviço passa
+por cima do RLS. A prova estava ao lado: `compra_aprovada`, `emails` e
+`meta_whatsapp` já rodavam com RLS ligado e zero política, e os fluxos gravavam
+nelas todo dia. Então ligar o RLS sem política fecha a porta para `anon` e
+`authenticated` sem encostar no n8n. Está em `banco/acessos.sql`.
+
+Fica um item que só você pode ligar, no painel do Supabase: **proteção contra
+senha vazada** (Auth → Password, checagem no HaveIBeenPwned). Vale ligar antes
+de a equipe criar as contas.
+
 ## De onde vem o que aparece na tela
 
 Nada no app é escrito à mão. Os padrões de fábrica são vazios de propósito:
