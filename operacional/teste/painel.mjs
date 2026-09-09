@@ -130,8 +130,23 @@ await pag.route('**/api/painel**', async (rota) => {
 });
 
 await pag.addInitScript(() => {
+  /* mensagens enviadas e gastos vêm da base da Central, por RPC — o painel
+     junta ao realizado do mesmo recorte */
+  window.__rpc = [];
+  const rpc = async (fn, args) => {
+    window.__rpc.push({ fn, args });
+    if (fn !== 'central_envios') return { data: null, error: null };
+    if (args.p_marca !== 'Botanika') return { data: {}, error: null };
+    const dias = (new Date(args.p_ate) - new Date(args.p_de)) / 86400000 + 1;
+    return { data: {
+      'automacoes|email|disparos': 1000 * dias,
+      'automacoes|whatsapp_api|disparos': 100 * dias,
+      'automacoes|whatsapp_api|gastos': 25 * dias,
+    }, error: null };
+  };
   window.supabase = { createClient: () => ({
     auth:{getSession:async()=>({data:{session:{access_token:'jwt-de-teste',user:{id:'u1',email:'v@b.com'}}}}),signOut:async()=>({})},
+    rpc,
     from:()=>({select:()=>({or:async()=>({data:[],error:null}),eq:()=>({maybeSingle:async()=>({data:null})})}),upsert:async()=>({error:null})}) }) };
 });
 await pag.route('**/supabase.js', (r) => r.fulfill({ status:200, body:'', contentType:'application/javascript' }));
@@ -227,6 +242,22 @@ conf('com o número do recorte, não o do mês',
   (await pag.locator('#painelCorpo .pn-metrica.com-periodo', { hasText: 'Investimento' }).first().innerText()).includes('7.083'));
 conf('métrica lançada à mão vem marcada como tal',
   (await pag.locator('#painelCorpo').innerText()).includes('lançado à mão'));
+
+/* ---------- mensagens enviadas e gastos ----------
+   Já chegavam à base da Central pelos fluxos do n8n e ninguém lia. Agora
+   entram no realizado do mesmo recorte, e a conversão de cada canal deixa
+   de depender de alguém digitar. */
+const pedEnv = await pag.evaluate(() => (window.__rpc || []).filter((c) => c.fn === 'central_envios'));
+conf('o painel busca os envios da marca, no mês e no período',
+  pedEnv.length >= 2 && pedEnv.every((c) => c.args.p_marca === 'Botanika' && !!c.args.p_de && !!c.args.p_ate));
+const autom = pag.locator('#painelCorpo .pn-setor', { hasText: 'Automações' });
+const automTxt = (await autom.innerText()).replace(/\s+/g, ' ');
+conf('as mensagens enviadas entram como número medido, não digitado',
+  /E-mail · enviados/i.test(automTxt) && !/E-mail · enviados[^·]*lançado à mão/i.test(automTxt));
+conf('e a conversão de cada canal passa a ser calculada',
+  /E-mail · conversão/i.test(automTxt) && /API · conversão/i.test(automTxt));
+conf('grupos segue lançado à mão, porque ainda não tem fonte',
+  /Grupos · mensagens enviadas/i.test(automTxt) && /lançado à mão/i.test(automTxt));
 
 await pag.locator('#painelCorpo [data-meta-edita="trafego||investimento"]').click(); await pag.waitForTimeout(250);
 conf('clicar numa meta abre o campo com o valor atual', (await pag.locator('#painelCorpo [data-meta-form] input').inputValue()) === '100000');

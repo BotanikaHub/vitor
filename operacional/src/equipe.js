@@ -387,8 +387,20 @@
     try { d = await pedir('setores', { ano, mes }) || {} }
     catch (e) { falhou = e && e.message ? e.message : 'não respondeu'; d = {} }
     const sem = (d.semanas || []).find((s) => s.inicio <= qui && s.fim >= qui) || null;
+    /* mensagens enviadas e gastos do mês e da semana da reunião: já estão
+       na base da Central, vindos dos fluxos do n8n */
+    if (ctx.envios) {
+      const ateMes = d.hoje && d.fim && d.hoje < d.fim ? d.hoje : d.fim;
+      const [envMes, envSem] = await Promise.all([
+        ctx.envios(marca, d.inicio, ateMes),
+        sem ? ctx.envios(marca, sem.inicio, sem.fim < hoje ? sem.fim : hoje) : Promise.resolve({}),
+      ]);
+      d.realizados = { ...(d.realizados || {}), ...envMes };
+      if (sem) sem.realizados = { ...(sem.realizados || {}), ...envSem };
+    }
     const anterior = (d.semanas || []).find((s) => s.fim === somaDias(seg, -1)) || null;
     const metasMes = ctx.metasCom ? ctx.metasCom(d) : (d.metas || {});
+    if (sem && ctx.comDerivadas) sem.realizados = ctx.comDerivadas(sem.realizados, null);
     /* conversão por canal e atendimento por pedido saem de uma conta entre o
        que a API traz e o que foi lançado à mão — só valem no recorte do mês */
     const realMes = ctx.comDerivadas ? ctx.comDerivadas(d.realizados, d.manuais) : (d.realizados || {});

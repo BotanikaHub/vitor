@@ -230,6 +230,30 @@ número medido e número digitado não podem se confundir.
 - **Atendimento** — atendimentos, tempo de resposta, CSAT, fila aberta e
   atendimentos por pedido.
 
+### Mensagens enviadas e gastos, sem ninguém digitar
+
+Estes números já chegavam à base da Central e ninguém lia:
+
+| Tabela | Quem enche | O que tem |
+|---|---|---|
+| `public.emails` | fluxo n8n *ActiveCampaign → Supabase* | campanha, data, envios, aberturas, cliques |
+| `public.meta_whatsapp` | fluxo n8n *Report - Meta API* | dia, mensagens enviadas e entregues, **gasto em reais** |
+| `public.disparos_manual` | à mão | dia, canal, mensagens disparadas |
+
+`banco/envios.sql` cria `central_envios(marca, de, ate)`, que lê as três e
+devolve **com as mesmas chaves que o painel usa** — então entram direto no
+realizado, em qualquer recorte, sem tradução no meio. O painel chama por RPC
+com a sessão de quem está logado; sem sessão, ou sem a função, segue sem, e o
+que estiver lançado à mão continua valendo.
+
+Com isso, **e-mails enviados**, **mensagens da API** e **gastos da API** saem
+de "digitado" e viram medido — e a **conversão de cada canal** (pedidos ÷
+mensagens) passa a ser calculada sozinha, por período e por semana.
+
+**Grupos ainda não.** O fluxo do SendFlow que existe traz composição de grupo
+(quem entrou, quem saiu), não disparo. Até haver uma credencial do SendFlow no
+n8n, os grupos saem de `disparos_manual`.
+
 ### O filtro de cada setor
 
 `central_setores` passou a receber o período da barra do painel e devolve

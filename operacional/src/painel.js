@@ -140,12 +140,13 @@
     /* ---------- automações ---------- */
     'automacoes|email|faturamento':           { nome: 'E-mail · faturamento',      tipo: 'fluxo', un: 'R$', auto: 'api' },
     'automacoes|email|pedidos':               { nome: 'E-mail · pedidos',          tipo: 'fluxo', un: 'un', auto: 'api' },
-    'automacoes|email|disparos':              { nome: 'E-mail · enviados',         tipo: 'fluxo', un: 'un', auto: 'mao' },
+    'automacoes|email|disparos':              { nome: 'E-mail · enviados',         tipo: 'fluxo', un: 'un', auto: 'api' },
     'automacoes|email|conversao':             { nome: 'E-mail · conversão',        tipo: 'taxa',  un: '%',  auto: 'derivada' },
     'automacoes|whatsapp_api|faturamento':    { nome: 'API · faturamento',         tipo: 'fluxo', un: 'R$', auto: 'api' },
     'automacoes|whatsapp_api|pedidos':        { nome: 'API · pedidos',             tipo: 'fluxo', un: 'un', auto: 'api' },
-    'automacoes|whatsapp_api|disparos':       { nome: 'API · mensagens enviadas',  tipo: 'fluxo', un: 'un', auto: 'mao' },
-    'automacoes|whatsapp_api|gastos':         { nome: 'API · gastos',              tipo: 'fluxo', un: 'R$', sentido: 'menor', auto: 'mao' },
+    'automacoes|whatsapp_api|disparos':       { nome: 'API · mensagens enviadas',  tipo: 'fluxo', un: 'un', auto: 'api' },
+    'automacoes|whatsapp_api|entregues':      { nome: 'API · entregues',           tipo: 'fluxo', un: 'un', auto: 'api' },
+    'automacoes|whatsapp_api|gastos':         { nome: 'API · gastos',              tipo: 'fluxo', un: 'R$', sentido: 'menor', auto: 'api' },
     'automacoes|whatsapp_api|conversao':      { nome: 'API · conversão',           tipo: 'taxa',  un: '%',  auto: 'derivada' },
     'automacoes|grupos|faturamento':          { nome: 'Grupos · faturamento',      tipo: 'fluxo', un: 'R$', auto: 'api' },
     'automacoes|grupos|pedidos':              { nome: 'Grupos · pedidos',          tipo: 'fluxo', un: 'un', auto: 'api' },
@@ -425,17 +426,50 @@
      entram só as derivadas que nascem inteiras da API. */
   function comDerivadas(real, manuais) {
     const r = { ...(real || {}) };
-    const m = manuais || {};
-    const v = (k) => { const x = r[k] != null ? r[k] : m[k]; return x == null ? null : +x };
-    if (manuais) {
-      for (const canal of ['email', 'whatsapp_api', 'grupos']) {
-        const ped = v(`automacoes|${canal}|pedidos`), env = v(`automacoes|${canal}|disparos`);
-        if (ped != null && env > 0) r[`automacoes|${canal}|conversao`] = ped * 100 / env;
-      }
-      const at = v('atendimento||volume'), pe = v('geral||pedidos');
-      if (at != null && pe > 0) r['atendimento||por_pedido'] = at / pe;
+    const m = manuais || null;
+    const v = (k) => { const x = r[k] != null ? r[k] : (m ? m[k] : null); return x == null ? null : +x };
+    for (const canal of ['email', 'whatsapp_api', 'grupos']) {
+      const ped = v(`automacoes|${canal}|pedidos`), env = v(`automacoes|${canal}|disparos`);
+      if (ped != null && env > 0) r[`automacoes|${canal}|conversao`] = ped * 100 / env;
     }
+    const at = v('atendimento||volume'), pe = v('geral||pedidos');
+    if (at != null && pe > 0) r['atendimento||por_pedido'] = at / pe;
     return r;
+  }
+
+  /* ---------- mensagens enviadas e gastos ----------
+     Estes números já chegavam à base da Central pelos fluxos do n8n: as
+     campanhas do ActiveCampaign em `emails`, o WhatsApp API em
+     `meta_whatsapp`, com gasto em reais. Ninguém lia — e por isso eles
+     apareciam no painel como campo de digitar à mão. A função
+     central_envios devolve com as mesmas chaves do painel, então entram
+     direto no realizado, em qualquer recorte.
+
+     Se não houver sessão, ou a função não existir naquela base, segue sem:
+     o que estiver lançado à mão continua valendo. */
+  async function envios(marca, de, ate) {
+    const db = window.CentralDB;
+    if (!db || typeof db.rpc !== 'function' || !de || !ate) return {};
+    try {
+      const { data, error } = await db.rpc('central_envios', { p_marca: marca, p_de: de, p_ate: ate });
+      if (error) throw error;
+      return data && typeof data === 'object' ? data : {};
+    } catch (e) {
+      console.info('[painel] envios indisponíveis:', (e && e.message) || e);
+      return {};
+    }
+  }
+
+  async function juntarEnvios(d, p) {
+    if (!d) return d;
+    const ateMes = d.hoje && d.fim && d.hoje < d.fim ? d.hoje : d.fim;
+    const [noMes, noPeriodo] = await Promise.all([
+      envios(st.marca, d.inicio, ateMes),
+      d.periodo ? envios(st.marca, d.periodo.de, d.periodo.ate) : Promise.resolve({}),
+    ]);
+    d.realizados = { ...(d.realizados || {}), ...noMes };
+    if (d.realizado_periodo) d.realizado_periodo = { ...d.realizado_periodo, ...noPeriodo };
+    return d;
   }
 
   const ORIGEM = { api: '', derivada: '', mao: 'lançado à mão' };
@@ -719,7 +753,7 @@
             pedir: (tela, args) => pedir(tela, args || {}, forcar),
             ui: { tile, cartao, tabela, colunas, barrasH, faisca, ritmo, delta, chipStatus, vazio },
             fmt: { moeda, num, pct, vezes, curto, dBR, dLonga, hora, esc, unidade, hojeSP, somaDias, fimDoMes },
-            metricaDe, avaliar, partes, metasCom, comDerivadas, SETORES, METRICAS,
+            metricaDe, avaliar, partes, metasCom, comDerivadas, envios, SETORES, METRICAS,
           });
           break;
         }
@@ -728,6 +762,7 @@
             pedir('setores', { ano: +h.slice(0, 4), mes: +h.slice(5, 7), de: p.de, ate: p.ate }, forcar),
             st.setor !== 'todos' && st.setor !== 'geral' && st.setor !== 'trafego' ? pedir('setor', { setor: st.setor, de: p.de, ate: p.ate }, forcar) : Promise.resolve(null),
           ]);
+          await juntarEnvios(d, p);
           html = rSetores(d, det); break;
         }
       }
@@ -898,6 +933,6 @@
   window.Painel = {
     mostrar, esconder, carregar, registrar, abrir, estado: st,
     periodoDe, avaliar, colunas, delta, moeda, num, pct,
-    telas: TELAS, setores: SETORES, metricas: METRICAS, comDerivadas,
+    telas: TELAS, setores: SETORES, metricas: METRICAS, comDerivadas, envios,
   };
 })();
