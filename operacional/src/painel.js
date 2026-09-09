@@ -67,6 +67,11 @@
     { id: 'visao', nome: 'Visão geral' }, { id: 'trafego', nome: 'Tráfego' }, { id: 'setores', nome: 'Setores e metas' },
     { id: 'kpis', nome: 'KPIs' }, { id: 'estoque', nome: 'Estoque' }, { id: 'cupons', nome: 'Cupons' }, { id: 'alertas', nome: 'Alertas' },
   ];
+  /* telas que outros módulos registram (equipe.js: Daily, Reunião de KPI,
+     Pessoas, Projetos) — entram no cabeçalho num segundo grupo, e são
+     desenhadas por quem as registrou, com as mesmas peças daqui. */
+  const EXTRAS = [];
+  const telaExtra = (id) => EXTRAS.find((t) => t.id === id);
   const SETORES = [
     { id: 'geral', nome: 'Geral' }, { id: 'trafego', nome: 'Tráfego' }, { id: 'influenciadores', nome: 'Influenciadores' },
     { id: 'social_media', nome: 'Social media' }, { id: 'automacoes', nome: 'Automações' }, { id: 'atendimento', nome: 'Atendimento' },
@@ -360,11 +365,25 @@
     return { cfg, r, m, esperado: null, cls: razao >= 1 ? 'ok' : razao >= 0.8 ? 'atencao' : 'critico', texto: `${pct(razao * 100, 0)} da meta` };
   }
 
+  /* a meta de faturamento do mês mora em metas_mensais (as três metas), e
+     não em metas_kpi — então entra aqui pela meta ativa, e edita lá */
+  function metasCom(d) {
+    const metas = { ...(d.metas || {}) };
+    const mg = d.meta_geral || {};
+    const ativa = n(mg.meta_ativa) || 1;
+    if (!metas['geral||faturamento_mes'] && n(mg[`meta${ativa}`]) > 0) metas['geral||faturamento_mes'] = { valor: n(mg[`meta${ativa}`]), unidade: 'R$', geral: true };
+    return metas;
+  }
   function cartaoSetor(setor, d) {
-    const metas = d.metas || {}, real = d.realizados || {};
+    const metas = metasCom(d), real = d.realizados || {};
     const chaves = [...new Set([...Object.keys(METRICAS), ...Object.keys(metas), ...Object.keys(real)])]
       .filter((k) => partes(k).escopo === setor.id && (metas[k] || real[k] != null || METRICAS[k]));
-    if (!chaves.length) return cartao(setor.nome, 'sem métricas', vazio('Este setor ainda não tem métrica ligada.'));
+    const D = window.Painel && window.Painel.donos;
+    const seletorDono = (chave, atual, vazioTxt) => !D ? '' :
+      `<select class="pn-dono" data-dono="${esc(chave)}" title="responsável"><option value="">${esc(vazioTxt)}</option>${D.pessoas().map((nome) => `<option ${nome === atual ? 'selected' : ''}>${esc(nome)}</option>`).join('')}</select>`;
+    const donoSetor = D ? D.ler(st.marca, `setor|${setor.id}`) : '';
+    const cabeca = `${chaves.length} métricas` + (D ? ` · dono ${seletorDono(`setor|${setor.id}`, donoSetor, 'sem dono')}` : '');
+    if (!chaves.length) return cartao(setor.nome, cabeca, vazio('Este setor ainda não tem métrica ligada.'));
     const linhas = chaves.map((k) => {
       const meta = metas[k] ? n(metas[k].valor) : null;
       const un = (metas[k] && metas[k].unidade) || metricaDe(k).un;
@@ -372,13 +391,14 @@
       const editando = st.editando === k;
       const campoMeta = editando
         ? `<form class="pn-edita" data-meta-form="${esc(k)}"><input name="valor" type="number" step="any" min="0" value="${meta == null ? '' : meta}" placeholder="meta do mês" autofocus><button type="submit" class="cu-btn primary">Salvar</button><button type="button" class="cu-btn" data-meta-cancela>Cancelar</button></form>`
-        : `<button type="button" class="pn-meta-btn" data-meta-edita="${esc(k)}" title="editar a meta do mês">${meta == null ? 'definir meta' : unidade(un, meta, un === 'x' ? 2 : 0)}</button>`;
-      return `<div class="pn-metrica ${av.cls}"><div class="pn-metrica-nome"><b>${esc(av.cfg.nome)}</b><small>${av.cfg.tipo === 'fluxo' ? 'acumulado no mês' : 'nível atual'}${av.cfg.sentido === 'menor' ? ' · quanto menor, melhor' : ''}</small></div>` +
+        : `<button type="button" class="pn-meta-btn" data-meta-edita="${metas[k] && metas[k].geral ? '__geral' : esc(k)}" title="editar a meta do mês">${meta == null ? 'definir meta' : unidade(un, meta, un === 'x' ? 2 : 0)}</button>`;
+      const donoMetrica = D ? D.ler(st.marca, k) : '';
+      return `<div class="pn-metrica ${av.cls}"><div class="pn-metrica-nome"><b>${esc(av.cfg.nome)}</b><small>${av.cfg.tipo === 'fluxo' ? 'acumulado no mês' : 'nível atual'}${av.cfg.sentido === 'menor' ? ' · quanto menor, melhor' : ''}</small>${D ? seletorDono(k, donoMetrica, donoSetor ? `dono: ${donoSetor}` : 'sem dono') : ''}</div>` +
         `<div class="pn-metrica-valor">${av.r == null ? '—' : unidade(un, av.r, un === 'x' ? 2 : un === '%' ? 1 : 0)}</div>` +
         `<div class="pn-metrica-meta">${campoMeta}</div>` +
         `<div class="pn-metrica-ritmo">${av.m ? ritmo(av.r, av.m, av.esperado, { un }) : ''}<small class="${av.cls}">${esc(av.texto)}${av.esperado != null ? ` · esperado ${unidade(un, av.esperado, 0)}` : ''}</small></div></div>`;
     }).join('');
-    return cartao(setor.nome, `${chaves.length} métricas`, `<div class="pn-metricas">${linhas}</div>`, 'pn-setor');
+    return cartao(setor.nome, cabeca, `<div class="pn-metricas">${linhas}</div>`, 'pn-setor');
   }
 
   function metaGeral(d) {
@@ -550,11 +570,13 @@
     const global = sel ? sel.value : '';
     const marcaFixa = MARCAS.includes(global);
     const p = periodoDe(st.preset, st.de, st.ate);
-    const semPeriodo = ['estoque', 'alertas'].includes(st.tela);
-    return `<header class="taskspage-head pn-head"><div class="taskspage-title"><div><h1>Painel</h1><p>Central / Acompanhamento / ${esc((TELAS.find((t) => t.id === st.tela) || {}).nome || '')}</p></div>` +
+    const ex = telaExtra(st.tela);
+    const semPeriodo = ['estoque', 'alertas'].includes(st.tela) || !!(ex && ex.semPeriodo);
+    return `<header class="taskspage-head pn-head"><div class="taskspage-title"><div><h1>Painel</h1><p>Central / Acompanhamento / ${esc((TELAS.find((t) => t.id === st.tela) || ex || {}).nome || '')}</p></div>` +
       `<div class="pn-head-dir">${marcaFixa ? `<span class="pn-marca">${esc(st.marca)}</span>` : `<div class="cu-views pn-marcas">${MARCAS.map((m) => `<button type="button" class="cu-view ${st.marca === m ? 'active' : ''}" data-marca="${m}">${m}</button>`).join('')}</div>`}` +
       `<span class="pn-atualizado" id="painelAtualizado">${st.carregando ? 'atualizando…' : st.em ? `atualizado ${hora(st.em)}` : ''}</span><button type="button" class="cu-btn" data-painel-atualiza title="buscar de novo agora">↻</button></div></div>` +
       `<div class="cu-toolbar"><div class="cu-views" aria-label="Tela do painel">${TELAS.map((t) => `<button type="button" class="cu-view ${st.tela === t.id ? 'active' : ''}" data-tela="${t.id}">${esc(t.nome)}</button>`).join('')}</div>` +
+      (EXTRAS.length ? `<div class="cu-views pn-extras" aria-label="Rituais e equipe">${EXTRAS.map((t) => `<button type="button" class="cu-view ${st.tela === t.id ? 'active' : ''}" data-tela="${t.id}">${esc(t.nome)}</button>`).join('')}</div>` : '') +
       (semPeriodo ? '' : `<div class="cu-views pn-presets" aria-label="Período">${PRESETS.map((x) => `<button type="button" class="cu-view ${st.preset === x.id ? 'active' : ''}" data-preset="${x.id}">${esc(x.nome)}</button>`).join('')}</div>` +
         `<div class="pn-datas ${st.preset === 'livre' ? '' : 'oculto'}"><input type="date" class="cu-filter" data-de value="${p.de}" aria-label="De"><span>até</span><input type="date" class="cu-filter" data-ate value="${p.ate}" aria-label="Até"></div>` +
         `<div class="cu-summary">${dLonga(p.de)} — ${dLonga(p.ate)}</div>`) + `</div></header>`;
@@ -597,6 +619,18 @@
         case 'estoque': html = rEstoque(await pedir('estoque', {}, forcar)); break;
         case 'cupons': html = rCupons(await pedir('cupons', { de: p.de, ate: p.ate }, forcar)); break;
         case 'alertas': html = rAlertas(await pedir('alertas', {}, forcar)); break;
+        default: {
+          const ex = telaExtra(st.tela);
+          if (!ex) break;
+          html = await ex.render({
+            marca: st.marca, periodo: p, hoje: h, st, forcar,
+            pedir: (tela, args) => pedir(tela, args || {}, forcar),
+            ui: { tile, cartao, tabela, colunas, barrasH, faisca, ritmo, delta, chipStatus, vazio },
+            fmt: { moeda, num, pct, vezes, curto, dBR, dLonga, hora, esc, unidade, hojeSP, somaDias, fimDoMes },
+            metricaDe, avaliar, partes, metasCom, SETORES, METRICAS,
+          });
+          break;
+        }
         case 'setores': {
           const [d, det] = await Promise.all([
             pedir('setores', { ano: +h.slice(0, 4), mes: +h.slice(5, 7) }, forcar),
@@ -702,6 +736,11 @@
     });
 
     view.addEventListener('change', (e) => {
+      if (e.target.matches('[data-dono]') && window.Painel && window.Painel.donos) {
+        window.Painel.donos.gravar(st.marca, e.target.dataset.dono, e.target.value);
+        window.showToast?.(e.target.value ? `${e.target.value} passa a responder por isso` : 'Sem dono');
+        return;
+      }
       if (e.target.matches('[data-de],[data-ate]')) {
         const de = view.querySelector('[data-de]')?.value, ate = view.querySelector('[data-ate]')?.value;
         if (!de || !ate) return;
@@ -752,8 +791,20 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ligar); else ligar();
 
+  function registrar(tela) {
+    if (!tela || !tela.id || EXTRAS.some((t) => t.id === tela.id)) return;
+    EXTRAS.push(tela);
+    if (st.aberto) moldura();
+  }
+  function abrir(tela, extra) {
+    if (tela) st.tela = tela;
+    if (extra && typeof extra === 'object') Object.assign(st, extra);
+    const corpo = document.getElementById('painelCorpo'); if (corpo) corpo.innerHTML = '';
+    if (st.aberto) carregar(false); else mostrar();
+  }
+
   window.Painel = {
-    mostrar, esconder, carregar, estado: st,
+    mostrar, esconder, carregar, registrar, abrir, estado: st,
     periodoDe, avaliar, colunas, delta, moeda, num, pct,
     telas: TELAS, setores: SETORES, metricas: METRICAS,
   };

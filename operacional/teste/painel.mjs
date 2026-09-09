@@ -150,7 +150,7 @@ conf('o painel abre e a home sai da frente',
   await pag.locator('#painelNav').evaluate((e) => e.classList.contains('active')) &&
   !(await pag.locator('#homeNav').evaluate((e) => e.classList.contains('active'))));
 conf('a URL guarda a tela', await pag.evaluate(() => location.hash) === '#painel');
-conf('o cabeçalho tem as sete telas', await pag.locator('#painelView [data-tela]').count() === 7);
+conf('o cabeçalho tem as sete telas do painel e as quatro da equipe', await pag.locator('#painelView [data-tela]').count() === 11);
 conf('e os seis atalhos de período', await pag.locator('#painelView [data-preset]').count() === 6);
 
 const hojeSP = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
@@ -221,7 +221,7 @@ conf('salvar grava a meta mensal no painel de lá',
   g.corpo.dados.periodo === 'mensal' && g.corpo.dados.periodo_num === +hojeSP.slice(5, 7) && g.corpo.marca === 'Botanika' && g.auth === 'Bearer jwt-de-teste');
 conf('e a tela recarrega com a meta nova', (await texto('#painelCorpo')).includes('R$ 120.000'));
 
-await pag.locator('#painelCorpo [data-meta-edita="__geral"]').click(); await pag.waitForTimeout(250);
+await pag.locator('#painelCorpo [data-meta-edita="__geral"]').first().click(); await pag.waitForTimeout(250);
 await pag.locator('#painelCorpo [data-meta-geral] [name=meta1]').fill('500000');
 await pag.locator('#painelCorpo [data-meta-geral] [name=meta_ativa]').selectOption('2');
 await pag.locator('#painelCorpo [data-meta-geral] button[type=submit]').click(); await pag.waitForTimeout(600);

@@ -45,6 +45,7 @@ as mudanças da tela e repõe o que é seu, com uma assinatura que evita o laço
 | `inicio.js` | os cartões, a lista de atenção e as campanhas do mês da página inicial, lidos das tarefas e campanhas de verdade |
 | `descricao.js` | a descrição da tarefa desenhada a partir do Markdown do ClickUp — títulos, tabelas, citações, caixas de marcar — em vez do arquivo cru |
 | `painel.js` | o Painel — visão geral, tráfego, setores e metas, KPIs, estoque, cupons e alertas — lido ao vivo do banco de cada marca por `/api/painel` (abaixo) |
+| `equipe.js` | as telas do Painel em que gente aparece: Daily, Reunião de KPI, Pessoas e Projetos — e o dono de cada setor, meta, ação e projeto |
 
 ## A conferência
 
@@ -115,6 +116,42 @@ ponte, com a ação `central_gravar`.
 Para ligar uma marca nova (a VermeFree, por exemplo): rodar `painel/lovable.sql`
 no banco do painel dela, gravar o sha256 do token em `app_config`, e inserir a
 linha dela em `painel_marcas` com a URL e a chave publicável do projeto.
+
+## Daily, reunião de KPI, pessoas e projetos
+
+O Painel mostra o número; estas quatro telas mostram quem responde por ele.
+
+- **Daily** — o dia escolhido (hoje, por padrão): faturamento de ontem contra
+  a média dos sete dias antes, Meta Ads de ontem, alertas do painel, e um
+  cartão por pessoa com o que vence hoje, o que está atrasado, o que fechou
+  de ontem para hoje, o foco do dia e as travas. As ações combinadas ficam
+  com dono e prazo. "Copiar resumo" monta o texto para o grupo.
+- **Reunião de KPI** — a semana escolhida (a reunião é na quinta): cada setor
+  com dono, meta da semana e realizado contra a semana anterior, acumulado do
+  mês contra o ritmo, leitura e decisões. As ações voltam toda quinta até
+  serem fechadas. A tabela "Execução da semana" conta as tarefas concluídas
+  por pessoa (a data de conclusão vem do ClickUp; o que é fechado só na
+  Central ganha a data em que a Central viu).
+- **Pessoas** — quem assina tarefa no ClickUp entra sozinho; área, função,
+  marcas e ativo se definem aqui. O cartão de cada pessoa junta as metas que
+  ela responde, as tarefas, os projetos que lidera e as ações pendentes.
+- **Projetos** — as campanhas do planejador com dono, meta, verba e as
+  tarefas do ClickUp casadas pelo nome do projeto; o que não casa aparece em
+  "Outros projetos".
+
+O dono de um setor ou de uma métrica se escolhe em Setores e metas. O que
+essas telas gravam mora no `localStorage` e passa pela ponte como qualquer
+outra chave `central.*`:
+
+| Chave | O que guarda |
+|---|---|
+| `central.pessoas.<usuário>` | o cadastro: nome, área, função, marcas, ativo |
+| `central.donos.<usuário>` | `marca|setor|<setor>` e `marca|<escopo>|<canal>|<métrica>` → nome |
+| `central.rituais.<usuário>` | notas da daily e da reunião, e a lista de ações |
+| `central.feitas.<usuário>` | a data em que a Central viu cada tarefa como feita |
+
+Nenhuma ação vira tarefa no ClickUp por aqui: isso só depois que a escrita de
+volta for liberada.
 
 ## De onde vem o que aparece na tela
 
