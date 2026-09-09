@@ -219,6 +219,12 @@ assert.equal(recarregou, 1, 'dado novo no banco chega mesmo com a aba já aberta
   const depois = subidas[subidas.length - 1];
   assert.ok(!depois.some((t) => t.id === 'c'), 'o que eu tiro, sai mesmo');
   assert.equal(depois.length, 2, 'e só isso sai');
+  /* e a lista que chega vazia não apaga o que existe: já aconteceu uma vez,
+     com as dezoito campanhas */
+  ls.setItem(CHAVE, JSON.stringify([]));
+  await new Promise((r) => setTimeout(r, 60));
+  const vazio = subidas[subidas.length - 1];
+  assert.equal(vazio.length, 2, 'lista vazia por cima de lista cheia é ignorada');
 }
 
-console.log('ponte: 16 checagens passaram');
+console.log('ponte: 17 checagens passaram');

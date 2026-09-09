@@ -90,6 +90,14 @@
 
   function juntar(base, meu, servidor) {
     if (servidor === undefined || servidor === null) return meu;
+    /* Cinto: lista que vem vazia depois de ter tido coisa é quase sempre o
+       app gravando o padrão dele, não alguém apagando setenta tarefas uma a
+       uma. Já aconteceu — foi assim que as dezoito campanhas quase foram
+       embora. Esvaziar de propósito se faz item por item. */
+    if (Array.isArray(meu) && !meu.length && Array.isArray(base) && base.length) {
+      console.warn('[central] ignorei uma gravação vazia por cima de', base.length, 'itens');
+      return servidor;
+    }
     if (comId(meu) && comId(servidor)) return juntarLista(base, meu, servidor);
     if (objeto(meu) && objeto(servidor)) {
       const b = objeto(base) ? base : {};
