@@ -363,11 +363,28 @@ await pag.screenshot({ path: 'teste/18-conferencia-campanha.png' });
 const R = (fn, ...a) => pag.evaluate(([f, args]) =>
   window.Conferencia[f](...args), [fn, a]);
 
-conf('toda campanha tem roteiro de oferta e de site, tenha tarefa ou não',
+/* O roteiro é do trabalho que existe. Mostrar o protocolo do site em
+   campanha que não encosta no site foi exatamente a reclamação: "vc ta
+   mostrando de tudo, pra qualquer tarefa". */
+conf('o roteiro só existe para a área que tem trabalho nesta campanha',
   await pag.evaluate(() => {
     const c = JSON.parse(localStorage.getItem('central.campaigns.vitor-gutierrez'))[0];
     const a = window.Conferencia.areasDa(c);
-    return a.includes('Oferta') && a.includes('Site') && a.includes('Tráfego') && a.includes('E-mail');
+    return a.includes('Tráfego') && a.includes('E-mail') && a.includes('Site') && !a.includes('Oferta');
+  }));
+conf('e a área sem tarefa fica de fora, para ser chamada à mão se precisar',
+  await pag.evaluate(() => {
+    const c = JSON.parse(localStorage.getItem('central.campaigns.vitor-gutierrez'))[0];
+    return window.Conferencia.areasDeFora(c).includes('Oferta');
+  }));
+conf('o resumo oferece chamar a área que faltou',
+  await pag.locator('[data-cf-rot-novo]').count() >= 1);
+await pag.locator('[data-cf-rot-novo$="|Oferta"]').first().click();
+await pag.waitForTimeout(500);
+conf('e chamada à mão, ela passa a valer nesta campanha',
+  await pag.evaluate(() => {
+    const c = JSON.parse(localStorage.getItem('central.campaigns.vitor-gutierrez'))[0];
+    return window.Conferencia.areasDa(c).includes('Oferta');
   }));
 
 conf('o roteiro da oferta testa desconto, combinação, brinde, Pix e cartão',
@@ -402,8 +419,13 @@ conf('a tarefa principal da área é quem o roteiro tranca',
 
 conf('a campanha mostra o roteiro de cada área',
   await pag.locator('.cf-camp .cf-rot').count() >= 4);
-conf('com as etapas numeradas, na ordem de fazer',
-  await pag.locator('.cf-camp .cf-etapa-rot').count() >= 15);
+/* no resumo eles nascem fechados: são muitos e cada um é longo */
+conf('e no resumo eles nascem fechados, para a tela não pesar',
+  await pag.locator('.cf-camp .cf-rot > .cf-corpo[hidden]').count() >= 3);
+await pag.locator('.cf-camp .cf-rot [data-cf-dobra]').first().click();
+await pag.waitForTimeout(400);
+conf('abrindo um, as etapas vêm numeradas, na ordem de fazer',
+  await pag.locator('.cf-camp .cf-etapa-rot').count() >= 3);
 
 /* a tranca de verdade: a lista da tarefa t4 está toda conferida (a IA
    escreveu e o teste marcou), mas o roteiro do site não — e é ele que

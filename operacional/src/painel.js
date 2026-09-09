@@ -575,11 +575,19 @@
     return `<header class="taskspage-head pn-head"><div class="taskspage-title"><div><h1>Painel</h1><p>Central / Acompanhamento / ${esc((TELAS.find((t) => t.id === st.tela) || ex || {}).nome || '')}</p></div>` +
       `<div class="pn-head-dir">${marcaFixa ? `<span class="pn-marca">${esc(st.marca)}</span>` : `<div class="cu-views pn-marcas">${MARCAS.map((m) => `<button type="button" class="cu-view ${st.marca === m ? 'active' : ''}" data-marca="${m}">${m}</button>`).join('')}</div>`}` +
       `<span class="pn-atualizado" id="painelAtualizado">${st.carregando ? 'atualizando…' : st.em ? `atualizado ${hora(st.em)}` : ''}</span><button type="button" class="cu-btn" data-painel-atualiza title="buscar de novo agora">↻</button></div></div>` +
-      `<div class="cu-toolbar"><div class="cu-views" aria-label="Tela do painel">${TELAS.map((t) => `<button type="button" class="cu-view ${st.tela === t.id ? 'active' : ''}" data-tela="${t.id}">${esc(t.nome)}</button>`).join('')}</div>` +
-      (EXTRAS.length ? `<div class="cu-views pn-extras" aria-label="Rituais e equipe">${EXTRAS.map((t) => `<button type="button" class="cu-view ${st.tela === t.id ? 'active' : ''}" data-tela="${t.id}">${esc(t.nome)}</button>`).join('')}</div>` : '') +
-      (semPeriodo ? '' : `<div class="cu-views pn-presets" aria-label="Período">${PRESETS.map((x) => `<button type="button" class="cu-view ${st.preset === x.id ? 'active' : ''}" data-preset="${x.id}">${esc(x.nome)}</button>`).join('')}</div>` +
+      /* Uma barra só de abas. Antes eram duas cápsulas cinzas idênticas
+         lado a lado — os números e os rituais — e uma terceira embaixo
+         para o período: três faixas iguais empilhadas, que é o que se
+         lia como linha repetida. Agora os dois grupos dividem a mesma
+         cápsula, separados por um traço, e o período desce numa linha
+         mais leve, sem cápsula, com o intervalo à direita. */
+      `<div class="cu-toolbar pn-toolbar"><div class="cu-views pn-abas" aria-label="Tela do painel">` +
+        `<span class="pn-abas-grupo">${TELAS.map((t) => `<button type="button" class="cu-view ${st.tela === t.id ? 'active' : ''}" data-tela="${t.id}">${esc(t.nome)}</button>`).join('')}</span>` +
+        (EXTRAS.length ? `<span class="pn-abas-corte" aria-hidden="true"></span><span class="pn-abas-grupo pn-extras" role="group" aria-label="Rituais e equipe">${EXTRAS.map((t) => `<button type="button" class="cu-view ${st.tela === t.id ? 'active' : ''}" data-tela="${t.id}">${esc(t.nome)}</button>`).join('')}</span>` : '') +
+      `</div>` +
+      (semPeriodo ? '' : `<div class="pn-periodo"><div class="pn-presets" role="group" aria-label="Período">${PRESETS.map((x) => `<button type="button" class="pn-preset ${st.preset === x.id ? 'ativo' : ''}" data-preset="${x.id}">${esc(x.nome)}</button>`).join('')}</div>` +
         `<div class="pn-datas ${st.preset === 'livre' ? '' : 'oculto'}"><input type="date" class="cu-filter" data-de value="${p.de}" aria-label="De"><span>até</span><input type="date" class="cu-filter" data-ate value="${p.ate}" aria-label="Até"></div>` +
-        `<div class="cu-summary">${dLonga(p.de)} — ${dLonga(p.ate)}</div>`) + `</div></header>`;
+        `<span class="pn-intervalo">${dLonga(p.de)} — ${dLonga(p.ate)}</span></div>`) + `</div></header>`;
   }
 
   function moldura() {

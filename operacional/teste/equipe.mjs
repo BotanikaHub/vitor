@@ -30,11 +30,17 @@ const tarefas = [
   { ...base, id:'t6', title:'Tarefa órfã vencida', status:'a fazer', assignees:[], due:dia(-1), brand:'Botanika', project:'Avulsas' },
   { ...base, id:'t7', title:'Coisa da VermeFree', status:'a fazer', assignees:['Ana Medeiros'], due:hoje, brand:'VermeFree', project:'Dia D Kids' },
   { ...base, id:'t8', title:'Feita só na Central', status:'feito', assignees:['Ítalo Neves'], due:hoje, brand:'Botanika', project:'Orgânico' },
+  /* a campanha que estreia daqui a três dias: prazo ainda não venceu, e é
+     exatamente por isso que ninguém olha para ela */
+  { ...base, id:'t9', title:'Arte do banner da Semana do Cliente', status:'a fazer', assignees:['Ítalo Neves'], due:dia(2), brand:'Botanika', project:'Semana do Cliente' },
+  { ...base, id:'t10', title:'Cupons da Semana do Cliente', status:'a fazer', assignees:[], due:dia(3), brand:'Botanika', project:'Semana do Cliente' },
+  { ...base, id:'t11', title:'Briefing da Semana do Cliente', status:'feito', assignees:['Ítalo Neves'], due:dia(-2), brand:'Botanika', project:'Semana do Cliente', feitaEm: dia(-2) },
 ];
 const campanhas = [
   { id:'pl-7', name:'Dia D — 09/09', brand:'Botanika', type:'Dia D', status:'Em execução', owner:'Vitor Gutierrez', start:dia(-1), end:dia(1), goal:60000, budget:10000, progress:0, color:'#121415', objective:'', offer:'', benefits:[], channels:[], products:[], schedule:[], tap:[] },
   { id:'pl-4', name:'Orgânico', brand:'Botanika', type:'Perpétuo', status:'Em execução', owner:'', start:dia(-5), end:dia(9), goal:30000, budget:0, progress:0, color:'#121415', objective:'', offer:'', benefits:[], channels:[], products:[], schedule:[], tap:[] },
   { id:'pl-17', name:'Dia D Kids', brand:'VermeFree', type:'Dia D', status:'Planejamento', owner:'Vitor Gutierrez', start:dia(18), end:dia(20), goal:50000, budget:8000, progress:0, color:'#121415', objective:'', offer:'', benefits:[], channels:[], products:[], schedule:[], tap:[] },
+  { id:'pl-9', name:'Semana do Cliente', brand:'Botanika', type:'Sazonal', status:'Planejamento', owner:'Vitor Gutierrez', start:dia(3), end:dia(9), goal:80000, budget:12000, progress:0, color:'#121415', objective:'', offer:'', benefits:[], channels:[], products:[], schedule:[], tap:[] },
   { id:'pl-1', name:'Campanha velha', brand:'Botanika', type:'Dia D', status:'Concluída', owner:'Pedro Lage', start:'2026-08-01', end:'2026-08-02', goal:1, budget:0, progress:0, color:'#121415', objective:'', offer:'', benefits:[], channels:[], products:[], schedule:[], tap:[] },
 ];
 
@@ -99,6 +105,29 @@ conf('o cartão do Pedro separa o que vence hoje do atrasado e do feito',
 conf('tarefa feita só na Central ganha a data de hoje', (await chave('central.feitas.vitor-gutierrez'))?.t8 === hoje);
 conf('tarefa vencida sem responsável aparece separada', corpo.includes('Tarefas sem dono') && corpo.includes('Tarefa órfã'));
 conf('o alerta do painel entra na daily, e diz que está sem dono', corpo.includes('fora do ritmo') && corpo.includes('sem dono'));
+
+/* ---------- o que estreia ----------
+   Campanha não quebra no dia da estreia: quebra nos dias antes, quando o
+   prazo da tarefa ainda não venceu e por isso ninguém olha para ela. */
+conf('a daily olha para frente e mostra a campanha que vem',
+  corpo.includes('O que estreia') && corpo.includes('Semana do Cliente') && corpo.includes('estreia em 3 dias'));
+conf('com o quanto já está pronto e o que ainda está aberto',
+  /2 abertas/.test(corpo) && /1 de 3 prontas/.test(corpo));
+conf('e aponta o que não tem dono antes de a campanha começar',
+  corpo.includes('1 sem dono'));
+const italo = pag.locator('#painelCorpo .eq-pessoa', { hasText: 'Ítalo Neves' });
+const italoTxt = (await italo.innerText()).replace(/\s+/g, ' ');
+/* os rótulos das colunas sobem para maiúsculas no CSS */
+conf('a tarefa da estreia entra na daily de quem a tem, mesmo sem prazo vencido',
+  /estreia em 3 dias/i.test(italoTxt) && /Arte do banner/i.test(italoTxt));
+conf('e vem com o campo de por que ainda não fechou',
+  await italo.locator('textarea[data-caminho^="estreias."]').count() === 1);
+await italo.locator('textarea[data-caminho^="estreias."]').fill('Faltou a foto do produto novo');
+await italo.locator('textarea[data-caminho^="estreias."]').dispatchEvent('change'); await pag.waitForTimeout(250);
+conf('o porquê fica gravado por campanha e por pessoa',
+  (await chave('central.rituais.vitor-gutierrez'))?.daily?.[`Botanika|${hoje}`]?.estreias?.['semana-do-cliente']?.['Ítalo Neves'] === 'Faltou a foto do produto novo');
+conf('a campanha que termina hoje ou amanhã aparece para sair do ar',
+  corpo.includes('O que sai do ar') && corpo.includes('Dia D — 09/09'));
 
 await pedro.locator('textarea[data-caminho$=".foco"]').fill('Fechar os criativos até 14h');
 await pedro.locator('textarea[data-caminho$=".foco"]').dispatchEvent('change'); await pag.waitForTimeout(200);

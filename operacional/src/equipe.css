@@ -93,3 +93,39 @@ html[data-theme="dark"] .painel-view .eq-nota textarea,html[data-theme="dark"] .
 .eq-sem-conferir{display:flex;align-items:baseline;gap:10px;justify-content:space-between}
 .eq-sem-conferir>span{font-size:10.5px;color:var(--pn-muted);white-space:nowrap}
 .eq-sem-conferir .eq-tarefa{flex:1 1 auto;min-width:0}
+
+/* --- quando o painel da marca não responde ---
+   O ritual é da Central e não depende do banco da marca. Se os números
+   não vierem, a reunião acontece assim mesmo: aviso em cima, e o resto
+   da tela inteira no lugar. */
+.eq-tombo{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:12px 14px;
+  border:1px solid #f0dcd0;border-radius:14px;background:#fdf6f1}
+.eq-tombo div{flex:1 1 240px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.eq-tombo b{font-size:11px;color:#8a4a22}
+.eq-tombo small{font-size:9.5px;color:#9b6a4a;line-height:1.5}
+html[data-theme="dark"] .eq-tombo{background:#1a120c;border-color:#3a2a1c}
+html[data-theme="dark"] .eq-tombo b{color:#e0a878}
+html[data-theme="dark"] .eq-tombo small{color:#b08a68}
+
+/* ---------- o que estreia ----------
+   Campanha não quebra no dia da estreia — quebra nos dias antes, quando o
+   prazo da tarefa ainda não venceu e por isso ninguém olha para ela. */
+.eq-estreias{display:flex;flex-direction:column;gap:10px}
+.eq-estreia{border:1px solid var(--pn-line,#e6e6e6);border-left-width:3px;border-radius:12px;padding:11px 13px;background:#fff}
+.eq-estreia.critico{border-left-color:var(--pn-critico,#ed4a4a);background:var(--pn-critico-bg,#fff0f0)}
+.eq-estreia.atencao{border-left-color:var(--pn-atencao,#d48328);background:var(--pn-atencao-bg,#fff6e8)}
+.eq-estreia.ok{border-left-color:var(--pn-ok,#159447);background:var(--pn-ok-bg,#ebf8ef)}
+.eq-estreia-topo{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.eq-estreia-topo b{font-size:12.5px;font-weight:650;color:var(--pn-ink,#121415)}
+.eq-estreia-conta{margin-left:auto;font-size:10.5px;font-weight:600;color:var(--pn-muted,#7d8288);white-space:nowrap}
+.eq-estreia-nums{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:5px;font-size:10.5px;color:var(--pn-muted,#7d8288)}
+.eq-estreia-nums .critico{color:var(--pn-critico,#ed4a4a);font-weight:650}
+.eq-estreia-nums .atencao{color:var(--pn-atencao,#d48328);font-weight:650}
+.eq-estreia-nums .ok{color:var(--pn-ok,#159447);font-weight:650}
+.eq-estreia-gente{margin-top:4px;font-size:10px;color:var(--pn-muted,#7d8288)}
+.eq-estreia-lista{display:flex;flex-direction:column;gap:4px;margin-top:8px;padding-top:8px;
+  border-top:1px dashed var(--pn-line,#e6e6e6)}
+html[data-theme="dark"] .eq-estreia{background:#111;border-color:#2b2b2b}
+html[data-theme="dark"] .eq-estreia.critico{background:#1c1010}
+html[data-theme="dark"] .eq-estreia.atencao{background:#1b1409}
+html[data-theme="dark"] .eq-estreia.ok{background:#0e1a12}

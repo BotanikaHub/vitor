@@ -118,6 +118,12 @@ campanha, por área, com um dono.
 - **Tráfego, Criativo, Copy, Instagram, E-mail, Grupos, Influencer,
   Atendimento** têm o seu, na mesma forma.
 
+**O roteiro é do trabalho que existe.** Ele aparece para a área que tem tarefa
+naquela campanha — o protocolo do site não vai para campanha que não encosta no
+site. Quando a campanha mexe em algo que ninguém abriu tarefa, o resumo da
+campanha oferece chamar aquele roteiro à mão. No resumo eles nascem fechados;
+na ficha da tarefa que travam, abertos enquanto falta.
+
 Cada roteiro vive em `roteiro:<marca>|<campanha>|<área>` e aparece em dois
 lugares: no resumo da campanha, um bloco por área, e na ficha da **tarefa
 principal** daquela área — a que tem subtarefas ou, sem nenhuma assim, a de
@@ -196,6 +202,28 @@ no banco do painel dela, gravar o sha256 do token em `app_config`, e inserir a
 linha dela em `painel_marcas` com a URL e a chave publicável do projeto.
 
 ## Daily, reunião de KPI, pessoas e projetos
+
+### A daily olha para frente
+
+Campanha não quebra no dia em que estreia — quebra nos dias antes, quando o
+prazo da tarefa ainda não venceu e por isso ninguém olha para ela.
+
+- **"O que estreia"** lista as campanhas dos próximos 10 dias com quanto já
+  está pronto, quantas tarefas seguem abertas, quantas já estão atrasadas e
+  quantas estão sem dono — e avisa quando uma campanha não tem tarefa nenhuma.
+- **A partir de 4 dias antes**, as tarefas abertas daquela campanha entram no
+  cartão de cada pessoa, mesmo com prazo ainda no futuro, junto de um campo
+  **"Por que ainda não fechou"** que fica gravado por campanha e por pessoa e
+  volta na daily seguinte.
+- **"O que sai do ar"** lista o que termina hoje ou amanhã, porque banner,
+  tarja, cupom, selo e anúncio precisam sair juntos.
+
+### Quando o painel da marca não responde
+
+Os rituais são da Central; os números vêm do banco da marca. Se aquele banco
+demorar ou cair, a reunião acontece do mesmo jeito: aviso no topo, botão de
+tentar de novo, e a pauta, a leitura e as ações inteiras no lugar. Antes, um
+tempo esgotado apagava a tela toda.
 
 O Painel mostra o número; estas quatro telas mostram quem responde por ele.
 

@@ -171,3 +171,30 @@ html[data-theme="dark"] .painel-view .pn-hit:hover{fill:rgba(255,255,255,.06)}
   .pn-kv,.pn-canal{grid-template-columns:repeat(2,minmax(0,1fr))}
   .pn-meta-linha{grid-template-columns:minmax(0,1fr)}
 }
+
+/* ---------- a barra do painel ----------
+   Três faixas cinzas iguais empilhadas — telas, rituais e período — se
+   liam como linha repetida, e coladas umas nas outras. Viraram duas: uma
+   cápsula com os dois grupos de abas separados por um traço, e abaixo o
+   período em texto, mais leve, com o intervalo alinhado à direita. */
+.pn-toolbar{padding:0 0 14px!important}
+.pn-abas{flex-wrap:wrap!important;max-width:100%}
+.pn-abas-grupo{display:inline-flex;align-items:center;gap:3px;min-width:0;flex-wrap:wrap}
+.pn-abas-corte{flex:0 0 auto;width:1px;align-self:stretch;margin:4px 7px;
+  background:linear-gradient(180deg,transparent,rgba(17,19,20,.16) 22%,rgba(17,19,20,.16) 78%,transparent)}
+.pn-periodo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:11px;padding-top:10px;
+  border-top:1px solid var(--pn-line)}
+.pn-presets{display:inline-flex;align-items:center;gap:2px;flex-wrap:wrap;min-width:0}
+.pn-preset{height:28px;padding:0 10px;border:0;border-radius:8px;background:transparent;
+  color:var(--pn-muted);font:inherit;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;
+  transition:background .15s ease,color .15s ease}
+.pn-preset:hover{background:var(--pn-soft);color:var(--pn-ink)}
+.pn-preset.ativo{background:var(--pn-ink);color:#fff}
+.pn-intervalo{margin-left:auto;font-size:11px;color:var(--pn-muted);white-space:nowrap}
+@media (max-width:900px){
+  .pn-intervalo{margin-left:0;flex:1 0 100%}
+  .pn-abas-corte{display:none}
+  .pn-abas-grupo{flex:1 1 100%}
+}
+html[data-theme="dark"] .pn-abas-corte{background:linear-gradient(180deg,transparent,rgba(255,255,255,.18) 22%,rgba(255,255,255,.18) 78%,transparent)}
+html[data-theme="dark"] .pn-preset.ativo{background:#f2f2f2;color:#111}

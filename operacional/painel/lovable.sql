@@ -371,12 +371,41 @@ grant execute on function public.central_trafego(text, date, date) to anon, auth
 -- Realizados automáticos de um intervalo, por chave escopo|canal|metrica.
 -- Tradução de computeRealizadosRange (metas-setor-auto.server.ts).
 -- ======================================================================
+-- O Instagram vem de fora, por rede. Cada ida custava perto de meio segundo,
+-- e a tela de Setores e metas pede o mês inteiro mais cada semana dele — dez
+-- idas numa requisição só, e o banco cortava por tempo esgotado antes de
+-- responder ("canceling statement due to statement timeout"). A resposta
+-- agora fica guardada por meia hora: a primeira ida paga, as outras leem
+-- daqui. Se o Instagram cair, vale o último que veio, mesmo velho.
+create table if not exists public.central_ig_cache (
+  de date not null,
+  ate date not null,
+  j jsonb not null,
+  em timestamptz not null default now(),
+  primary key (de, ate)
+);
+alter table public.central_ig_cache enable row level security;
+revoke all on table public.central_ig_cache from anon, authenticated;
+
 create or replace function public.central_ig_seguro(p_de date, p_ate date) returns jsonb
 language plpgsql security definer set search_path = public, extensions, vault as $$
+declare
+  guardado jsonb;
+  novo jsonb;
 begin
-  return coalesce(public.get_ig_realizado_range(p_de, p_ate), '{}'::jsonb);
+  select j into guardado from public.central_ig_cache
+   where de = p_de and ate = p_ate and em > now() - interval '30 minutes';
+  if guardado is not null then return guardado; end if;
+
+  novo := coalesce(public.get_ig_realizado_range(p_de, p_ate), '{}'::jsonb);
+
+  insert into public.central_ig_cache (de, ate, j, em) values (p_de, p_ate, novo, now())
+  on conflict (de, ate) do update set j = excluded.j, em = excluded.em;
+
+  return novo;
 exception when others then
-  return '{}'::jsonb;
+  select j into guardado from public.central_ig_cache where de = p_de and ate = p_ate;
+  return coalesce(guardado, '{}'::jsonb);
 end $$;
 revoke all on function public.central_ig_seguro(date, date) from public;
 
@@ -427,7 +456,7 @@ revoke all on function public.central_realizados(date, date) from public;
 -- realizados automáticos do mês e de cada semana (seg–dom, recortada).
 -- ======================================================================
 create or replace function public.central_setores(p_token text, p_ano int, p_mes int) returns jsonb
-language plpgsql security definer set search_path = public, extensions as $$
+language plpgsql security definer set search_path = public, extensions set statement_timeout = '25s' as $$
 declare
   hoje date := (now() at time zone 'America/Sao_Paulo')::date;
   m_ini date := make_date(p_ano, p_mes, 1);
@@ -437,6 +466,7 @@ declare
   semanas jsonb := '[]'::jsonb;
   ini date; fim date; n int := 1;
   realizado_mes jsonb;
+  seg date := hoje - (extract(isodow from hoje)::int - 1);
 begin
   if not public.central_ok(p_token) then raise exception 'token' using errcode = '28000'; end if;
 
@@ -470,12 +500,11 @@ begin
     'realizados', realizado_mes,
     'semanas', semanas,
     'sessoes', (select jsonb_build_object('ultima', max(dia), 'dias', hoje - max(dia)) from kpi_sessions_diarias),
-    'sugestao', (with s as (
-        select generate_series(0, 3) i, (hoje - (extract(isodow from hoje)::int - 1)) seg)
-      select jsonb_build_object('semanas', jsonb_agg(jsonb_build_object('de', seg - 7 * (i + 1), 'ate', seg - 7 * i - 1)),
-        'medias', (select jsonb_object_agg(k, v) from (
-          select key k, avg(value::numeric) v from s, jsonb_each_text(public.central_realizados(seg - 7 * (i + 1), seg - 7 * i - 1)) group by key) m))
-      from s));
+    -- As quatro semanas anteriores, só as datas. A média de cada métrica nelas
+    -- custava quatro leituras inteiras a mais por carregamento, e nenhuma tela
+    -- usava o número. Quando alguma usar, vira função à parte, pedida só ali.
+    'sugestao', jsonb_build_object('semanas', (select jsonb_agg(jsonb_build_object(
+        'de', seg - 7 * (i + 1), 'ate', seg - 7 * i - 1) order by i) from generate_series(0, 3) i)));
 end $$;
 revoke all on function public.central_setores(text, int, int) from public;
 grant execute on function public.central_setores(text, int, int) to anon, authenticated, service_role;

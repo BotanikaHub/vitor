@@ -200,6 +200,51 @@
   }
   const area = (id, tipo, ref, caminho, rotulo, placeholder) => `<label class="eq-nota"><span>${esc(rotulo)}</span><textarea data-eq-nota data-tipo="${tipo}" data-ref="${esc(ref)}" data-caminho="${esc(caminho)}" placeholder="${esc(placeholder || '')}">${esc(lerNota(tipo, ref, caminho))}</textarea></label>`;
 
+  /* ---------- a campanha que vem ----------
+     A daily olhava só para o dia de hoje. Mas campanha não quebra no dia
+     em que estreia: quebra nos quatro dias antes, quando ninguém está
+     olhando para ela porque o prazo da tarefa ainda não chegou. Então a
+     daily passa a olhar para frente. */
+  const AVISO_ESTREIA = 4;   // a partir daqui a campanha entra na daily de cada pessoa
+  const HORIZONTE = 10;      // e no cartão de cima, para ninguém ser pego de surpresa
+
+  const dist = (de, ate) => Math.round(
+    (new Date(`${ate}T12:00:00Z`) - new Date(`${de}T12:00:00Z`)) / 86400000);
+
+  const limpo = (t) => String(t || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ').trim();
+
+  /* mesma ligação que a conferência e as abas de campanha usam: o Projeto */
+  function tarefasDaCampanha(ts, c) {
+    const n = limpo(c.name);
+    return ts.filter((t) => {
+      const pr = limpo(t.project);
+      if (!pr || pr === 'sem projeto') return false;
+      return n === pr || n.startsWith(pr + ' ') || pr.startsWith(n + ' ') ||
+             (n.startsWith(pr) && pr.length >= 5);
+    });
+  }
+
+  const chaveCampanha = (c) => limpo(c.name).replace(/ /g, '-') || 'campanha';
+
+  const emDias = (n) => n === 0 ? 'estreia hoje' : n === 1 ? 'estreia amanhã' : `estreia em ${n} dias`;
+
+  /* O que está por vir, com o estado das tarefas de cada uma. */
+  function estreiasDe(cs, ts, dia) {
+    return cs
+      .filter((c) => c.start && c.status !== 'Concluída' &&
+        dist(dia, c.start) >= 0 && dist(dia, c.start) <= HORIZONTE)
+      .map((c) => {
+        const dela = tarefasDaCampanha(ts, c);
+        const abertas = dela.filter((t) => t.status !== 'feito');
+        return { c, faltam: dist(dia, c.start), total: dela.length, abertas,
+                 atrasadas: abertas.filter((t) => vencida(t, dia)),
+                 semDono: abertas.filter((t) => !(t.assignees || []).length) };
+      })
+      .sort((a, b) => a.faltam - b.faltam || b.abertas.length - a.abertas.length);
+  }
+
   const vencida = (t, hoje) => t.status !== 'feito' && t.due && t.due < hoje;
   /* a pessoa pode assinar com um nome no ClickUp e outro no cadastro */
   const daPessoa = (t, p) => (t.assignees || []).some((a) => (p.nomes || [p.nome]).includes(a));
@@ -241,8 +286,16 @@
     ].join('');
 
     const ts = tarefas(marca);
+    const cs = campanhas(marca);
     const pess = ativas(marca);
     const ref = `${marca}|${dia}`;
+
+    /* o que vem por aí, e o que precisa sair do ar */
+    const estreias = estreiasDe(cs, ts, dia);
+    const perto = estreias.filter((e) => e.faltam <= AVISO_ESTREIA);
+    const encerrando = cs
+      .filter((c) => c.end && c.status !== 'Concluída' && dist(dia, c.end) >= 0 && dist(dia, c.end) <= 1)
+      .map((c) => ({ c, faltam: dist(dia, c.end) }));
     const pendentes = acoes(marca, (a) => !a.feito && (!a.prazo || a.prazo <= dia));
     const doDia = acoes(marca, (a) => a.origem === 'daily' && a.ref === ref);
     const semDono = ts.filter((t) => t.status !== 'feito' && !(t.assignees || []).length && t.due && t.due <= dia);
@@ -260,11 +313,21 @@
       const atrasadas = minhas.filter((t) => vencida(t, dia));
       const feitasOntem = minhas.filter((t) => t.status === 'feito' && feitaEm(t) && feitaEm(t) >= ontem && feitaEm(t) <= dia);
       const minhasAcoes = acoes(marca, (a) => !a.feito && a.dono === p.nome);
+      /* o que essa pessoa tem em aberto nas campanhas que estão chegando */
+      const minhasEstreias = perto
+        .map((e) => ({ ...e, minhas: e.abertas.filter((t) => daPessoa(t, p)) }))
+        .filter((e) => e.minhas.length);
       const metas = Object.entries(donos()).filter(([ch, nome]) => nome === p.nome && ch.startsWith(`${marca}|`)).map(([ch]) => ch.slice(marca.length + 1));
-      const tom = atrasadas.length ? 'critico' : hojeVence.length ? 'atencao' : 'ok';
+      const tom = atrasadas.length || minhasEstreias.length ? 'critico' : hojeVence.length ? 'atencao' : 'ok';
       return `<section class="pn-card eq-pessoa ${tom}"><div class="pn-card-head"><strong>${esc(p.nome)}</strong><span>${esc(areaNome(p.area) || 'sem área')}${metas.length ? ` · responde por ${metas.length} ${metas.length === 1 ? 'meta' : 'metas'}` : ''}</span><span class="eq-contas"><b class="${atrasadas.length ? 'critico' : ''}">${atrasadas.length} atrasadas</b><b>${hojeVence.length} vencem hoje</b><b class="ok">${feitasOntem.length} feitas</b></span></div><div class="pn-card-body eq-pessoa-corpo">` +
         `<div class="eq-col"><h4>Vence hoje</h4>${hojeVence.length ? hojeVence.map((t) => linhaTarefa(t, dia)).join('') : '<div class="pn-vazio">nada para hoje</div>'}${atrasadas.length ? `<h4 class="critico">Atrasadas</h4>${atrasadas.slice(0, 6).map((t) => linhaTarefa(t, dia)).join('')}${atrasadas.length > 6 ? `<small class="pn-sub">e mais ${atrasadas.length - 6}</small>` : ''}` : ''}</div>` +
-        `<div class="eq-col"><h4>Concluídas de ontem para hoje</h4>${feitasOntem.length ? feitasOntem.map((t) => linhaTarefa(t, dia)).join('') : '<div class="pn-vazio">nenhuma registrada</div>'}${minhasAcoes.length ? `<h4>Ações pendentes</h4>${listaAcoes(minhasAcoes, { hoje: dia })}` : ''}</div>` +
+        `<div class="eq-col"><h4>Concluídas de ontem para hoje</h4>${feitasOntem.length ? feitasOntem.map((t) => linhaTarefa(t, dia)).join('') : '<div class="pn-vazio">nenhuma registrada</div>'}${minhasAcoes.length ? `<h4>Ações pendentes</h4>${listaAcoes(minhasAcoes, { hoje: dia })}` : ''}` +
+          minhasEstreias.map((e) => `<h4 class="critico">${esc(emDias(e.faltam))} · ${esc(e.c.name)}</h4>` +
+            e.minhas.slice(0, 6).map((t) => linhaTarefa(t, dia)).join('') +
+            (e.minhas.length > 6 ? `<small class="pn-sub">e mais ${e.minhas.length - 6}</small>` : '') +
+            area(p.nome, 'daily', ref, `estreias.${chaveCampanha(e.c)}.${p.nome}`,
+              'Por que ainda não fechou', 'o que falta, e quem destrava')).join('') +
+        `</div>` +
         `<div class="eq-col">${area(p.nome, 'daily', ref, `pessoas.${p.nome}.foco`, 'Foco de hoje', 'o que essa pessoa entrega hoje')}${area(p.nome, 'daily', ref, `pessoas.${p.nome}.travas`, 'Travas', 'o que está impedindo, e quem destrava')}</div>` +
         `</div></section>`;
     }).join('');
@@ -272,6 +335,30 @@
     return `<div class="eq-barra"><div class="eq-dia"><button type="button" class="cu-btn" data-eq-dia="-1">‹</button><input type="date" class="cu-filter" data-eq-dia-input value="${dia}"><button type="button" class="cu-btn" data-eq-dia="1">›</button><b>${NOMES_DIA[diaSemana(dia)]}, ${dBR(dia)}${dia === hoje ? ' · hoje' : ''}</b></div><button type="button" class="cu-btn" data-eq-copiar="daily">Copiar resumo</button></div>` +
       `<div class="pn-tiles">${tiles}</div>` +
       (visao && visao.mes ? ui.cartao('Ritmo do mês', `${visao.mes.mes}/${visao.mes.ano} · dia ${visao.mes.dia_hoje} de ${visao.mes.dias}`, metaResumo(visao.mes, ui, fmt)) : '') +
+      /* Campanha não quebra no dia da estreia: quebra nos dias antes, quando
+         o prazo da tarefa ainda não venceu e por isso ninguém olha. */
+      (estreias.length ? ui.cartao('O que estreia', `${perto.length ? `${perto.length} ${perto.length === 1 ? 'entra' : 'entram'} em ${AVISO_ESTREIA} dias ou menos · ` : ''}próximos ${HORIZONTE} dias`,
+        `<div class="eq-estreias">${estreias.map((e) => {
+          const tom = e.faltam <= AVISO_ESTREIA && e.abertas.length ? 'critico' : e.faltam <= AVISO_ESTREIA ? 'ok' : e.abertas.length ? 'atencao' : '';
+          const feitas = e.total - e.abertas.length;
+          const pessoasComAberta = [...new Set(e.abertas.flatMap((t) => t.assignees || []))];
+          return `<div class="eq-estreia ${tom}"><div class="eq-estreia-topo">
+            <b>${esc(e.c.name)}</b>
+            <span class="eq-estreia-conta">${esc(emDias(e.faltam))} · ${dBR(e.c.start)}${e.c.end ? ` a ${dBR(e.c.end)}` : ''}</span></div>
+            <div class="eq-estreia-nums">
+              <span class="${e.abertas.length ? 'critico' : 'ok'}">${e.abertas.length} abertas</span>
+              <span>${feitas} de ${e.total} prontas</span>
+              ${e.atrasadas.length ? `<span class="critico">${e.atrasadas.length} já atrasadas</span>` : ''}
+              ${e.semDono.length ? `<span class="atencao">${e.semDono.length} sem dono</span>` : ''}
+              ${e.total === 0 ? '<span class="atencao">nenhuma tarefa aberta para esta campanha</span>' : ''}
+            </div>
+            ${pessoasComAberta.length ? `<div class="eq-estreia-gente">com ${esc(pessoasComAberta.join(', '))}</div>` : ''}
+            ${e.faltam <= AVISO_ESTREIA ? `<div class="eq-estreia-lista">${e.abertas.slice(0, 8).map((t) => linhaTarefa(t, dia)).join('') || '<div class="pn-vazio">nada em aberto</div>'}${e.abertas.length > 8 ? `<small class="pn-sub">e mais ${e.abertas.length - 8}</small>` : ''}</div>` : ''}
+          </div>`;
+        }).join('')}</div>` +
+        `<p class="pn-nota">A partir de ${AVISO_ESTREIA} dias antes da estreia, as tarefas abertas de cada campanha entram na daily de quem as tem — com um campo para escrever por que ainda não fecharam.</p>`) : '') +
+      (encerrando.length ? ui.cartao('O que sai do ar', `${encerrando.length} ${encerrando.length === 1 ? 'campanha termina' : 'campanhas terminam'} até amanhã`,
+        `<div class="eq-estreias">${encerrando.map((e) => `<div class="eq-estreia atencao"><div class="eq-estreia-topo"><b>${esc(e.c.name)}</b><span class="eq-estreia-conta">${e.faltam === 0 ? 'termina hoje' : 'termina amanhã'} · ${dBR(e.c.end)}</span></div><div class="eq-estreia-nums"><span>banner, tarja, cupom, selo de produto e anúncio precisam sair junto</span></div></div>`).join('')}</div>`) : '') +
       ((alertas || []).length ? ui.cartao('Alertas para a daily', 'do painel, agora', `<div class="pn-alertas">${(alertas || []).slice(0, 6).map((a) => { const dono = D.de(marca, a.chave || `setor|${a.tela}`); return `<div class="pn-alerta ${a.severidade === 'critico' ? 'critico' : 'atencao'}"><i></i><div><b>${esc(a.titulo)}</b><small>${esc(a.detalhe || '')}${dono ? ` · dono ${esc(dono)}` : ' · sem dono'}</small></div></div>` }).join('')}</div>`) : '') +
       `<div class="eq-grid">${cartoes || '<div class="pn-vazio">Nenhuma pessoa ativa nesta marca. Cadastre em Pessoas.</div>'}</div>` +
       (semDono.length ? ui.cartao('Tarefas sem dono', `${semDono.length} vencidas ou vencendo hoje, sem responsável`, semDono.slice(0, 10).map((t) => linhaTarefa(t, dia)).join('')) : '') +
@@ -291,7 +378,14 @@
     const semana = semanaISO(seg);
     const ref = `${marca}|${semana}`;
     const [ano, mes] = [+qui.slice(0, 4), +qui.slice(5, 7)];
-    const d = await pedir('setores', { ano, mes });
+    /* A reunião é um ritual da Central: pauta, leitura, decisões e ações
+       moram aqui. Os números do setor vêm do painel da marca, que é outro
+       banco e pode demorar ou cair. Quando cai, a reunião acontece do
+       mesmo jeito — sem número, com o aviso e o botão de tentar de novo.
+       Antes, um tempo esgotado no banco da marca apagava a tela inteira. */
+    let d = {}, falhou = null;
+    try { d = await pedir('setores', { ano, mes }) || {} }
+    catch (e) { falhou = e && e.message ? e.message : 'não respondeu'; d = {} }
     const sem = (d.semanas || []).find((s) => s.inicio <= qui && s.fim >= qui) || null;
     const anterior = (d.semanas || []).find((s) => s.fim === somaDias(seg, -1)) || null;
     const metasMes = ctx.metasCom ? ctx.metasCom(d) : (d.metas || {}), realMes = d.realizados || {};
@@ -327,6 +421,7 @@
     const porPessoa = ativas(marca).map((p) => ({ p, feitas: feitasSemana.filter((t) => daPessoa(t, p)).length, atrasadas: atrasadas.filter((t) => daPessoa(t, p)).length, abertas: ts.filter((t) => t.status !== 'feito' && daPessoa(t, p)).length }));
 
     return `<div class="eq-barra"><div class="eq-dia"><button type="button" class="cu-btn" data-eq-semana="-7">‹</button><input type="date" class="cu-filter" data-eq-semana-input value="${qui}"><button type="button" class="cu-btn" data-eq-semana="7">›</button><b>Semana ${semana.slice(-2)} · ${dBR(seg)} a ${dBR(dom)} · reunião quinta ${dBR(qui)}</b></div><button type="button" class="cu-btn" data-eq-copiar="kpi">Copiar resumo</button></div>` +
+      (falhou ? `<div class="eq-tombo"><div><b>Os números da ${esc(marca)} não vieram</b><small>${esc(falhou)} — a pauta, a leitura e as ações continuam valendo; só as metas e os realizados estão em branco.</small></div><button type="button" class="cu-btn" data-painel-atualiza>Tentar de novo</button></div>` : '') +
       `<p class="pn-nota">Cada setor com dono, meta da semana (quando definida em Setores e metas), realizado da semana contra a anterior, e o acumulado do mês contra o ritmo. Escreva a leitura e as decisões; as ações ficam com dono e prazo, e voltam na próxima quinta até serem fechadas.</p>` +
       (metaFat ? ui.cartao('Faturamento', `meta ${ativaN} do mês`, metaResumo({ meta: metaFat, realizado: realFat, pct: realFat * 100 / metaFat, esperado_ate_hoje: esperadoFat, meta_ativa: ativaN, ritmo: [{ nome: `Meta ${ativaN}`, dentro: realFat >= esperadoFat, gap: realFat - esperadoFat }] }, ui, fmt)) : '') +
       ui.cartao('Pendências da reunião passada', `${pendencias.length} ações abertas de outras semanas`, listaAcoes(pendencias, { hoje, vazioTxt: 'Nenhuma pendência de reuniões anteriores.' })) +

@@ -625,15 +625,26 @@
     return [...new Set(nomes.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
   }
 
-  /* As áreas que esta campanha tem. As tarefas dizem quase todas; oferta
-     e site entram sempre, porque toda campanha mexe em desconto e toda
-     campanha aparece na loja — e foi justamente aí que os erros passaram. */
+  /* As áreas que esta campanha tem de verdade.
+
+     Isto já foi errado: eu forçava oferta e site em toda campanha, "porque
+     toda campanha mexe na loja". O efeito foi o roteiro do site — home,
+     PDP, carrinho, checkout, celular — aparecer em campanha que não
+     encosta no site, e em tarefa que não é de site. O protocolo do site é
+     para quando se mexe no site.
+
+     Então a regra passa a ser: a área entra quando existe trabalho dela
+     nesta campanha. Quem quiser um roteiro que ninguém abriu tarefa
+     acrescenta à mão, no botão do resumo da campanha. */
   function areasDa(c) {
     const vistas = new Set();
     for (const t of tarefasDa(c)) { const a = areaDe(t); if (a !== 'Geral') vistas.add(a) }
-    vistas.add('Oferta'); vistas.add('Site');
+    for (const a of AREAS) if (conferencia(escopoRoteiro(c, a))) vistas.add(a);
     return [...vistas].filter(temRoteiro).sort((a, b) => AREAS.indexOf(a) - AREAS.indexOf(b));
   }
+
+  /* as que ainda não estão na campanha e podem ser chamadas à mão */
+  const areasDeFora = (c) => AREAS.filter((a) => temRoteiro(a) && !areasDa(c).includes(a));
 
   /* A tarefa principal daquela área naquela campanha: a que tem
      subtarefas penduradas; sem nenhuma assim, a de prazo mais longe. É
@@ -967,13 +978,16 @@
     const b = barra(chave);
     const pct = b.total ? Math.round((b.feitos / b.total) * 100) : 0;
     const ok = b.total > 0 && b.faltam === 0;
-    const abrir = aberta(chave, b.faltam);
+    /* No resumo da campanha eles nascem fechados: são muitos, e cada um é
+       longo. Desenhar dez roteiros abertos a cada mudança de tela deixava
+       a Central pesada à toa. Na ficha da tarefa que ele tranca, abre. */
+    const abrir = abertoRot(chave, b.faltam, comContexto);
     const dono = donoRoteiro(c, area);
     const gente = gentePossivel(c);
     const principal = tarefaPrincipal(c, area);
 
     const etapas = [];
-    for (const i of conf.itens) {
+    if (abrir) for (const i of conf.itens) {
       const nomeEtapa = i.etapa || 'Conferência';
       let et = etapas.find((x) => x.etapa === nomeEtapa);
       if (!et) { et = { etapa: nomeEtapa, itens: [] }; etapas.push(et) }
@@ -1053,23 +1067,36 @@
     return itens;
   }
 
+  /* No resumo, fechado por padrão; na ficha, aberto enquanto falta. A
+     escolha de quem clicou vale sobre as duas. */
+  const abertoRot = (chave, falta, noResumo) =>
+    dobra.has(chave) ? dobra.get(chave) : (!noResumo && falta > 0);
+
   /* assinatura do bloco de roteiros: muda quando algo neles muda */
   function assinaturaRoteiros(c) {
     return areasDa(c).map((a) => {
       const chave = escopoRoteiro(c, a);
       const b = barra(chave);
-      return `${a}:${b.feitos}/${b.total}:${donoRoteiro(c, a)}:${aberta(chave, b.faltam)}`;
-    }).join(';');
+      return `${a}:${b.feitos}/${b.total}:${donoRoteiro(c, a)}:${abertoRot(chave, b.faltam, true)}`;
+    }).join(';') + '|' + areasDeFora(c).length;
   }
 
   function roteirosHtml(c) {
     const areas = areasDa(c);
-    if (!areas.length) return '';
-    const fechados = areas.filter((a) => barra(escopoRoteiro(c, a)).faltam === 0 &&
-                                         barra(escopoRoteiro(c, a)).total > 0).length;
+    const fora = areasDeFora(c);
+    const chamar = fora.length ? `<div class="cf-rot-chamar">
+      <span>Esta campanha também mexe em:</span>
+      ${fora.map((a) => `<button type="button" class="cf-bt cf-bt-fraco" data-cf-rot-novo="${esc(escopoRoteiro(c, a))}">+ ${esc(a)}</button>`).join('')}
+    </div>` : '';
+    if (!areas.length) return chamar ? `<div class="cf-rots">
+      <div class="cf-tarefas-rot">Roteiro por área</div>
+      <p class="cf-vazio">Nenhuma área com tarefa nesta campanha ainda. O roteiro aparece quando
+      existir trabalho da área aqui — ou quando alguém chamar um abaixo.</p>${chamar}</div>` : '';
+    const fechados = areas.filter((a) => { const b = barra(escopoRoteiro(c, a)); return b.total > 0 && b.faltam === 0 }).length;
     return `<div class="cf-rots">
       <div class="cf-tarefas-rot">Roteiro de cada área nesta campanha — ${fechados} de ${areas.length} fechados</div>
       ${areas.map((a) => roteiroHtml(c, a, true)).join('')}
+      ${chamar}
     </div>`;
   }
 
@@ -1395,6 +1422,16 @@
       return;
     }
 
+    /* --- chamar para esta campanha um roteiro de área que não tem tarefa --- */
+    const rn = alvo.closest?.('[data-cf-rot-novo]');
+    if (rn) {
+      const chave = rn.dataset.cfRotNovo;
+      const c = campanhaDaChave(chave);
+      if (c) { garantirRoteiro(c, partesRoteiro(chave).area); dobra.set(chave, true) }
+      redesenhar();
+      return;
+    }
+
     /* --- refazer o roteiro pelo protocolo da área --- */
     const rg = alvo.closest?.('[data-cf-rot-gerar]');
     if (rg) {
@@ -1683,7 +1720,7 @@
     garantirLista, semConferencia, registrarErro, meusNomes, souResponsavel,
     roteiros: ROTEIROS, roteiroPadrao, gravarRoteiroPadrao, porRegrasRoteiro,
     escopoRoteiro, garantirRoteiro, refazerRoteiro, registrarErroRoteiro,
-    areasDa, tarefaPrincipal, ehPrincipal, travas, faltamTotal,
+    areasDa, areasDeFora, tarefaPrincipal, ehPrincipal, travas, faltamTotal,
     donoRoteiro, gravarDono, gentePossivel,
   };
 })();
