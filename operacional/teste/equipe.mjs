@@ -155,7 +155,7 @@ await pag.locator('#painelCorpo [data-eq-dia="1"]').click(); await pag.waitForTi
 
 /* ---------- donos em Setores ---------- */
 await pag.locator('#painelView [data-tela="setores"]').click(); await espera('#painelCorpo .pn-setor');
-conf('cada setor ganhou um seletor de dono', await pag.locator('#painelCorpo [data-dono^="setor|"]').count() === 6);
+conf('cada setor ganhou um seletor de dono', await pag.locator('#painelCorpo [data-dono^="setor|"]').count() === 7);
 await pag.locator('#painelCorpo [data-dono="setor|trafego"]').selectOption('Pedro Lage'); await pag.waitForTimeout(200);
 conf('escolher o dono grava em central.donos', (await chave('central.donos.vitor-gutierrez'))['Botanika|setor|trafego'] === 'Pedro Lage');
 await pag.locator('#painelView [data-tela="daily"]').click(); await espera('#painelCorpo .eq-pessoa');
@@ -165,7 +165,7 @@ conf('e o alerta do setor passa a dizer quem responde', (await texto('#painelCor
 await pag.locator('#painelView [data-tela="kpi"]').click(); await espera('#painelCorpo .eq-setor');
 corpo = await texto('#painelCorpo');
 conf('a reunião mostra a semana e a quinta', /Semana \d\d · \d\d\/\d\d a \d\d\/\d\d · reunião quinta/.test(corpo));
-conf('o setor de tráfego aparece com o dono; os outros, sem', corpo.includes('dono Pedro Lage') && (await pag.locator('#painelCorpo .eq-setor em').count()) === 5);
+conf('o setor de tráfego aparece com o dono; os outros, sem', corpo.includes('dono Pedro Lage') && (await pag.locator('#painelCorpo .eq-setor em').count()) === 6);
 const traf = pag.locator('#painelCorpo .eq-setor', { hasText: 'Tráfego' });
 const trafTxt = (await traf.innerText()).replace(/\s+/g, ' ');
 conf('a meta da semana e o realizado entram na tabela', trafTxt.includes('R$ 20.000') && trafTxt.includes('R$ 7.083'));

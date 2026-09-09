@@ -68,7 +68,10 @@ const SETORES = { ano: 2026, mes: 9, inicio: '2026-09-01', fim: '2026-09-30', di
     { n: 2, inicio: '2026-09-07', fim: '2026-09-13', dias: 7, futura: false, em_andamento: true, metas: { 'trafego||investimento': 20000, 'geral||ticket_medio': 350 }, realizados: { 'trafego||investimento': 7083.01, 'geral||ticket_medio': 312.99 } },
     { n: 3, inicio: '2026-09-14', fim: '2026-09-20', dias: 7, futura: true, em_andamento: true, metas: { 'trafego||investimento': 20000 }, realizados: {} }],
   sugestao: { medias: {}, semanas: [{ de: '2026-08-31', ate: '2026-09-06' }, { de: '2026-08-24', ate: '2026-08-30' }, { de: '2026-08-17', ate: '2026-08-23' }, { de: '2026-08-10', ate: '2026-08-16' }] },
-  sessoes: { dias: 0, ultima: '2026-09-09' } };
+  sessoes: { dias: 0, ultima: '2026-09-09' },
+  /* o mesmo cálculo no recorte que a pessoa escolheu na barra do painel */
+  periodo: { de: '2026-09-07', ate: '2026-09-09', dias: 3 },
+  realizado_periodo: { 'trafego||investimento': 7083.01, 'site||taxa_checkout': 2.24, 'geral||cac': 37.72 } };
 const SETOR = {
   influenciadores: { setor: 'influenciadores', de: '2026-09-01', ate: '2026-09-30', hoje: '2026-09-09', kpis: { ativos: 6, ticket: 383.67, vendas: 68, faturamento: 26089.69 },
     metas: { '|influencers_ativos': 10, '|pct_clientes_novos': 25, '|faturamento_influencer': 95000 }, serie: serie('2026-09-01', 9, 1500).map((p) => ({ dia: p.dia, faturamento: p.faturamento })),
@@ -206,10 +209,24 @@ await pag.screenshot({ path: 'teste/23-painel-trafego.png', fullPage: true });
 await pag.locator('#painelView [data-tela="setores"]').click(); await espera('#painelCorpo .pn-metrica');
 const se = await texto('#painelCorpo');
 conf('setores mostra a meta de faturamento com as três metas', se.includes('Meta 1 · ativa') && se.includes('R$ 530.000'));
-conf('cada setor vira um cartão com as suas métricas', await pag.locator('#painelCorpo .pn-setor').count() === 6);
+conf('cada setor vira um cartão com as suas métricas', await pag.locator('#painelCorpo .pn-setor').count() === 7);
+conf('e o site entrou como setor, porque quem cuida do tráfego cuida dele',
+  (await pag.locator('#painelCorpo').innerText()).includes('Sessão → checkout'));
 conf('métrica de fluxo mostra o esperado até hoje', se.includes('esperado R$ 30.000'));
 conf('métrica fora do ritmo fica marcada', await pag.locator('#painelCorpo .pn-metrica.critico').count() >= 2);
 conf('a tabela semanal marca a semana atual', /S2 · 07\/09–13\/09 · agora/i.test(se));
+
+/* ---------- cada setor no recorte que a pessoa escolheu ----------
+   O mês é o compromisso; o período é o que a pessoa está olhando agora. */
+const pedSet = chamadas.map((c) => c.q).filter((q) => q.tela === 'setores').pop();
+conf('a tela de setores passa a pedir também o período escolhido',
+  !!pedSet && !!pedSet.de && !!pedSet.ate && !!pedSet.ano && !!pedSet.mes);
+conf('e a métrica mostra o valor do período ao lado do mês',
+  await pag.locator('#painelCorpo .pn-metrica.com-periodo .pn-metrica-per').count() >= 3);
+conf('com o número do recorte, não o do mês',
+  (await pag.locator('#painelCorpo .pn-metrica.com-periodo', { hasText: 'Investimento' }).first().innerText()).includes('7.083'));
+conf('métrica lançada à mão vem marcada como tal',
+  (await pag.locator('#painelCorpo').innerText()).includes('lançado à mão'));
 
 await pag.locator('#painelCorpo [data-meta-edita="trafego||investimento"]').click(); await pag.waitForTimeout(250);
 conf('clicar numa meta abre o campo com o valor atual', (await pag.locator('#painelCorpo [data-meta-form] input').inputValue()) === '100000');

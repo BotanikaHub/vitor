@@ -73,39 +73,90 @@
   const EXTRAS = [];
   const telaExtra = (id) => EXTRAS.find((t) => t.id === id);
   const SETORES = [
-    { id: 'geral', nome: 'Geral' }, { id: 'trafego', nome: 'Tráfego' }, { id: 'influenciadores', nome: 'Influenciadores' },
+    { id: 'geral', nome: 'Geral' }, { id: 'trafego', nome: 'Tráfego' }, { id: 'site', nome: 'Site' },
+    { id: 'influenciadores', nome: 'Influenciadores' },
     { id: 'social_media', nome: 'Social media' }, { id: 'automacoes', nome: 'Automações' }, { id: 'atendimento', nome: 'Atendimento' },
   ];
   /* chave = escopo|canal|metrica, como no banco de lá.
      fluxo: acumula no mês e se compara com o ritmo (meta × dia/dias);
      taxa: é um nível, e se compara direto com a meta. */
+  /* ---------- o que cada setor responde ----------
+     `auto` diz de onde o número vem: 'api' quando o banco da marca calcula
+     sozinho (Shopify, Meta, Instagram, sessões), 'mao' quando alguém
+     precisa lançar, e 'derivada' quando sai de uma conta entre os dois.
+     O que é de mão aparece marcado na tela, para ninguém confundir número
+     medido com número digitado. */
   const METRICAS = {
-    'geral||faturamento_mes':                 { nome: 'Faturamento',               tipo: 'fluxo', un: 'R$' },
-    'geral||pedidos':                         { nome: 'Pedidos',                   tipo: 'fluxo', un: 'un' },
-    'geral||ticket_medio':                    { nome: 'Ticket médio',              tipo: 'taxa',  un: 'R$' },
-    'geral||taxa_recompra':                   { nome: 'Taxa de recompra',          tipo: 'taxa',  un: '%' },
-    'geral||conversao':                       { nome: 'Conversão',                 tipo: 'taxa',  un: '%' },
-    'trafego||investimento':                  { nome: 'Investimento',              tipo: 'fluxo', un: 'R$' },
-    'trafego||faturamento_atribuido':         { nome: 'Faturamento atribuído',     tipo: 'fluxo', un: 'R$' },
-    'trafego||roas_alvo':                     { nome: 'ROAS',                      tipo: 'taxa',  un: 'x' },
-    'trafego||cpa_alvo':                      { nome: 'CPA',                       tipo: 'taxa',  un: 'R$', sentido: 'menor' },
-    'influenciadores||faturamento_influencer':{ nome: 'Faturamento via influencer',tipo: 'fluxo', un: 'R$' },
-    'influenciadores||influencers_ativos':    { nome: 'Influencers ativos',        tipo: 'taxa',  un: 'un' },
-    'influenciadores||pct_clientes_novos':    { nome: 'Clientes novos',            tipo: 'taxa',  un: '%' },
-    'social_media||visualizacoes':            { nome: 'Visualizações',             tipo: 'fluxo', un: 'un' },
-    'social_media||interacoes':               { nome: 'Interações',                tipo: 'fluxo', un: 'un' },
-    'social_media||cliques_link':             { nome: 'Cliques no link',           tipo: 'fluxo', un: 'un' },
-    'social_media||seguidores_liquidos':      { nome: 'Seguidores líquidos',       tipo: 'fluxo', un: 'un' },
-    'social_media||vendas_link':              { nome: 'Vendas pelo link',          tipo: 'fluxo', un: 'R$' },
-    'automacoes|email|faturamento':           { nome: 'E-mail · faturamento',      tipo: 'fluxo', un: 'R$' },
-    'automacoes|whatsapp_api|faturamento':    { nome: 'WhatsApp API · faturamento',tipo: 'fluxo', un: 'R$' },
-    'automacoes|grupos|faturamento':          { nome: 'Grupos · faturamento',      tipo: 'fluxo', un: 'R$' },
-    'automacoes|email|disparos':              { nome: 'E-mail · disparos',         tipo: 'fluxo', un: 'un' },
-    'automacoes|whatsapp_api|disparos':       { nome: 'WhatsApp API · disparos',   tipo: 'fluxo', un: 'un' },
-    'automacoes|grupos|disparos':             { nome: 'Grupos · disparos',         tipo: 'fluxo', un: 'un' },
-    'atendimento||volume':                    { nome: 'Atendimentos',              tipo: 'fluxo', un: 'un' },
-    'atendimento||tempo_resposta':            { nome: 'Tempo de resposta (min)',   tipo: 'taxa',  un: 'un', sentido: 'menor' },
-    'atendimento||csat':                      { nome: 'Satisfação (CSAT)',         tipo: 'taxa',  un: '%' },
+    /* ---------- geral ---------- */
+    'geral||faturamento_mes':                 { nome: 'Faturamento',               tipo: 'fluxo', un: 'R$', auto: 'api' },
+    'geral||pedidos':                         { nome: 'Pedidos',                   tipo: 'fluxo', un: 'un', auto: 'api' },
+    'geral||ticket_medio':                    { nome: 'Ticket médio',              tipo: 'taxa',  un: 'R$', auto: 'api' },
+    'geral||taxa_recompra':                   { nome: 'Taxa de recompra',          tipo: 'taxa',  un: '%',  auto: 'api' },
+    'geral||conversao':                       { nome: 'Conversão',                 tipo: 'taxa',  un: '%',  auto: 'api' },
+    'geral||sessoes':                         { nome: 'Sessões',                   tipo: 'fluxo', un: 'un', auto: 'api' },
+    'geral||cac':                             { nome: 'CAC (custo por pedido)',    tipo: 'taxa',  un: 'R$', sentido: 'menor', auto: 'derivada' },
+    /* ---------- tráfego ---------- */
+    'trafego||investimento':                  { nome: 'Investimento',              tipo: 'fluxo', un: 'R$', auto: 'api' },
+    'trafego||faturamento_atribuido':         { nome: 'Faturamento atribuído',     tipo: 'fluxo', un: 'R$', auto: 'api' },
+    'trafego||roas_alvo':                     { nome: 'ROAS',                      tipo: 'taxa',  un: 'x',  auto: 'api' },
+    'trafego||cpa_alvo':                      { nome: 'CPA',                       tipo: 'taxa',  un: 'R$', sentido: 'menor', auto: 'api' },
+    'trafego||impressoes':                    { nome: 'Impressões',                tipo: 'fluxo', un: 'un', auto: 'api' },
+    'trafego||cliques':                       { nome: 'Cliques no link',           tipo: 'fluxo', un: 'un', auto: 'api' },
+    'trafego||ctr':                           { nome: 'CTR',                       tipo: 'taxa',  un: '%',  auto: 'derivada' },
+    'trafego||cpc':                           { nome: 'Custo por clique',          tipo: 'taxa',  un: 'R$', sentido: 'menor', auto: 'derivada' },
+    'trafego||cpm':                           { nome: 'CPM',                       tipo: 'taxa',  un: 'R$', sentido: 'menor', auto: 'api' },
+    'trafego||frequencia':                    { nome: 'Frequência',                tipo: 'taxa',  un: 'x',  sentido: 'menor', auto: 'api' },
+    'trafego||lp_views':                      { nome: 'Visitas à página',          tipo: 'fluxo', un: 'un', auto: 'api' },
+    'trafego||clique_para_lp':                { nome: 'Clique → página',           tipo: 'taxa',  un: '%',  auto: 'derivada' },
+    'trafego||checkouts_ads':                 { nome: 'Checkouts do anúncio',      tipo: 'fluxo', un: 'un', auto: 'api' },
+    /* ---------- site ---------- */
+    'site||sessoes':                          { nome: 'Sessões',                   tipo: 'fluxo', un: 'un', auto: 'api' },
+    'site||conversao':                        { nome: 'Conversão',                 tipo: 'taxa',  un: '%',  auto: 'derivada' },
+    'site||checkouts_iniciados':              { nome: 'Checkouts iniciados',       tipo: 'fluxo', un: 'un', auto: 'api' },
+    'site||taxa_checkout':                    { nome: 'Sessão → checkout',         tipo: 'taxa',  un: '%',  auto: 'derivada' },
+    'site||conclusao_checkout':               { nome: 'Checkout → pedido',         tipo: 'taxa',  un: '%',  auto: 'derivada' },
+    'site||receita_por_sessao':               { nome: 'Receita por sessão',        tipo: 'taxa',  un: 'R$', auto: 'derivada' },
+    'site||velocidade':                       { nome: 'Velocidade da página (s)',  tipo: 'taxa',  un: 'un', sentido: 'menor', auto: 'mao' },
+    /* ---------- influenciadores ---------- */
+    'influenciadores||faturamento_influencer':{ nome: 'Faturamento via influencer',tipo: 'fluxo', un: 'R$', auto: 'api' },
+    'influenciadores||influencers_ativos':    { nome: 'Influencers ativos',        tipo: 'taxa',  un: 'un', auto: 'api' },
+    'influenciadores||pct_clientes_novos':    { nome: 'Clientes novos',            tipo: 'taxa',  un: '%',  auto: 'api' },
+    'influenciadores||fat_por_influencer':    { nome: 'Faturamento por influencer',tipo: 'taxa',  un: 'R$', auto: 'derivada' },
+    'influenciadores||comissao':              { nome: 'Comissão paga',             tipo: 'fluxo', un: 'R$', auto: 'api' },
+    'influenciadores||roi':                   { nome: 'Retorno sobre comissão',    tipo: 'taxa',  un: 'x',  auto: 'derivada' },
+    'influenciadores||publicacoes':           { nome: 'Publicações no ar',         tipo: 'fluxo', un: 'un', auto: 'mao' },
+    /* ---------- social media ---------- */
+    'social_media||visualizacoes':            { nome: 'Visualizações',             tipo: 'fluxo', un: 'un', auto: 'api' },
+    'social_media||interacoes':               { nome: 'Interações',                tipo: 'fluxo', un: 'un', auto: 'api' },
+    'social_media||cliques_link':             { nome: 'Cliques no link',           tipo: 'fluxo', un: 'un', auto: 'api' },
+    'social_media||taxa_clique':              { nome: 'Views → clique',            tipo: 'taxa',  un: '%',  auto: 'derivada' },
+    'social_media||seguidores':               { nome: 'Seguidores',                tipo: 'taxa',  un: 'un', auto: 'api' },
+    'social_media||seguidores_liquidos':      { nome: 'Seguidores líquidos',       tipo: 'fluxo', un: 'un', auto: 'api' },
+    'social_media||vendas_link':              { nome: 'Vendas pelo link',          tipo: 'fluxo', un: 'R$', auto: 'api' },
+    'social_media||vendas_bio':               { nome: 'Vendas · link da bio',      tipo: 'fluxo', un: 'R$', auto: 'api' },
+    'social_media||vendas_stories':           { nome: 'Vendas · stories',          tipo: 'fluxo', un: 'R$', auto: 'api' },
+    'social_media||vendas_live':              { nome: 'Vendas · live',             tipo: 'fluxo', un: 'R$', auto: 'api' },
+    'social_media||publicacoes':              { nome: 'Publicações no ar',         tipo: 'fluxo', un: 'un', auto: 'mao' },
+    /* ---------- automações ---------- */
+    'automacoes|email|faturamento':           { nome: 'E-mail · faturamento',      tipo: 'fluxo', un: 'R$', auto: 'api' },
+    'automacoes|email|pedidos':               { nome: 'E-mail · pedidos',          tipo: 'fluxo', un: 'un', auto: 'api' },
+    'automacoes|email|disparos':              { nome: 'E-mail · enviados',         tipo: 'fluxo', un: 'un', auto: 'mao' },
+    'automacoes|email|conversao':             { nome: 'E-mail · conversão',        tipo: 'taxa',  un: '%',  auto: 'derivada' },
+    'automacoes|whatsapp_api|faturamento':    { nome: 'API · faturamento',         tipo: 'fluxo', un: 'R$', auto: 'api' },
+    'automacoes|whatsapp_api|pedidos':        { nome: 'API · pedidos',             tipo: 'fluxo', un: 'un', auto: 'api' },
+    'automacoes|whatsapp_api|disparos':       { nome: 'API · mensagens enviadas',  tipo: 'fluxo', un: 'un', auto: 'mao' },
+    'automacoes|whatsapp_api|gastos':         { nome: 'API · gastos',              tipo: 'fluxo', un: 'R$', sentido: 'menor', auto: 'mao' },
+    'automacoes|whatsapp_api|conversao':      { nome: 'API · conversão',           tipo: 'taxa',  un: '%',  auto: 'derivada' },
+    'automacoes|grupos|faturamento':          { nome: 'Grupos · faturamento',      tipo: 'fluxo', un: 'R$', auto: 'api' },
+    'automacoes|grupos|pedidos':              { nome: 'Grupos · pedidos',          tipo: 'fluxo', un: 'un', auto: 'api' },
+    'automacoes|grupos|disparos':             { nome: 'Grupos · mensagens enviadas', tipo: 'fluxo', un: 'un', auto: 'mao' },
+    'automacoes|grupos|conversao':            { nome: 'Grupos · conversão',        tipo: 'taxa',  un: '%',  auto: 'derivada' },
+    /* ---------- atendimento ---------- */
+    'atendimento||volume':                    { nome: 'Atendimentos',              tipo: 'fluxo', un: 'un', auto: 'mao' },
+    'atendimento||tempo_resposta':            { nome: 'Tempo de resposta (min)',   tipo: 'taxa',  un: 'un', sentido: 'menor', auto: 'mao' },
+    'atendimento||csat':                      { nome: 'Satisfação (CSAT)',         tipo: 'taxa',  un: '%',  auto: 'mao' },
+    'atendimento||fila_aberta':               { nome: 'Fila aberta agora',         tipo: 'taxa',  un: 'un', sentido: 'menor', auto: 'mao' },
+    'atendimento||por_pedido':                { nome: 'Atendimentos por pedido',   tipo: 'taxa',  un: 'x',  sentido: 'menor', auto: 'derivada' },
   };
   const CANAIS = { email: 'E-mail', whatsapp_api: 'WhatsApp API', grupos: 'Grupos' };
   const partes = (chave) => { const [escopo, canal, metrica] = String(chave).split('|'); return { escopo, canal: canal || '', metrica } };
@@ -367,6 +418,28 @@
 
   /* a meta de faturamento do mês mora em metas_mensais (as três metas), e
      não em metas_kpi — então entra aqui pela meta ativa, e edita lá */
+  /* ---------- números que saem de uma conta ----------
+     Conversão por canal é pedidos ÷ mensagens enviadas, e as enviadas são
+     lançadas à mão enquanto a integração não existe — então essa conta só
+     vale no mês, que é o recorte do que foi lançado. No período escolhido
+     entram só as derivadas que nascem inteiras da API. */
+  function comDerivadas(real, manuais) {
+    const r = { ...(real || {}) };
+    const m = manuais || {};
+    const v = (k) => { const x = r[k] != null ? r[k] : m[k]; return x == null ? null : +x };
+    if (manuais) {
+      for (const canal of ['email', 'whatsapp_api', 'grupos']) {
+        const ped = v(`automacoes|${canal}|pedidos`), env = v(`automacoes|${canal}|disparos`);
+        if (ped != null && env > 0) r[`automacoes|${canal}|conversao`] = ped * 100 / env;
+      }
+      const at = v('atendimento||volume'), pe = v('geral||pedidos');
+      if (at != null && pe > 0) r['atendimento||por_pedido'] = at / pe;
+    }
+    return r;
+  }
+
+  const ORIGEM = { api: '', derivada: '', mao: 'lançado à mão' };
+
   function metasCom(d) {
     const metas = { ...(d.metas || {}) };
     const mg = d.meta_geral || {};
@@ -375,7 +448,13 @@
     return metas;
   }
   function cartaoSetor(setor, d) {
-    const metas = metasCom(d), real = d.realizados || {};
+    const metas = metasCom(d);
+    const real = comDerivadas(d.realizados, d.manuais);
+    const per = comDerivadas(d.realizado_periodo, null);
+    const jan = d.periodo || null;
+    /* o período só vira coluna quando é outro recorte que não o mês inteiro */
+    const mostraPeriodo = !!(jan && d.realizado_periodo &&
+      !(jan.de === d.inicio && jan.ate === (d.hoje < d.fim ? d.hoje : d.fim)));
     const chaves = [...new Set([...Object.keys(METRICAS), ...Object.keys(metas), ...Object.keys(real)])]
       .filter((k) => partes(k).escopo === setor.id && (metas[k] || real[k] != null || METRICAS[k]));
     const D = window.Painel && window.Painel.donos;
@@ -393,8 +472,13 @@
         ? `<form class="pn-edita" data-meta-form="${esc(k)}"><input name="valor" type="number" step="any" min="0" value="${meta == null ? '' : meta}" placeholder="meta do mês" autofocus><button type="submit" class="cu-btn primary">Salvar</button><button type="button" class="cu-btn" data-meta-cancela>Cancelar</button></form>`
         : `<button type="button" class="pn-meta-btn" data-meta-edita="${metas[k] && metas[k].geral ? '__geral' : esc(k)}" title="editar a meta do mês">${meta == null ? 'definir meta' : unidade(un, meta, un === 'x' ? 2 : 0)}</button>`;
       const donoMetrica = D ? D.ler(st.marca, k) : '';
-      return `<div class="pn-metrica ${av.cls}"><div class="pn-metrica-nome"><b>${esc(av.cfg.nome)}</b><small>${av.cfg.tipo === 'fluxo' ? 'acumulado no mês' : 'nível atual'}${av.cfg.sentido === 'menor' ? ' · quanto menor, melhor' : ''}</small>${D ? seletorDono(k, donoMetrica, donoSetor ? `dono: ${donoSetor}` : 'sem dono') : ''}</div>` +
-        `<div class="pn-metrica-valor">${av.r == null ? '—' : unidade(un, av.r, un === 'x' ? 2 : un === '%' ? 1 : 0)}</div>` +
+      const marca = ORIGEM[av.cfg.auto || 'api'];
+      const casas = un === 'x' ? 2 : un === '%' ? 1 : 0;
+      const noPeriodo = mostraPeriodo
+        ? `<div class="pn-metrica-per"><b>${per[k] == null ? '—' : unidade(un, per[k], casas)}</b><small>no período</small></div>` : '';
+      return `<div class="pn-metrica ${av.cls} ${mostraPeriodo ? 'com-periodo' : ''}"><div class="pn-metrica-nome"><b>${esc(av.cfg.nome)}</b><small>${av.cfg.tipo === 'fluxo' ? 'acumulado no mês' : 'nível atual'}${av.cfg.sentido === 'menor' ? ' · quanto menor, melhor' : ''}${marca ? ` · ${esc(marca)}` : ''}</small>${D ? seletorDono(k, donoMetrica, donoSetor ? `dono: ${donoSetor}` : 'sem dono') : ''}</div>` +
+        noPeriodo +
+        `<div class="pn-metrica-valor">${av.r == null ? '—' : unidade(un, av.r, casas)}</div>` +
         `<div class="pn-metrica-meta">${campoMeta}</div>` +
         `<div class="pn-metrica-ritmo">${av.m ? ritmo(av.r, av.m, av.esperado, { un }) : ''}<small class="${av.cls}">${esc(av.texto)}${av.esperado != null ? ` · esperado ${unidade(un, av.esperado, 0)}` : ''}</small></div></div>`;
     }).join('');
@@ -635,13 +719,13 @@
             pedir: (tela, args) => pedir(tela, args || {}, forcar),
             ui: { tile, cartao, tabela, colunas, barrasH, faisca, ritmo, delta, chipStatus, vazio },
             fmt: { moeda, num, pct, vezes, curto, dBR, dLonga, hora, esc, unidade, hojeSP, somaDias, fimDoMes },
-            metricaDe, avaliar, partes, metasCom, SETORES, METRICAS,
+            metricaDe, avaliar, partes, metasCom, comDerivadas, SETORES, METRICAS,
           });
           break;
         }
         case 'setores': {
           const [d, det] = await Promise.all([
-            pedir('setores', { ano: +h.slice(0, 4), mes: +h.slice(5, 7) }, forcar),
+            pedir('setores', { ano: +h.slice(0, 4), mes: +h.slice(5, 7), de: p.de, ate: p.ate }, forcar),
             st.setor !== 'todos' && st.setor !== 'geral' && st.setor !== 'trafego' ? pedir('setor', { setor: st.setor, de: p.de, ate: p.ate }, forcar) : Promise.resolve(null),
           ]);
           html = rSetores(d, det); break;
@@ -814,6 +898,6 @@
   window.Painel = {
     mostrar, esconder, carregar, registrar, abrir, estado: st,
     periodoDe, avaliar, colunas, delta, moeda, num, pct,
-    telas: TELAS, setores: SETORES, metricas: METRICAS,
+    telas: TELAS, setores: SETORES, metricas: METRICAS, comDerivadas,
   };
 })();

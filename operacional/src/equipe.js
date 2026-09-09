@@ -388,7 +388,10 @@
     catch (e) { falhou = e && e.message ? e.message : 'não respondeu'; d = {} }
     const sem = (d.semanas || []).find((s) => s.inicio <= qui && s.fim >= qui) || null;
     const anterior = (d.semanas || []).find((s) => s.fim === somaDias(seg, -1)) || null;
-    const metasMes = ctx.metasCom ? ctx.metasCom(d) : (d.metas || {}), realMes = d.realizados || {};
+    const metasMes = ctx.metasCom ? ctx.metasCom(d) : (d.metas || {});
+    /* conversão por canal e atendimento por pedido saem de uma conta entre o
+       que a API traz e o que foi lançado à mão — só valem no recorte do mês */
+    const realMes = ctx.comDerivadas ? ctx.comDerivadas(d.realizados, d.manuais) : (d.realizados || {});
     const ativaN = (d.meta_geral && +d.meta_geral.meta_ativa) || 1;
     const metaFat = d.meta_geral ? +d.meta_geral[`meta${ativaN}`] || 0 : 0;
     const esperadoFat = metaFat * (+d.dia_hoje || 0) / (+d.dias || 30);

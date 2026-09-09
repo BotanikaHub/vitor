@@ -414,40 +414,101 @@ language sql security definer set search_path = public, extensions as $$
   with pp as (
     select id, dia, total - refunded_amount liq, discount_code, utm_source, utm_medium, source_category, cliente_hash
     from shopify_orders where is_test = false and dia between p_de and p_ate and financial_status in ('paid','partially_refunded')),
-  inv as (select coalesce(sum(spend), 0) v from campaign_insights_daily where date between p_de and p_ate),
-  sess as (select coalesce(sum(sessions), 0) v from kpi_sessions_diarias where dia between p_de and p_ate),
-  cup as (select upper(codigo) c from cupons_acompanhados where tipo = 'influencer'),
-  inf as (select p.* from pp p join cup on cup.c = upper(trim(coalesce(p.discount_code,'')))),
+  ads as (select coalesce(sum(spend),0) spend, coalesce(sum(impressions),0) impr,
+                 coalesce(sum(inline_link_clicks),0) cliques, coalesce(sum(lp_views),0) lpv,
+                 coalesce(sum(checkouts),0) chk,
+                 case when coalesce(sum(impressions),0) > 0
+                      then sum(frequency * impressions) / sum(impressions) else 0 end freq
+          from campaign_insights_daily where date between p_de and p_ate),
+  inv as (select spend v from ads),
+  sess as (select coalesce(sum(sessions), 0) v, coalesce(sum(checkouts), 0) chk
+           from kpi_sessions_diarias where dia between p_de and p_ate),
+  seg as (select followers f from instagram_snapshots where dia <= p_ate order by dia desc limit 1),
+  cup as (select upper(codigo) c, coalesce(percentual,0) pct from cupons_acompanhados where tipo = 'influencer'),
+  inf as (select p.*, cup.pct from pp p join cup on cup.c = upper(trim(coalesce(p.discount_code,'')))),
   prim as (select cliente_hash, min(dia) primeiro from shopify_orders
            where is_test = false and financial_status in ('paid','partially_refunded') and cliente_hash is not null and dia <= p_ate group by 1),
   ig as (select public.central_ig_seguro(p_de, p_ate) j),
-  proxy as (select not exists (select 1 from pp where lower(coalesce(utm_source,'')) ~ 'instagram|(^|[^a-z])ig([^a-z]|$)|insta') v)
+  proxy as (select not exists (select 1 from pp where lower(coalesce(utm_source,'')) ~ 'instagram|(^|[^a-z])ig([^a-z]|$)|insta') v),
+  -- o Instagram orgânico, separado por onde o link estava
+  bio as (select coalesce(sum(liq),0) v, count(*) n from pp
+          where lower(coalesce(utm_source,'')) ~ 'insta' and lower(coalesce(utm_medium,'')) ~ '^bio|link.?bio'),
+  sto as (select coalesce(sum(liq),0) v, count(*) n from pp
+          where lower(coalesce(utm_source,'')) ~ 'insta' and lower(coalesce(utm_medium,'')) ~ 'stor'),
+  liv as (select coalesce(sum(liq),0) v, count(*) n from pp
+          where lower(coalesce(utm_source,'')) ~ 'insta' and lower(coalesce(utm_medium,'')) ~ 'live'),
+  -- pedidos por canal de automação, para a conversão por disparo
+  pe as (select
+      count(*) filter (where lower(coalesce(utm_source,'')) ~ 'whatsapp_api|wa_api') api,
+      count(*) filter (where lower(coalesce(utm_source,'')) ~ 'whatsapp_org|grupos|whatsapp' and lower(coalesce(utm_source,'')) !~ 'whatsapp_api|wa_api') grupos,
+      count(*) filter (where lower(coalesce(utm_source,'')) !~ 'whatsapp'
+        and (lower(coalesce(utm_source,'')) ~ 'email|active' or lower(coalesce(utm_medium,'')) ~ 'email')) email
+    from pp)
   select jsonb_build_object(
+    -- ---------- geral ----------
     'geral||faturamento_mes', coalesce((select sum(liq) from pp), 0),
     'geral||pedidos', (select count(*) from pp),
     'geral||ticket_medio', coalesce((select sum(liq) / nullif(count(*), 0) from pp), 0),
     'geral||conversao', case when (select v from sess) > 0 then (select count(*) from pp)::numeric * 100 / (select v from sess) else 0 end,
     'geral||taxa_recompra', coalesce((select taxa_recompra_pct from public.recompra(p_de, p_ate)), 0),
+    'geral||sessoes', (select v from sess),
+    -- o número que amarra tráfego ao resultado: quanto custou cada pedido, contando tudo
+    'geral||cac', case when (select count(*) from pp) > 0 then (select spend from ads) / (select count(*) from pp) else 0 end,
+    -- ---------- tráfego ----------
     'trafego||faturamento_atribuido', coalesce((select sum(liq) from pp where source_category = 'Meta'), 0),
     'trafego||investimento', (select v from inv),
     'trafego||roas_alvo', case when (select v from inv) > 0 then coalesce((select sum(liq) from pp where source_category = 'Meta'), 0) / (select v from inv) else 0 end,
     'trafego||cpa_alvo', case when (select count(*) from pp where source_category = 'Meta') > 0 then (select v from inv) / (select count(*) from pp where source_category = 'Meta') else 0 end,
+    'trafego||impressoes', (select impr from ads),
+    'trafego||cliques', (select cliques from ads),
+    'trafego||ctr', case when (select impr from ads) > 0 then (select cliques from ads)::numeric * 100 / (select impr from ads) else 0 end,
+    'trafego||cpc', case when (select cliques from ads) > 0 then (select spend from ads) / (select cliques from ads) else 0 end,
+    'trafego||cpm', case when (select impr from ads) > 0 then (select spend from ads) * 1000 / (select impr from ads) else 0 end,
+    'trafego||frequencia', (select freq from ads),
+    'trafego||lp_views', (select lpv from ads),
+    'trafego||checkouts_ads', (select chk from ads),
+    -- do clique à página: onde o anúncio perde gente
+    'trafego||clique_para_lp', case when (select cliques from ads) > 0 then (select lpv from ads)::numeric * 100 / (select cliques from ads) else 0 end,
+    -- ---------- site ----------
+    'site||sessoes', (select v from sess),
+    'site||checkouts_iniciados', (select chk from sess),
+    'site||taxa_checkout', case when (select v from sess) > 0 then (select chk from sess)::numeric * 100 / (select v from sess) else 0 end,
+    'site||conclusao_checkout', case when (select chk from sess) > 0 then (select count(*) from pp)::numeric * 100 / (select chk from sess) else 0 end,
+    'site||conversao', case when (select v from sess) > 0 then (select count(*) from pp)::numeric * 100 / (select v from sess) else 0 end,
+    'site||receita_por_sessao', case when (select v from sess) > 0 then coalesce((select sum(liq) from pp), 0) / (select v from sess) else 0 end,
+    -- ---------- influenciadores ----------
     'influenciadores||faturamento_influencer', coalesce((select sum(liq) from inf), 0),
     'influenciadores||influencers_ativos', (select count(distinct upper(trim(discount_code))) from inf),
     'influenciadores||pct_clientes_novos', coalesce((select count(*) filter (where pr.primeiro = i.dia)::numeric * 100 / nullif(count(*), 0)
         from inf i left join prim pr on pr.cliente_hash = i.cliente_hash), 0),
+    'influenciadores||fat_por_influencer', coalesce((select sum(liq) from inf), 0)
+      / nullif((select count(distinct upper(trim(discount_code))) from inf), 0),
+    'influenciadores||comissao', coalesce((select sum(liq * pct / 100) from inf), 0),
+    'influenciadores||roi', case when coalesce((select sum(liq * pct / 100) from inf), 0) > 0
+      then coalesce((select sum(liq) from inf), 0) / (select sum(liq * pct / 100) from inf) else 0 end,
+    -- ---------- social media ----------
     'social_media||visualizacoes', coalesce(((select j from ig)->>'views')::numeric, 0),
     'social_media||interacoes', coalesce(((select j from ig)->>'interacoes')::numeric, 0),
     'social_media||cliques_link', coalesce(((select j from ig)->>'cliques')::numeric, 0),
     'social_media||seguidores_liquidos', coalesce(((select j from ig)->>'seguidores_liquidos')::numeric, 0),
+    'social_media||seguidores', coalesce((select f from seg), 0),
+    'social_media||taxa_clique', case when coalesce(((select j from ig)->>'views')::numeric, 0) > 0
+      then coalesce(((select j from ig)->>'cliques')::numeric, 0) * 100 / ((select j from ig)->>'views')::numeric else 0 end,
     'social_media||vendas_link', coalesce((select sum(liq) from pp, proxy
         where case when proxy.v then source_category = 'Orgânico' and nullif(trim(discount_code),'') is null
                    else lower(coalesce(utm_source,'')) ~ 'instagram|(^|[^a-z])ig([^a-z]|$)|insta' end), 0),
+    'social_media||vendas_bio', (select v from bio),
+    'social_media||vendas_stories', (select v from sto),
+    'social_media||vendas_live', (select v from liv),
+    -- ---------- automações ----------
     'automacoes|whatsapp_api|faturamento', coalesce((select sum(liq) from pp where lower(coalesce(utm_source,'')) ~ 'whatsapp_api|wa_api'), 0),
     'automacoes|grupos|faturamento', coalesce((select sum(liq) from pp where lower(coalesce(utm_source,'')) ~ 'whatsapp_org|grupos'
         and lower(coalesce(utm_source,'')) !~ 'whatsapp_api|wa_api'), 0),
     'automacoes|email|faturamento', coalesce((select sum(liq) from pp where lower(coalesce(utm_source,'')) !~ 'whatsapp'
-        and (lower(coalesce(utm_source,'')) ~ 'email|active' or lower(coalesce(utm_medium,'')) ~ 'email')), 0));
+        and (lower(coalesce(utm_source,'')) ~ 'email|active' or lower(coalesce(utm_medium,'')) ~ 'email')), 0),
+    'automacoes|whatsapp_api|pedidos', (select api from pe),
+    'automacoes|grupos|pedidos', (select grupos from pe),
+    'automacoes|email|pedidos', (select email from pe));
 $$;
 revoke all on function public.central_realizados(date, date) from public;
 
@@ -455,7 +516,8 @@ revoke all on function public.central_realizados(date, date) from public;
 -- Setores e metas: o mês inteiro, com metas mensais, manuais, semanais,
 -- realizados automáticos do mês e de cada semana (seg–dom, recortada).
 -- ======================================================================
-create or replace function public.central_setores(p_token text, p_ano int, p_mes int) returns jsonb
+create or replace function public.central_setores(p_token text, p_ano int, p_mes int,
+  p_de date default null, p_ate date default null) returns jsonb
 language plpgsql security definer set search_path = public, extensions set statement_timeout = '25s' as $$
 declare
   hoje date := (now() at time zone 'America/Sao_Paulo')::date;
@@ -467,6 +529,8 @@ declare
   ini date; fim date; n int := 1;
   realizado_mes jsonb;
   seg date := hoje - (extract(isodow from hoje)::int - 1);
+  per_de date := least(coalesce(p_de, m_ini), coalesce(p_ate, ate));
+  per_ate date := least(greatest(coalesce(p_ate, ate), per_de), hoje);
 begin
   if not public.central_ok(p_token) then raise exception 'token' using errcode = '28000'; end if;
 
@@ -498,6 +562,12 @@ begin
     'historico_metas', coalesce((select jsonb_agg(jsonb_build_object('ano', ano, 'mes', mes, 'meta1', meta1, 'meta2', meta2,
         'meta3', meta3, 'meta_ativa', meta_ativa) order by ano desc, mes desc) from metas_mensais), '[]'::jsonb),
     'realizados', realizado_mes,
+    -- o mesmo cálculo no recorte que a pessoa escolheu na tela: hoje, ontem,
+    -- 3 dias, 7 dias, 30 dias ou um período à mão. É o que deixa cada setor
+    -- ver o próprio resultado no filtro dele, e não só no mês fechado.
+    'periodo', jsonb_build_object('de', per_de, 'ate', per_ate, 'dias', per_ate - per_de + 1),
+    'realizado_periodo', case when per_ate < per_de then '{}'::jsonb
+      else public.central_realizados(per_de, per_ate) end,
     'semanas', semanas,
     'sessoes', (select jsonb_build_object('ultima', max(dia), 'dias', hoje - max(dia)) from kpi_sessions_diarias),
     -- As quatro semanas anteriores, só as datas. A média de cada métrica nelas
@@ -506,8 +576,9 @@ begin
     'sugestao', jsonb_build_object('semanas', (select jsonb_agg(jsonb_build_object(
         'de', seg - 7 * (i + 1), 'ate', seg - 7 * i - 1) order by i) from generate_series(0, 3) i)));
 end $$;
-revoke all on function public.central_setores(text, int, int) from public;
-grant execute on function public.central_setores(text, int, int) to anon, authenticated, service_role;
+revoke all on function public.central_setores(text, int, int, date, date) from public;
+grant execute on function public.central_setores(text, int, int, date, date) to anon, authenticated, service_role;
+drop function if exists public.central_setores(text, int, int);
 
 -- ======================================================================
 -- Um setor, no período: o que a página dele mostra.

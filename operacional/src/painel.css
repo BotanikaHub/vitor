@@ -198,3 +198,12 @@ html[data-theme="dark"] .painel-view .pn-hit:hover{fill:rgba(255,255,255,.06)}
 }
 html[data-theme="dark"] .pn-abas-corte{background:linear-gradient(180deg,transparent,rgba(255,255,255,.18) 22%,rgba(255,255,255,.18) 78%,transparent)}
 html[data-theme="dark"] .pn-preset.ativo{background:#f2f2f2;color:#111}
+
+/* ---------- a métrica no período escolhido ----------
+   O mês é o compromisso; o período é o que a pessoa está olhando agora —
+   hoje, três dias, sete, ou o recorte que ela pediu. Os dois lado a lado,
+   com o do período em primeiro, porque é o que responde "e agora?". */
+.pn-metrica-per{display:flex;flex-direction:column;gap:1px;min-width:76px;text-align:right}
+.pn-metrica-per b{font-size:14px;font-weight:650;letter-spacing:-.01em;color:var(--pn-ink)}
+.pn-metrica-per small{font-size:9px;color:var(--pn-muted)}
+.pn-metrica.com-periodo .pn-metrica-valor{color:var(--pn-muted)}

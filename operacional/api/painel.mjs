@@ -30,7 +30,7 @@ const TELAS = {
   saude:    { fn: 'central_saude',    args: [] },
   visao:    { fn: 'central_visao',    args: ['de', 'ate'] },
   trafego:  { fn: 'central_trafego',  args: ['de', 'ate'] },
-  setores:  { fn: 'central_setores',  args: ['ano', 'mes'] },
+  setores:  { fn: 'central_setores',  args: ['ano', 'mes', 'de', 'ate'] },
   setor:    { fn: 'central_setor',    args: ['setor', 'de', 'ate'] },
   estoque:  { fn: 'central_estoque',  args: [] },
   cupons:   { fn: 'central_cupons',   args: ['de', 'ate'] },
@@ -40,7 +40,7 @@ const TELAS = {
 const NOMES = { de: 'p_de', ate: 'p_ate', ano: 'p_ano', mes: 'p_mes', setor: 'p_setor' };
 
 const DATA = /^\d{4}-\d{2}-\d{2}$/;
-const SETORES = new Set(['geral', 'trafego', 'influenciadores', 'social_media', 'automacoes', 'atendimento']);
+const SETORES = new Set(['geral', 'trafego', 'site', 'influenciadores', 'social_media', 'automacoes', 'atendimento']);
 
 function responder(res, status, corpo) {
   res.setHeader('Cache-Control', 'no-store');

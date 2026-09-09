@@ -201,6 +201,43 @@ Para ligar uma marca nova (a VermeFree, por exemplo): rodar `painel/lovable.sql`
 no banco do painel dela, gravar o sha256 do token em `app_config`, e inserir a
 linha dela em `painel_marcas` com a URL e a chave publicável do projeto.
 
+### O que cada setor responde
+
+O catálogo de métricas do painel diz, para cada linha, **de onde o número vem**:
+`api` quando o banco da marca calcula sozinho (Shopify, Meta Ads, Instagram,
+sessões), `derivada` quando sai de uma conta entre dois números medidos, e
+`mao` quando alguém precisa lançar. O que é de mão aparece marcado na tela —
+número medido e número digitado não podem se confundir.
+
+- **Geral** — faturamento, pedidos, ticket, conversão, sessões, recompra e
+  **CAC** (investimento ÷ pedidos), o número que amarra tráfego a resultado.
+- **Tráfego** — investimento, faturamento atribuído, ROAS, CPA, impressões,
+  cliques, CTR, CPC, CPM, **frequência** (fadiga de criativo), visitas à
+  página, clique → página e checkouts do anúncio.
+- **Site** — setor novo, porque quem cuida do tráfego cuida do site: sessões,
+  conversão, checkouts iniciados, **sessão → checkout**, **checkout → pedido**
+  (o abandono) e receita por sessão.
+- **Influenciadores** — faturamento por cupom, influencers ativos, clientes
+  novos, **faturamento por influencer**, comissão paga e retorno sobre a
+  comissão.
+- **Social media** — views, interações, cliques, views → clique, seguidores, e
+  as vendas separadas por **link da bio, stories e live** (pelo `utm_medium` do
+  pedido).
+- **Automações** — faturamento, pedidos e conversão de **e-mail, WhatsApp API e
+  grupos**. Pedidos e faturamento são automáticos; mensagens enviadas e gastos
+  são lançados à mão enquanto a integração não existe, e a conversão é a conta
+  entre os dois — por isso ela só vale no recorte do mês.
+- **Atendimento** — atendimentos, tempo de resposta, CSAT, fila aberta e
+  atendimentos por pedido.
+
+### O filtro de cada setor
+
+`central_setores` passou a receber o período da barra do painel e devolve
+`realizado_periodo` junto do mês. Assim cada setor vê o próprio resultado no
+recorte que escolheu — hoje, ontem, 3 dias, 7, 30 ou um período à mão — ao lado
+do mês e da meta. O mês é o compromisso; o período é o que a pessoa está
+olhando agora.
+
 ## Daily, reunião de KPI, pessoas e projetos
 
 ### A daily olha para frente
