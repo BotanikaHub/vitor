@@ -11,14 +11,19 @@ const porta = srv.address().port;
 
 const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
 const pag = await nav.newPage({ viewport: { width: 1440, height: 900 } });
-await pag.addInitScript(() => {
+const tarefaDoTeste = [{ id:'t1', title:'DIA D — Programar disparos de e-mail e WhatsApp', status:'a fazer',
+  description:'', assignees:['Sarah'], due:'2026-09-09', start:null, brand:'Botanika', project:'Dia D',
+  priority:'urgent', recurrence:'none', subtasks:[], checklist:[], attachments:[], comments:[], history:[] }];
+await pag.addInitScript((ts) => {
   window.supabase = { createClient: () => ({
     auth: { getSession: async () => ({ data: { session: { user: { id: 'u1', email: 'vitor@botanika.com.br' } } } }),
             signOut: async () => ({}) },
-    from: () => ({ select: () => ({ or: async () => ({ data: [], error: null }) }),
+    from: () => ({ select: () => ({ or: async () => ({ data: [
+             { chave: 'central.tasks.vitor-gutierrez', dono: null, valor: ts },
+             { chave: 'central.campaigns.vitor-gutierrez', dono: null, valor: [] }], error: null }) }),
                    upsert: async () => ({ error: null }) }),
   }) };
-});
+}, tarefaDoTeste);
 await pag.route('**/supabase.js', (r) => r.fulfill({ status: 200, body: '', contentType: 'application/javascript' }));
 await pag.goto(`http://127.0.0.1:${porta}/`, { waitUntil: 'networkidle' });
 
@@ -26,11 +31,11 @@ const foto = async (nome) => { await pag.screenshot({ path: `teste/${nome}.png`,
 await foto('01-inicio');
 
 /* Tarefas */
-const tarefas = pag.locator('text=Tarefas').first();
-if (await tarefas.count()) { await tarefas.click().catch(()=>{}); await pag.waitForTimeout(500); await foto('02-tarefas') }
+await pag.waitForTimeout(1200);
+await pag.locator('#tasksNav').click(); await pag.waitForTimeout(600); await foto('02-tarefas');
 
 /* abre a primeira tarefa da lista, que é onde o pop-up sai do lugar */
-await pag.getByText('DIA D — Programar disparos de e-mail e WhatsApp').first().click();
+await pag.locator('.cu-row[data-task-id="t1"]').first().click();
 await pag.waitForTimeout(800); await foto('03-tarefa-aberta');
 await pag.keyboard.press('Escape'); await pag.waitForTimeout(400);
 

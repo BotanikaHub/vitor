@@ -7,20 +7,23 @@ import { createServer } from 'node:http';
 const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
 const srv = createServer((_, r) => { r.writeHead(200,{'content-type':'text/html; charset=utf-8'}); r.end(html) }).listen(0);
 const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+const tarefaDoTeste = [{ id:'t1', title:'DIA D — Programar disparos de e-mail e WhatsApp', status:'a fazer',
+  description:'', assignees:['Sarah'], due:'2026-09-09', start:null, brand:'Botanika', project:'Dia D',
+  priority:'urgent', recurrence:'none', subtasks:[], checklist:[], attachments:[], comments:[], history:[] }];
 
-const stub = () => { window.supabase = { createClient: () => ({
+const stub = (ts) => { window.supabase = { createClient: () => ({
   auth:{getSession:async()=>({data:{session:{user:{id:'u1',email:'v@b.com'}}}}),signOut:async()=>({})},
-  from:()=>({select:()=>({or:async()=>({data:[],error:null}),eq:()=>({maybeSingle:async()=>({data:null})})}),upsert:async()=>({error:null})}) }) } };
+  from:()=>({select:()=>({or:async()=>({data:[{chave:'central.tasks.vitor-gutierrez',dono:null,valor:ts},{chave:'central.campaigns.vitor-gutierrez',dono:null,valor:[]}],error:null}),eq:()=>({maybeSingle:async()=>({data:null})})}),upsert:async()=>({error:null})}) }) } };
 
 for (const [w, h] of [[1280,800],[1440,900],[1728,1080],[1920,1080]]) {
   const pag = await nav.newPage({ viewport: { width: w, height: h } });
-  await pag.addInitScript(stub);
+  await pag.addInitScript(stub, tarefaDoTeste);
   await pag.route('**/supabase.js', (r) => r.fulfill({ status:200, body:'', contentType:'application/javascript' }));
   await pag.goto(`http://127.0.0.1:${srv.address().port}/`, { waitUntil:'networkidle' });
 
   /* painel da tarefa */
-  await pag.locator('text=Tarefas').first().click(); await pag.waitForTimeout(300);
-  await pag.getByText('DIA D — Programar disparos de e-mail e WhatsApp').first().click();
+  await pag.waitForTimeout(1200); await pag.locator('#tasksNav').click(); await pag.waitForTimeout(600);
+  await pag.locator('.cu-row[data-task-id="t1"]').first().click();
   await pag.waitForTimeout(600);
   const painel = await pag.evaluate(() => {
     const p = document.querySelector('.tdrawer-panel'), pr = p.getBoundingClientRect();
