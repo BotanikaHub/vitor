@@ -114,13 +114,19 @@ await abrirTarefas();
 await abrirFicha('Subir criativos');
 conf('a conferência aparece na ficha da tarefa',
   await pag.locator('.cf-secao').count() === 1);
-conf('e diz que ainda não há lista',
-  (await pag.locator('.cf-secao').innerText()).includes('ainda não há lista'));
-
-/* ---------- sem lista não tranca ---------- */
-conf('sem lista, o status "feito" continua disponível',
-  await pag.locator('#detailStatus option[value=""], #detailStatus option').evaluateAll(
-    (os) => os.filter((o) => o.textContent.startsWith('feito')).every((o) => !o.disabled)));
+/* ---------- abrir a ficha já faz a lista existir ----------
+   Antes a lista era opcional, e por isso nunca ninguém gerou uma: em dois
+   meses de operação, zero listas. Agora ela nasce sozinha do padrão da
+   área, e a tranca vale desde a primeira vez que a tarefa é aberta. */
+const c0 = await conferencia();
+conf('abrir a ficha faz nascer a lista, sem ninguém pedir',
+  Array.isArray(c0.escopos['tarefa:t1']?.itens) && c0.escopos['tarefa:t1'].itens.length > 6);
+conf('e ela vem marcada como nascida sozinha', c0.escopos['tarefa:t1'].automatica === true);
+conf('a ficha já mostra travado, sem passo nenhum',
+  (await pag.locator('.cf-secao').innerText()).includes('Travado'));
+conf('e o "feito" do status já sai de circulação',
+  await pag.locator('#detailStatus option').evaluateAll(
+    (os) => os.some((o) => o.textContent.startsWith('feito') && o.disabled)));
 
 /* ---------- gerar pelas regras ---------- */
 await pag.locator('.cf-secao [data-cf-gerar]:not([data-cf-ia])').click();
@@ -200,6 +206,11 @@ await fecharFicha();
 await pag.locator('[data-view="list"]').click();
 await pag.waitForTimeout(400);
 await abrirFicha('Subir criativos');
+/* Itens de prova pedem o link ou o print antes de marcar. Aqui o
+   navegador responde sempre a mesma coisa, e mais adiante eu confiro que
+   a prova ficou guardada junto da marcação. */
+const PROVA = 'https://botanikabrasil.com.br/tri-mg?utm_source=teste';
+pag.on('dialog', (d) => d.accept(PROVA));
 const marcar = async () => {
   for (;;) {
     const cx = pag.locator('.cf-item.obrig:not(.feito) input[type=checkbox]').first();
@@ -211,6 +222,16 @@ const marcar = async () => {
 await marcar();
 conf('com tudo conferido, a ficha diz que está liberado',
   (await pag.locator('.cf-secao').innerText()).includes('Liberado'));
+
+/* ---------- marcar passou a custar ---------- */
+const comProva = (await conferencia()).escopos['tarefa:t1'].itens.filter((i) => i.prova);
+conf('o item de link testado pede prova', comProva.length >= 1);
+conf('e a prova fica guardada junto da marcação, não só o clique',
+  comProva.every((i) => i.provaTexto === PROVA));
+conf('a prova fica escrita na ficha, para quem for revisar depois',
+  (await pag.locator('.cf-secao').innerHTML()).includes('utm_source=teste'));
+conf('e a marcação é assinada por quem marcou',
+  comProva.every((i) => i.por && i.em));
 conf('e o "feito" volta ao status',
   await pag.locator('#detailStatus option').evaluateAll(
     (os) => os.filter((o) => o.textContent.startsWith('feito')).every((o) => !o.disabled)));

@@ -69,6 +69,43 @@ sempre** — sem chave, sem rede e sem espera. A IA entra por cima quando existe
 `/api/conferencia` respondendo, e se ela falhar ou demorar a lista das regras
 fica: nunca se entrega sem lista.
 
+### A tranca não espera ser pedida
+
+A primeira versão disto era frouxa: *sem lista, não travava*. A ideia era não
+parar a operação no dia em que o sistema subiu. O efeito foi outro — em dois
+meses, **zero listas foram criadas**, e portanto nada nunca travou. Uma tranca
+que espera alguém pedir para ser trancada não tranca nada.
+
+Agora:
+
+- **A lista nasce sozinha.** Abrir a ficha de uma tarefa aberta já cria a lista
+  pelo padrão da área. Não existe entrega sem lista; existe lista em branco, e
+  ela tranca. A lista criada assim vem marcada com `automatica: true`.
+- **Quem fez não confere o próprio trabalho.** Itens marcados como `revisao` só
+  podem ser marcados por outra pessoa: se quem está logado é responsável pela
+  tarefa, a caixa recusa. Quem é quem vem do cadastro de acessos, casando o
+  nome do perfil e o nome que a pessoa tem no ClickUp.
+- **Marcar custa.** Itens marcados como `prova` pedem o link, o print ou o que
+  foi testado, e guardam isso junto da marcação, com nome e hora. Sem escrever,
+  não marca.
+- **O erro que passou vira linha.** O botão "Passou um erro" na ficha
+  transforma o que escapou em item obrigatório daquela área, para todas as
+  próximas entregas. Sem isso a lista nunca aprende — foi assim que o mesmo
+  tipo de erro apareceu quatro vezes na tarefa recorrente de conferência.
+- **O que escapou fica visível.** A daily mostra o que foi entregue sem
+  conferir nos últimos sete dias, com nome.
+
+Quais itens pedem prova e quais pedem outra pessoa está na terceira coluna do
+padrão de fábrica, em `PADRAO` e `GERAIS`. O padrão de cada área é editável na
+própria tela, e o que estiver guardado manda.
+
+### O furo que sobra
+
+A tranca vale dentro da Central. **Uma tarefa fechada no ClickUp chega aqui já
+como "feito"**, e a conferência nunca a viu. Enquanto a escrita de volta para o
+ClickUp não estiver ligada, isso depende de combinado — e a daily cobra todo
+dia, com nome, o que passou por fora.
+
 ### A IA está desligada
 
 Por decisão do Vitor, a Central roda sem a chave da Anthropic — a conferência

@@ -246,6 +246,13 @@
     const pendentes = acoes(marca, (a) => !a.feito && (!a.prazo || a.prazo <= dia));
     const doDia = acoes(marca, (a) => a.origem === 'daily' && a.ref === ref);
     const semDono = ts.filter((t) => t.status !== 'feito' && !(t.assignees || []).length && t.due && t.due <= dia);
+    /* Entregue sem conferir: quase sempre é tarefa fechada no ClickUp, onde
+       a tranca da Central não alcança. Não dá para desfazer, mas some do
+       radar se ninguém olhar — então a daily olha, todo dia, com nome. */
+    const C = window.Conferencia;
+    const semConferir = C && C.semConferencia
+      ? C.semConferencia(ts).filter((t) => { const f = feitaEm(t); return f && f >= somaDias(dia, -7) && f <= dia })
+      : [];
 
     const cartoes = pess.map((p) => {
       const minhas = ts.filter((t) => daPessoa(t, p));
@@ -268,6 +275,9 @@
       ((alertas || []).length ? ui.cartao('Alertas para a daily', 'do painel, agora', `<div class="pn-alertas">${(alertas || []).slice(0, 6).map((a) => { const dono = D.de(marca, a.chave || `setor|${a.tela}`); return `<div class="pn-alerta ${a.severidade === 'critico' ? 'critico' : 'atencao'}"><i></i><div><b>${esc(a.titulo)}</b><small>${esc(a.detalhe || '')}${dono ? ` · dono ${esc(dono)}` : ' · sem dono'}</small></div></div>` }).join('')}</div>`) : '') +
       `<div class="eq-grid">${cartoes || '<div class="pn-vazio">Nenhuma pessoa ativa nesta marca. Cadastre em Pessoas.</div>'}</div>` +
       (semDono.length ? ui.cartao('Tarefas sem dono', `${semDono.length} vencidas ou vencendo hoje, sem responsável`, semDono.slice(0, 10).map((t) => linhaTarefa(t, dia)).join('')) : '') +
+      (semConferir.length ? ui.cartao('Entregue sem conferir', `${semConferir.length} nos últimos 7 dias · fechadas fora da Central, onde a tranca não alcança`,
+        semConferir.slice(0, 12).map((t) => `<div class="eq-sem-conferir">${linhaTarefa(t, dia)}<span>${esc((t.assignees || []).join(', ') || 'sem responsável')}</span></div>`).join('') +
+        `<p class="pn-nota">A conferência tranca a conclusão dentro da Central. Quem fecha no ClickUp passa por fora. Enquanto a escrita de volta não existir, o combinado é fechar por aqui.</p>`) : '') +
       ui.cartao('Combinado na daily', `${doDia.length} ${doDia.length === 1 ? 'ação' : 'ações'} de ${dBR(dia)}`, listaAcoes(doDia, { hoje: dia, vazioTxt: 'Nada combinado ainda.' }) + formAcao('daily', ref, marca)) +
       ui.cartao('Pendências abertas', `${pendentes.length} ações com prazo até ${dBR(dia)}, de qualquer dia`, listaAcoes(pendentes, { hoje: dia, vazioTxt: 'Nenhuma pendência. Bom sinal.' }));
   }

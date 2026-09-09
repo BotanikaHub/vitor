@@ -131,3 +131,12 @@ html[data-theme="dark"] .cf-dobra{background:#0f0f0f;border-color:#333;color:#c9
 .ini-vazio{padding:26px 4px;text-align:center;color:#9aa0a5;font-size:10px;line-height:1.6}
 html[data-theme="dark"] .ini-vazio{color:#7d8286}
 .ini-pisca{animation:cf-pisca 1.3s ease}
+
+/* ---------- o que endurece a conferência ----------
+   As marcas de "outra pessoa" e "com prova" precisam ser lidas antes de
+   alguém tentar marcar, não depois da recusa. */
+.cf-tag-revisao{background:#efe9ff;color:#5b46b8}
+.cf-tag-prova{background:#e9f2ff;color:#2b5fa8}
+.cf-prova{flex:1 0 100%;margin:4px 0 0 26px;padding:5px 8px;border-radius:7px;
+  background:#f6f6f4;color:#5a5f63;font-size:9px;line-height:1.4;word-break:break-word}
+.cf-item.feito .cf-prova{background:#eef5ef;color:#3f6a4e}

@@ -39,7 +39,28 @@
   const agora = () => new Date().toISOString();
   const id = (p) => p + Math.random().toString(36).slice(2, 8);
 
-  const nome = () => (window.user && (window.user.firstName || window.user.name)) || 'alguém';
+  /* Quem está conferindo. Antes vinha de window.user, que nunca existiu —
+     então toda marcação ficava assinada como "alguém". Agora vem do
+     cadastro de acessos: o nome do perfil e o nome que a pessoa tem no
+     ClickUp, que é como a tarefa a chama. */
+  function meusNomes() {
+    const eu = window.CentralEu;
+    const nomes = [];
+    if (eu && eu.nome) nomes.push(eu.nome);
+    try {
+      const A = window.Acessos;
+      if (A && eu) {
+        const p = (A.equipe() || []).find((x) => x.email === eu.email);
+        if (p) { if (p.nome) nomes.push(p.nome); if (p.nomeClickup) nomes.push(p.nomeClickup) }
+      }
+    } catch { /* sem cadastro, vale o nome do perfil */ }
+    return [...new Set(nomes.filter(Boolean))];
+  }
+  const nome = () => meusNomes()[0] || 'alguém';
+  const souResponsavel = (t) => {
+    const meus = meusNomes();
+    return !!(t && meus.length && (t.assignees || []).some((a) => meus.includes(a)));
+  };
 
   function aviso(texto) {
     if (window.showToast) { try { return window.showToast(texto) } catch {} }
@@ -54,6 +75,15 @@
      coisa que já deu errado alguma vez. O que é obrigatório trava a
      entrega; o resto fica como lembrete.
 
+     A terceira coluna endurece a linha, porque marcar caixa é grátis e
+     erro custa caro:
+
+       'prova'    pede o link, o print ou o número junto da marcação.
+                  Sem escrever a prova, a caixa não marca.
+       'revisao'  quem fez não pode marcar. Precisa de outra pessoa —
+                  é o segundo par de olhos, que é o que pega o que o
+                  primeiro não vê.
+
      Isto aqui é só o padrão de fábrica. O que vale é o que estiver
      guardado — a pessoa edita a área e a edição manda. */
   const GERAIS = [
@@ -61,7 +91,7 @@
     ['A marca do material é a certa — Botanika ou VermeFree, sem trocar', true],
     ['Preço, desconto e cupom batem com a oferta da campanha', true],
     ['Data e horário de publicação batem com o cronograma', true],
-    ['Link testado: abre na página certa e com UTM', true],
+    ['Link testado: abre na página certa e com UTM', true, 'prova'],
     ['Texto lido inteiro, sem erro de português', true],
     ['Arquivo final salvo na pasta da campanha', false],
   ];
@@ -73,7 +103,7 @@
       ['Pixel disparando — teste de evento feito antes de subir', true],
       ['Criativo no formato certo de cada posicionamento', true],
       ['UTM completa: source, medium, campaign e content', true],
-      ['Página de destino aberta e testada no celular', true],
+      ['Página de destino aberta e testada no celular', true, 'prova'],
       ['Verba do dia dentro do que o TAP previu', false],
     ],
     'Criativo': [
@@ -89,24 +119,24 @@
       ['Nada dito sobre saúde além do que pode ser dito', true],
       ['Uma chamada só, e clara', true],
       ['Nome do produto e dosagem iguais ao rótulo', true],
-      ['Revisado por outra pessoa antes de subir', true],
+      ['Revisado por outra pessoa antes de subir', true, 'revisao'],
     ],
     'Instagram': [
       ['Legenda, primeiro comentário e hashtags prontos', true],
       ['Link da bio ou figurinha apontando para a página da campanha', true],
       ['Capa do Reels e primeiro frame conferidos', true],
-      ['Agendamento confirmado no dia e na hora do cronograma', true],
+      ['Agendamento confirmado no dia e na hora do cronograma', true, 'prova'],
       ['Áudio liberado para conta comercial', false],
     ],
     'E-mail': [
       ['Assunto e pré-cabeçalho sem corte no celular', true],
-      ['Teste enviado e aberto no Gmail e no celular', true],
+      ['Teste enviado e aberto no Gmail e no celular', true, 'prova'],
       ['Todos os links clicados no teste', true],
       ['Segmento e exclusões conferidos antes do disparo', true],
       ['Remetente, resposta e descadastro funcionando', true],
     ],
     'Site': [
-      ['Alterado no tema rascunho e revisado antes de publicar', true],
+      ['Alterado no tema rascunho e revisado antes de publicar', true, 'revisao'],
       ['Testado no celular e no computador', true],
       ['Preço, frete e cupom aplicando até o checkout', true],
       ['Estoque conferido dos produtos da oferta', true],
@@ -115,7 +145,7 @@
     'Influencer': [
       ['Briefing enviado e confirmado pelo creator', true],
       ['Cupom e link exclusivos criados e testados', true],
-      ['Entregável aprovado antes de publicar', true],
+      ['Entregável aprovado antes de publicar', true, 'revisao'],
       ['Data de publicação combinada e dentro do cronograma', true],
       ['Print do publicado salvo', false],
     ],
@@ -126,26 +156,26 @@
       ['Escala coberta no horário de pico do dia', true],
     ],
     'Grupos': [
-      ['Mensagem testada em um grupo antes do disparo geral', true],
+      ['Mensagem testada em um grupo antes do disparo geral', true, 'prova'],
       ['Link e cupom testados dentro da própria mensagem', true],
       ['Grupos e horário conferidos contra o cronograma', true],
       ['Não é a mesma mensagem de ontem', true],
     ],
     'API': [
       ['Público e regra da automação conferidos', true],
-      ['Teste com um contato real antes de ligar', true],
+      ['Teste com um contato real antes de ligar', true, 'prova'],
       ['Limite de disparo e horário dentro do combinado', true],
     ],
     'Geral': [],
   };
 
   const PADRAO_CAMPANHA = [
-    ['Todas as tarefas da campanha conferidas e concluídas', true],
+    ['Todas as tarefas da campanha conferidas e concluídas', true, 'revisao'],
     ['A oferta está escrita igual em todos os canais', true],
     ['Cronograma cumprido — nenhum dia previsto ficou sem publicar', true],
     ['Meta e verba do TAP batem com o que foi gasto', true],
     ['Página ou coleção da campanha no ar e testada', true],
-    ['Resultado registrado: faturamento, verba e ROAS', true],
+    ['Resultado registrado: faturamento, verba e ROAS', true, 'prova'],
     ['Aprendizados escritos para a próxima', false],
   ];
 
@@ -198,7 +228,26 @@
     const e = estado();
     if (Array.isArray(e.padroes[area]) && e.padroes[area].length) return e.padroes[area];
     return [...GERAIS, ...(PADRAO[area] || [])]
-      .map(([texto, obrigatorio]) => ({ id: id('p'), texto, obrigatorio }));
+      .map(([texto, obrigatorio, marca]) => ({
+        id: id('p'), texto, obrigatorio,
+        prova: /prova/.test(marca || ''), revisao: /revisao/.test(marca || ''),
+      }));
+  }
+
+  /* O erro que escapou vira linha do padrão da área. É o único jeito de a
+     lista melhorar: a tarefa recorrente que o Vitor mandou na foto lista
+     quatro erros do mesmo tipo, em datas diferentes, porque nenhum deles
+     virou item de conferência depois de acontecer. */
+  function registrarErro(area, texto) {
+    const limpo = String(texto || '').trim().slice(0, 200);
+    if (!limpo) return null;
+    const itens = padraoDe(area);
+    const jaTem = itens.some((i) => limpa(i.texto) === limpa(limpo));
+    if (!jaTem) {
+      itens.push({ id: id('p'), texto: limpo, obrigatorio: true, prova: false, revisao: false, deErro: agora() });
+      gravarPadrao(area, itens);
+    }
+    return { area, texto: limpo, novo: !jaTem };
   }
 
   function gravarPadrao(area, itens) {
@@ -219,16 +268,48 @@
   }
 
   /* ---------- a tranca ----------
-     Sem lista, não trava: uma tarefa que nunca foi conferida ainda pode
-     ser fechada, senão o sistema pararia a operação no dia em que subiu.
-     Com lista, todo item obrigatório tem que estar marcado. */
-  function pendentes(chave) {
-    const c = conferencia(chave);
+     Isto aqui já foi frouxo: sem lista, não travava. A ideia era não
+     parar a operação no dia em que o sistema subiu. O efeito foi que
+     ninguém gerou lista nenhuma, e nada nunca travou — os erros que a
+     conferência existia para pegar continuaram passando.
+
+     Agora a lista nasce sozinha, do padrão da área, na primeira vez que
+     alguém tenta fechar a tarefa. Não existe entrega sem lista: existe
+     lista em branco, e ela tranca. */
+  function garantirLista(chave, tarefa) {
+    const jaTem = conferencia(chave);
+    if (jaTem) return jaTem;
+    if (!tarefa) return null;
+    const area = areaDe(tarefa);
+    const conf = {
+      itens: porRegras(area, []), area, geradoEm: agora(),
+      geradoPor: 'regras', versao: 1, automatica: true,
+    };
+    gravarConferencia(chave, conf);
+    return conf;
+  }
+
+  function pendentes(chave, tarefa) {
+    let c = conferencia(chave);
+    if (!c && tarefa) c = garantirLista(chave, tarefa);
     if (!c || !Array.isArray(c.itens) || !c.itens.length) return [];
     return c.itens.filter((i) => i.obrigatorio && !i.feito);
   }
 
   const liberado = (chave) => pendentes(chave).length === 0;
+
+  /* O que foi entregue sem passar por aqui. Uma tarefa fechada no ClickUp
+     chega na Central já como "feito", e a tranca daqui nunca a viu. Não
+     dá para desfazer isso, mas dá para não deixar passar em silêncio: a
+     daily mostra a lista todo dia, com nome. */
+  function semConferencia(tarefas) {
+    return (tarefas || []).filter((t) => {
+      if (t.status !== 'feito') return false;
+      const c = conferencia(escopoTarefa(t));
+      if (!c || !Array.isArray(c.itens) || !c.itens.length) return true;
+      return c.itens.some((i) => i.obrigatorio && !i.feito);
+    });
+  }
 
   /* ---------- escrever a lista ----------
      Primeiro as regras, que respondem na hora. A IA, quando existe,
@@ -236,10 +317,12 @@
      responder, o que já está na tela continua valendo. */
   function porRegras(area, extras) {
     const base = padraoDe(area).map((p) => ({
-      id: id('i'), texto: p.texto, obrigatorio: !!p.obrigatorio, feito: false,
+      id: id('i'), texto: p.texto, obrigatorio: !!p.obrigatorio,
+      prova: !!p.prova, revisao: !!p.revisao, feito: false,
     }));
-    for (const [texto, obrigatorio] of (extras || []))
-      base.push({ id: id('i'), texto, obrigatorio: !!obrigatorio, feito: false });
+    for (const [texto, obrigatorio, marca] of (extras || []))
+      base.push({ id: id('i'), texto, obrigatorio: !!obrigatorio,
+        prova: /prova/.test(marca || ''), revisao: /revisao/.test(marca || ''), feito: false });
     return base;
   }
 
@@ -399,12 +482,13 @@
           ${iaFora ? '' : `<button type="button" class="cf-bt" data-cf-gerar="${esc(chave)}" data-cf-ia="1">${c ? 'Refazer com IA' : 'Gerar com IA'}</button>`}
           <button type="button" class="cf-bt" data-cf-gerar="${esc(chave)}">${c ? 'Refazer pelo padrão' : 'Usar o padrão'}</button>
           ${contexto.area ? `<button type="button" class="cf-bt cf-bt-fraco" data-cf-area="${esc(contexto.area)}">Padrão de ${esc(contexto.area)}</button>` : ''}
+          ${contexto.area ? `<button type="button" class="cf-bt cf-bt-fraco" data-cf-erro="${esc(contexto.area)}" title="o que passou hoje vira item obrigatório de amanhã">Passou um erro</button>` : ''}
         </div>
       </div>`;
 
     if (!c) return `<div class="cf">${cabeca}
-      <p class="cf-vazio">Sem lista, esta entrega ainda pode ser fechada. Gere a lista e
-      a conclusão passa a depender dela.</p></div>`;
+      <p class="cf-vazio">A lista nasce sozinha, pelo padrão da área, na primeira vez que
+      alguém abrir ou tentar fechar esta entrega. Nada se entrega sem conferir.</p></div>`;
 
     const selo = ok
       ? '<span class="cf-selo cf-ok">Liberado para entrega</span>'
@@ -421,8 +505,11 @@
             <input type="checkbox" data-cf-item="${esc(chave)}|${esc(i.id)}" ${i.feito ? 'checked' : ''}>
             <span class="cf-texto">${esc(i.texto)}</span>
             ${i.obrigatorio ? '<span class="cf-tag">obrigatório</span>' : ''}
+            ${i.revisao ? '<span class="cf-tag cf-tag-revisao" title="quem fez a tarefa não pode marcar">outra pessoa</span>' : ''}
+            ${i.prova ? '<span class="cf-tag cf-tag-prova" title="pede link, print ou o que foi testado">com prova</span>' : ''}
             ${i.feito && i.por ? `<span class="cf-quem">${esc(i.por)}${i.em ? ' · ' + dBRiso(i.em) : ''}</span>` : ''}
             <button type="button" class="cf-x" data-cf-tirar="${esc(chave)}|${esc(i.id)}" title="Tirar este item">×</button>
+            ${i.feito && i.provaTexto ? `<span class="cf-prova">${esc(i.provaTexto)}</span>` : ''}
           </label>`).join('')}
       </div>
       <div class="cf-linha-add">
@@ -493,6 +580,10 @@
     if (!t) return;
 
     const chave = escopoTarefa(t);
+    /* abrir a ficha de uma tarefa aberta já faz a lista existir: assim a
+       pessoa vê o que vai ser cobrado antes de começar, e não na hora de
+       fechar */
+    if (t.status !== 'feito') garantirLista(chave, t);
     const assinatura = `${chave}|${JSON.stringify(barra(chave))}|${aberta(chave, barra(chave).faltam)}`;
     const atual = main.querySelector('[data-cf-secao]');
     if (atual && atual.dataset.cfSecao === assinatura) return;
@@ -516,6 +607,7 @@
     const sel = document.getElementById('detailStatus');
     if (!sel) return;
     const trancar = pendentes(chave).length > 0 && statusEscolhido(sel) !== 'feito';
+
     for (const o of sel.options) {
       if (statusDaOpcao(o) !== 'feito') continue;
       o.value = 'feito';
@@ -566,8 +658,9 @@
 
   /* a campanha herda o padrão dela, e não o de uma área */
   function porRegrasCampanha() {
-    return PADRAO_CAMPANHA.map(([texto, obrigatorio]) =>
-      ({ id: id('i'), texto, obrigatorio, feito: false }));
+    return PADRAO_CAMPANHA.map(([texto, obrigatorio, marca]) =>
+      ({ id: id('i'), texto, obrigatorio,
+         prova: /prova/.test(marca || ''), revisao: /revisao/.test(marca || ''), feito: false }));
   }
 
   function contagemDa(c) {
@@ -772,6 +865,18 @@
       return;
     }
 
+    /* --- o erro que passou --- */
+    const er = alvo.closest?.('[data-cf-erro]');
+    if (er) {
+      const area = er.dataset.cfErro;
+      const dito = window.prompt(
+        `O que passou sem alguém ver?\n\nEscreva como item de conferência, na forma de uma coisa a checar.\nEx.: "Link do produto abre na página do produto, não na home".\n\nIsso vira item obrigatório de ${area} para todas as próximas entregas.`, '');
+      const r = registrarErro(area, dito);
+      if (r) aviso(r.novo ? `Virou item obrigatório de ${area}. Vale da próxima entrega em diante.` : 'Esse item já estava no padrão da área.');
+      redesenhar();
+      return;
+    }
+
     /* --- padrão da área --- */
     const pa = alvo.closest?.('[data-cf-area]');
     if (pa) { abrirArea(pa.dataset.cfArea); return }
@@ -819,8 +924,36 @@
       if (!c) return;
       const i = c.itens.find((y) => y.id === item);
       if (!i) return;
+
+      if (cb.checked) {
+        /* segundo par de olhos: quem fez não confere o próprio trabalho */
+        if (i.revisao) {
+          const t = tarefaPorId(String(chave).split(':')[1]);
+          if (t && souResponsavel(t)) {
+            cb.checked = false;
+            aviso('Este item é de revisão: quem fez a tarefa não pode marcar. Peça a outra pessoa.');
+            return;
+          }
+          if (!meusNomes().length) {
+            cb.checked = false;
+            aviso('Este item é de revisão e precisa saber quem está marcando. Entre com a sua conta.');
+            return;
+          }
+        }
+        /* prova: o link, o print ou o número que mostra que foi feito */
+        if (i.prova && !i.provaTexto) {
+          const dito = window.prompt(`Prova de "${i.texto}"\n\nCole o link, o print ou escreva o que foi testado:`, '');
+          if (!dito || !dito.trim()) {
+            cb.checked = false;
+            aviso('Sem a prova, este item não marca.');
+            return;
+          }
+          i.provaTexto = dito.trim().slice(0, 300);
+        }
+      }
+
       i.feito = cb.checked;
-      if (cb.checked) { i.por = nome(); i.em = agora() } else { delete i.por; delete i.em }
+      if (cb.checked) { i.por = nome(); i.em = agora() } else { delete i.por; delete i.em; delete i.provaTexto }
       gravarConferencia(chave, c);
       redesenhar();
       return;
@@ -858,7 +991,7 @@
 
   function recusar(t) {
     const chave = escopoTarefa(t);
-    const falta = pendentes(chave);
+    const falta = pendentes(chave, t);
     aviso(`"${t.title}" não pode ser concluída: ${falta.length} item${falta.length > 1 ? 's' : ''} de conferência em aberto.`);
     /* abre a ficha na conferência, para a recusa vir com o caminho junto */
     if (!document.getElementById('taskDetailDrawer')?.classList.contains('open')) {
@@ -880,7 +1013,7 @@
     const bt = e.target.closest?.('[data-toggle-done]');
     if (bt) {
       const t = tarefaPorId(bt.dataset.toggleDone);
-      if (t && t.status !== 'feito' && pendentes(escopoTarefa(t)).length) {
+      if (t && t.status !== 'feito' && pendentes(escopoTarefa(t), t).length) {
         e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
         recusar(t);
       }
@@ -893,7 +1026,7 @@
     if (e.target.closest?.('#taskSaveBtn')) {
       const sel = document.getElementById('detailStatus');
       const t = tarefaDaFicha();
-      if (sel && statusEscolhido(sel) === 'feito' && t && t.status !== 'feito' && pendentes(escopoTarefa(t)).length) {
+      if (sel && statusEscolhido(sel) === 'feito' && t && t.status !== 'feito' && pendentes(escopoTarefa(t), t).length) {
         sel.value = t.status;
         recusar(t);
       }
@@ -906,7 +1039,7 @@
     let idArrastado = '';
     try { idArrastado = e.dataTransfer.getData('text/plain') } catch {}
     const t = tarefaPorId(idArrastado);
-    if (t && t.status !== 'feito' && pendentes(escopoTarefa(t)).length) {
+    if (t && t.status !== 'feito' && pendentes(escopoTarefa(t), t).length) {
       e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
       recusar(t);
     }
@@ -941,5 +1074,6 @@
     escopoTarefa, escopoCampanha, conferencia, gravarConferencia,
     pendentes, liberado, gerar, porRegras, porRegrasCampanha,
     estado, redesenhar, abrirArea, tarefasDa, campanhaDaTarefa,
+    garantirLista, semConferencia, registrarErro, meusNomes, souResponsavel,
   };
 })();

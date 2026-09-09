@@ -88,3 +88,8 @@
 .eq-meta-linha small.ok{color:var(--pn-ok)}.eq-meta-linha small.atencao{color:var(--pn-atencao)}.eq-meta-linha small.critico{color:var(--pn-critico)}
 
 html[data-theme="dark"] .painel-view .eq-nota textarea,html[data-theme="dark"] .painel-view .eq-form input,html[data-theme="dark"] .painel-view .eq-form select,html[data-theme="dark"] .painel-view .eq-cadastro select,html[data-theme="dark"] .painel-view .eq-cadastro input{background:var(--pn-surface);border-color:var(--pn-line);color:var(--pn-ink)}
+
+/* o que foi entregue sem passar pela conferência, na daily */
+.eq-sem-conferir{display:flex;align-items:baseline;gap:10px;justify-content:space-between}
+.eq-sem-conferir>span{font-size:10.5px;color:var(--pn-muted);white-space:nowrap}
+.eq-sem-conferir .eq-tarefa{flex:1 1 auto;min-width:0}

@@ -229,7 +229,10 @@ const g2 = gravacoes[1];
 conf('as metas de faturamento gravam as três e a ativa', g2 && g2.corpo.acao === 'meta_mensal' && g2.corpo.dados.meta1 === 500000 && g2.corpo.dados.meta_ativa === 2);
 await pag.screenshot({ path: 'teste/24-painel-setores.png', fullPage: true });
 
-await pag.locator('#painelCorpo [data-setor="influenciadores"]').click(); await espera('#painelCorpo .pn-tabela');
+await pag.locator('#painelCorpo [data-setor="influenciadores"]').click();
+/* esperar por uma tabela qualquer não serve: a tela anterior também tem
+   tabela, e a checagem corria antes do desenho novo */
+await pag.locator('#painelCorpo .pn-card', { hasText: 'Ranking' }).first().waitFor({ state: 'visible', timeout: 5000 });
 const inf = await texto('#painelCorpo');
 conf('o setor de influenciadores traz o ranking', inf.includes('Victoria') && inf.includes('R$ 20.766') && inf.includes('subindo'));
 conf('e os cupons da marca ficam fora do ranking', inf.includes('Outros cupons') && inf.includes('Botanika (marca)'));
