@@ -188,7 +188,16 @@
     const m = String(msg || '');
     if (/Invalid login credentials/i.test(m)) return 'E-mail ou senha não conferem.';
     if (/Email not confirmed/i.test(m))       return 'Esse e-mail ainda não foi confirmado. Procure a mensagem de confirmação na caixa de entrada.';
-    if (/rate limit|too many/i.test(m))       return 'Muitas tentativas seguidas. Espere um minuto e tente de novo.';
+    if (/rate limit|too many|after \d+ seconds/i.test(m)) return 'Muitas tentativas seguidas. Espere um minuto e tente de novo.';
+    if (/User already registered|already been registered/i.test(m))
+      return 'Esse e-mail já tem conta. Volte para "Já tenho conta" e entre.';
+    if (/Password should be at least/i.test(m)) return 'A senha é curta demais. Use pelo menos 8 caracteres.';
+    if (/[Pp]assword.*(pwned|compromised|leaked|data breach)/i.test(m))
+      return 'Essa senha aparece em vazamentos conhecidos e o Supabase não aceita. Escolha outra.';
+    if (/Database error saving new user/i.test(m))
+      return 'A conta não foi criada por um erro no banco. Tente de novo; se repetir, avise o Vitor.';
+    if (/[Ss]ignups? not allowed|[Ss]ignup is disabled/i.test(m))
+      return 'O cadastro está desligado no servidor. Avise o Vitor.';
     if (/Failed to fetch|NetworkError/i.test(m)) return 'Não consegui falar com o servidor. Verifique a conexão.';
     return m || 'Não consegui entrar.';
   }
@@ -232,6 +241,11 @@
       .ent-link{display:block;width:100%;margin-top:14px;background:none;border:0;padding:0;
         font:inherit;font-size:13px;color:#7e8389;text-align:center;cursor:pointer}
       .ent-link:hover{color:#151718;text-decoration:underline}
+      .ent-quem{margin-top:7px;font-size:12px;line-height:1.45}
+      .ent-quem:empty{margin-top:0}
+      .ent-quem.sim{color:#1a7f4b}
+      .ent-quem.nao{color:#b06a12}
+      .ent-dica{margin-top:6px;font-size:12px;color:#a4a8ac}
       .ent-msg{margin-top:13px;font-size:13px;min-height:0}
       .ent-msg:empty{margin-top:0}
       .ent-msg.erro{color:#c0392b}
@@ -243,9 +257,16 @@
     document.head.appendChild(s);
   }
 
-  function telaEntrar(sb) {
+  /* A tela tem dois lados. Entrar é o de todo dia; criar conta é o de uma
+     vez só, no primeiro acesso — e existe para o Vitor parar de abrir o
+     Supabase e cadastrar cada pessoa na mão.
+
+     Quem cria a conta não escolhe nome, papel, área nem marca: isso já
+     está na lista de convites e o gatilho do banco monta o perfil com o
+     que está lá. A pessoa escolhe só a senha dela. */
+  function telaEntrar(sb, modo) {
     if (!document.body) {
-      addEventListener('DOMContentLoaded', () => telaEntrar(sb), { once: true });
+      addEventListener('DOMContentLoaded', () => telaEntrar(sb, modo), { once: true });
       return;
     }
     estilos();
@@ -253,46 +274,68 @@
        de apagar o corpo, senão um erro de sessão levaria a página junto. */
     document.querySelectorAll('.ent-fundo').forEach((e) => e.remove());
 
+    const criando = modo === 'cadastrar';
+
     const fundo = document.createElement('div');
     fundo.className = 'ent-fundo';
     fundo.innerHTML = `
       <div class="ent-cx">
         <div class="ent-marca">Central</div>
-        <div class="ent-sub">A operação da Botanika e da VermeFree.</div>
+        <div class="ent-sub">${criando
+          ? 'Crie a sua conta para entrar na operação.'
+          : 'A operação da Botanika e da VermeFree.'}</div>
         <form class="ent-cartao" novalidate>
           <div class="ent-campo">
             <label class="ent-rot" for="ent-email">E-mail</label>
             <input id="ent-email" name="email" type="email" required
                    autocomplete="username" autocapitalize="off" spellcheck="false">
+            <div class="ent-quem" data-quem></div>
           </div>
           <div class="ent-campo">
-            <label class="ent-rot" for="ent-senha">Senha</label>
+            <label class="ent-rot" for="ent-senha">${criando ? 'Crie uma senha' : 'Senha'}</label>
             <div class="ent-cai">
               <input id="ent-senha" name="senha" type="password" required
-                     autocomplete="current-password">
+                     autocomplete="${criando ? 'new-password' : 'current-password'}">
               <button type="button" class="ent-olho" data-olho>mostrar</button>
             </div>
+            ${criando ? '<div class="ent-dica">Pelo menos 8 caracteres.</div>' : ''}
           </div>
-          <button type="submit" class="ent-bt">Entrar</button>
-          <button type="button" class="ent-link" data-esqueci>Esqueci minha senha</button>
+          ${criando ? `
+          <div class="ent-campo">
+            <label class="ent-rot" for="ent-senha2">Repita a senha</label>
+            <input id="ent-senha2" name="senha2" type="password" required autocomplete="new-password">
+          </div>` : ''}
+          <button type="submit" class="ent-bt">${criando ? 'Criar minha conta' : 'Entrar'}</button>
+          ${criando
+            ? '<button type="button" class="ent-link" data-modo="entrar">Já tenho conta — entrar</button>'
+            : '<button type="button" class="ent-link" data-esqueci>Esqueci minha senha</button>' +
+              '<button type="button" class="ent-link" data-modo="cadastrar">Primeiro acesso — criar minha conta</button>'}
           <div class="ent-msg" role="status" aria-live="polite"></div>
         </form>
-        <div class="ent-pe">Acesso restrito à equipe.</div>
+        <div class="ent-pe">${criando
+          ? 'Só quem está na lista da equipe consegue criar conta.'
+          : 'Acesso restrito à equipe.'}</div>
       </div>`;
     document.body.appendChild(fundo);
 
-    const f     = fundo.querySelector('form');
-    const email = fundo.querySelector('#ent-email');
-    const senha = fundo.querySelector('#ent-senha');
-    const bt    = fundo.querySelector('.ent-bt');
-    const msg   = fundo.querySelector('.ent-msg');
-    const olho  = fundo.querySelector('[data-olho]');
+    const f      = fundo.querySelector('form');
+    const email  = fundo.querySelector('#ent-email');
+    const senha  = fundo.querySelector('#ent-senha');
+    const senha2 = fundo.querySelector('#ent-senha2');
+    const bt     = fundo.querySelector('.ent-bt');
+    const msg    = fundo.querySelector('.ent-msg');
+    const olho   = fundo.querySelector('[data-olho]');
+    const quem   = fundo.querySelector('[data-quem]');
 
     const diz = (texto, tipo) => { msg.textContent = texto; msg.className = 'ent-msg ' + (tipo || ''); };
 
+    for (const b of fundo.querySelectorAll('[data-modo]')) {
+      b.onclick = () => telaEntrar(sb, b.dataset.modo);
+    }
+
     /* Quem já entrou uma vez não precisa digitar o e-mail de novo. */
     const lembrado = localStorage.getItem(ULTIMO_EMAIL);
-    if (lembrado) { email.value = lembrado; senha.focus(); } else { email.focus(); }
+    if (lembrado && !criando) { email.value = lembrado; senha.focus(); } else { email.focus(); }
 
     olho.onclick = () => {
       const escondida = senha.type === 'password';
@@ -301,8 +344,98 @@
       senha.focus();
     };
 
-    f.onsubmit = async (e) => {
-      e.preventDefault();
+    /* ---------- de quem é este e-mail ----------
+       A lista de convites tem RLS e quem está criando conta ainda não
+       entrou; quem responde é a função `convite_de`, que devolve só o
+       nome. Serve para dois erros que aconteceriam sempre: digitar um
+       endereço parecido mas diferente do que está na lista, e tentar
+       criar conta de novo quando já existe uma. */
+    let convite = null;
+    let conferido = '';
+    async function conferirEmail() {
+      const e = email.value.trim();
+      convite = null;
+      conferido = e;
+      quem.textContent = '';
+      quem.className = 'ent-quem';
+      if (!criando || !e) return;
+      try {
+        const { data, error } = await sb.rpc('convite_de', { p_email: e });
+        if (error || !data) { conferido = ''; return }
+        convite = data;
+        if (data.erro) return;
+        if (!data.convidado) {
+          quem.textContent = 'Esse e-mail não está na lista da equipe. Confira se digitou certo — ou peça ao Vitor para incluir.';
+          quem.className = 'ent-quem nao';
+        } else if (data.ja_tem_conta) {
+          quem.textContent = `${data.nome} já tem conta com esse e-mail. Entre em vez de criar de novo.`;
+          quem.className = 'ent-quem nao';
+        } else {
+          quem.textContent = `Conta de ${data.nome}.`;
+          quem.className = 'ent-quem sim';
+        }
+      } catch { conferido = '' /* sem resposta, segue: o banco ainda barra na hora */ }
+    }
+    if (criando) {
+      email.addEventListener('blur', conferirEmail);
+      email.addEventListener('change', conferirEmail);
+    }
+
+    /* ---------- criar conta ---------- */
+    async function cadastrar() {
+      const e = email.value.trim();
+      if (!e || !senha.value) { diz('Preencha o e-mail e a senha.', 'erro'); (!e ? email : senha).focus(); return }
+      if (senha.value.length < 8) { diz('A senha precisa de pelo menos 8 caracteres.', 'erro'); senha.focus(); return }
+      if (senha.value !== senha2.value) { diz('As duas senhas estão diferentes.', 'erro'); senha2.select(); return }
+
+      bt.disabled = true;
+      diz('Criando…', 'indo');
+      if (conferido !== e) await conferirEmail();
+      if (convite && convite.convidado === false) {
+        bt.disabled = false;
+        diz('Esse e-mail não está na lista da equipe, então a conta não daria acesso a nada. Confira o endereço ou peça ao Vitor para incluir.', 'erro');
+        email.setAttribute('aria-invalid', 'true');
+        email.focus();
+        return;
+      }
+
+      const { data, error } = await sb.auth.signUp({
+        email: e,
+        password: senha.value,
+        options: { emailRedirectTo: location.origin },
+      });
+      if (error) { bt.disabled = false; diz(recado(error.message), 'erro'); return }
+
+      gravarLocal(ULTIMO_EMAIL, e);
+
+      /* Três desfechos, e o Supabase os separa assim: sessão pronta quer
+         dizer que a confirmação por e-mail está desligada e a pessoa já
+         está dentro; sem sessão e sem identidade nenhuma é o jeito do
+         Supabase dizer "esse e-mail já existe" sem contar isso a um
+         estranho — aqui a gente conta, porque quem chegou nesta tela já
+         sabia o endereço; o resto é o link de confirmação a caminho. */
+      if (data && data.session) {
+        sessionStorage.removeItem(MARCA_RELOAD);
+        location.reload();
+        return;
+      }
+      const identidades = (data && data.user && data.user.identities) || [];
+      if (!identidades.length) {
+        bt.disabled = false;
+        diz('Esse e-mail já tem conta. Volte para "Já tenho conta" e entre — se não lembra a senha, use "Esqueci minha senha".', 'erro');
+        return;
+      }
+      f.innerHTML =
+        '<div style="font-weight:600;margin-bottom:6px">Falta um clique.</div>' +
+        '<div style="color:#7e8389">Mandei um e-mail de confirmação para <strong>' + e +
+        '</strong>. Abra e clique no link para terminar o cadastro — depois é só entrar por aqui. ' +
+        'Se não aparecer em alguns minutos, olhe no spam.</div>' +
+        '<button type="button" class="ent-bt" style="margin-top:18px">Ir para a tela de entrar</button>';
+      f.querySelector('button').onclick = () => telaEntrar(sb, 'entrar');
+    }
+
+    /* ---------- entrar ---------- */
+    async function entrar() {
       email.setAttribute('aria-invalid', 'false');
       senha.setAttribute('aria-invalid', 'false');
       if (!email.value.trim() || !senha.value) {
@@ -328,9 +461,12 @@
          entra tem que ver o estado do banco, não o que sobrou no navegador. */
       sessionStorage.removeItem(MARCA_RELOAD);
       location.reload();
-    };
+    }
 
-    fundo.querySelector('[data-esqueci]').onclick = async () => {
+    f.onsubmit = (ev) => { ev.preventDefault(); (criando ? cadastrar : entrar)() };
+
+    const esqueci = fundo.querySelector('[data-esqueci]');
+    if (esqueci) esqueci.onclick = async () => {
       const e = email.value.trim();
       if (!e) { diz('Escreva o e-mail primeiro — o link vai para ele.', 'erro'); email.focus(); return; }
       diz('Enviando…', 'indo');
@@ -339,6 +475,36 @@
                 : 'Se esse e-mail estiver cadastrado, o link para trocar a senha já está a caminho.',
           error ? 'erro' : 'ok');
     };
+  }
+
+  /* A conta existe, a pessoa entrou — e não está liberada. Acontece com
+     quem criou conta com um e-mail fora da lista: o gatilho monta o perfil
+     desativado e o RLS não deixa ler nada. Sem esta tela, a operação
+     abriria vazia, sem tarefa nem campanha nenhuma, e a pessoa acharia que
+     o sistema quebrou. */
+  function semLiberacao(sb, sessao) {
+    if (!document.body) {
+      addEventListener('DOMContentLoaded', () => semLiberacao(sb, sessao), { once: true });
+      return;
+    }
+    estilos();
+    document.querySelectorAll('.ent-fundo').forEach((e) => e.remove());
+    const fundo = document.createElement('div');
+    fundo.className = 'ent-fundo';
+    fundo.innerHTML =
+      '<div class="ent-cx"><div class="ent-marca">Central</div>' +
+      '<div class="ent-cartao"><div style="font-weight:600;margin-bottom:6px">Conta criada, acesso ainda não.</div>' +
+      '<div style="color:#7e8389">O e-mail <strong>' + (sessao.user.email || '') + '</strong> não está na lista da ' +
+      'equipe, então a conta entrou sem permissão de ver a operação. Se você usa outro endereço aqui dentro, ' +
+      'saia e crie a conta com ele; se for esse mesmo, peça ao Vitor para liberar.</div>' +
+      '<button type="button" class="ent-bt" style="margin-top:18px">Sair</button>' +
+      '</div></div>';
+    fundo.querySelector('button').onclick = async () => {
+      await sb.auth.signOut();
+      sessionStorage.removeItem(MARCA_RELOAD);
+      location.reload();
+    };
+    document.body.appendChild(fundo);
   }
 
   /* Fechar a porta quando não dá para autenticar: melhor a pessoa ver que
@@ -505,7 +671,12 @@
        (equipe, acessos). A sessão manda em tudo: o RLS decide o resto. */
     window.CentralDB = sb;
     window.CentralSessaoAtual = session;
-    marcarSessao(sb, session);
+    await marcarSessao(sb, session);
+
+    /* Agora que qualquer um pode criar conta, o "entrou" e o "pode ver"
+       deixaram de ser a mesma coisa. Quem não está liberado para antes de
+       hidratar: sem isso ele veria a Central inteira desenhada e vazia. */
+    if (window.CentralEu && window.CentralEu.ativo === false) return semLiberacao(sb, session);
 
     /* Buscar ANTES de espelhar, e não depois.
 

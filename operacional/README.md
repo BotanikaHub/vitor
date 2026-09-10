@@ -487,14 +487,42 @@ de cada um (`admin`, `gestor`, `membro`, `externo`). O que faltava era a
 lista de quem *pode* entrar, e uma tela para administrar isso. Agora existe
 `equipe_convites`: o e-mail é o convite.
 
-    cadastrar em Acessos ─► criar a conta no Supabase ─► a pessoa entra
-      (e-mail, nome,          (Authentication → Users,     (o gatilho lê a lista
-       papel, área, marcas)     com senha provisória)       e monta o perfil pronto)
+    cadastrar em Acessos ─► a pessoa cria a conta ─► a pessoa entra
+      (e-mail, nome,          (na própria tela de       (o gatilho lê a lista
+       papel, área, marcas)     entrar, com a senha       e monta o perfil pronto)
+                                que ela escolher)
 
 O gatilho `app.ao_criar_usuario` faz a terceira parte: quem está na lista
 entra **liberado**, com o papel, a área e as marcas cadastradas; quem não
-está entra bloqueado e não enxerga nada. Criar a conta é o único passo que
-não dá para fazer pela Central — só o painel do Supabase cria senha.
+está entra bloqueado e não enxerga nada.
+
+### O primeiro acesso
+
+O passo do meio já foi abrir o Supabase e cadastrar cada pessoa na mão, com
+senha provisória. Não é mais: a tela de entrar tem um segundo lado,
+**"Primeiro acesso — criar minha conta"**, e cada um cria a sua com o próprio
+e-mail e a senha que quiser.
+
+Quem cria a conta não escolhe nome, papel, área nem marca — isso é do
+convite, e o gatilho é quem monta o perfil. A pessoa escolhe só a senha.
+
+Antes de criar qualquer coisa, a tela confere o e-mail digitado contra a
+lista e mostra de quem ele é: **"Conta de Ítalo Neves."** O erro que
+aconteceria sempre é digitar um endereço parecido com o da lista mas
+diferente — `italoneves@` no lugar de `ass.italoneves@` —, e aí a conta
+nasceria sem acesso a nada, sem dizer por quê. Agora a tela avisa na hora.
+
+A lista tem RLS e quem está criando conta ainda não entrou, então quem
+responde de fora é `public.convite_de(email)` (`banco/cadastro.sql`), que
+devolve só três coisas: se o e-mail é da equipe, o nome de quem é, e se já
+existe conta. Papel, área e marcas não saem. É a única função da Central que
+o `anon` pode chamar, e ela é a razão de o linter do Supabase apontar um
+`SECURITY DEFINER` executável sem login.
+
+Se mesmo assim alguém entrar com uma conta não liberada — outro e-mail, uma
+aba aberta antes —, a Central para antes de desenhar e explica: *"Conta
+criada, acesso ainda não."* Sem isso, a operação abriria vazia e a pessoa
+acharia que o sistema quebrou.
 
 Quem manda no que pode ser salvo é o RLS, não a tela: `admin` edita todo
 mundo, o resto só lê, e ninguém muda o próprio papel. Sem ser admin, a tela
