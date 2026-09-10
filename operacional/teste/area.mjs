@@ -20,6 +20,7 @@ const ANO = +hoje.slice(0, 4), MES = +hoje.slice(5, 7), DIA = +hoje.slice(8, 10)
 const AREAS = [
   { id: 'a-traf', nome: 'Tráfego', slug: 'trafego' },
   { id: 'a-soc', nome: 'Social Media', slug: 'social-media' },
+  { id: 'a-cre', nome: 'Creators', slug: 'creators' },
   { id: 'a-gest', nome: 'Gestão', slug: 'gestao' },
 ];
 const PERFIS = [
@@ -38,6 +39,25 @@ const campanhas = [
   { id:'c1', name:'Dia D', brand:'Botanika', type:'Dia D', status:'Em execução', owner:'', start:dia(-2), end:dia(2),
     goal:0, budget:0, progress:0, color:'#121415', objective:'', offer:'', benefits:[], channels:[], products:[], schedule:[], tap:[] },
 ];
+const SETOR_INF = {
+  setor: 'influenciadores', de: dia(-30), ate: hoje, hoje,
+  kpis: { faturamento: 24731.69, vendas: 68, ticket: 363.7, ativos: 2 },
+  aquisicao: { novos: 14000, recorrentes: 10731.69, desconto: 1269.84 },
+  serie: [{ dia: dia(-2), faturamento: 5000 }, { dia: dia(-1), faturamento: 8000 }],
+  ranking: [
+    { nome: 'Victoria', codigos: 'VICTORIA', vendas: 54, faturamento: 20766.32, ticket: 384.56, pct_novos: 50, desconto: 1092.96, tendencia: 'up' },
+    { nome: 'Julia Colares', codigos: 'JULIACOLARES', vendas: 14, faturamento: 3965.37, ticket: 283.24, pct_novos: 71.43, desconto: 176.88, tendencia: 'down' },
+  ],
+  outros: [], metas: {}, realizado_periodo: {}, realizado_mes: {},
+};
+const CUPONS = { cadastro: [
+  { codigo: 'VICTORIA', nome: 'Victoria', tipo: 'influencer', percentual: 5 },
+  { codigo: 'JULIACOLARES', nome: 'Julia Colares', tipo: 'influencer', percentual: 4 },
+  { codigo: 'ANNAM', nome: 'Anna Machado', tipo: 'influencer', percentual: 10 },
+  { codigo: 'BOTANIKA5', nome: 'Boas-vindas', tipo: 'promo', percentual: 5 },
+], agrupados: [] };
+const gravacoes = [];
+
 const SETORES = { ano: ANO, mes: MES, dias: 30, dia_hoje: DIA, hoje, inicio: `${hoje.slice(0,7)}-01`, fim: `${hoje.slice(0,7)}-30`,
   metas: { 'trafego||investimento': { valor: 30000, unidade: 'R$' }, 'trafego||roas_alvo': { valor: 3, unidade: 'x' } },
   realizados: { 'trafego||investimento': 12000, 'trafego||roas_alvo': 2.4 },
@@ -66,8 +86,17 @@ async function abrir(perfil) {
       }) }) };
   }, [tarefas, campanhas, AREAS, PERFIS, perfil]);
   await pag.route('**/supabase.js', (r) => r.fulfill({ status:200, body:'', contentType:'application/javascript' }));
-  await pag.route('**/api/painel**', (rota) => rota.fulfill({ status:200, contentType:'application/json',
-    body: JSON.stringify({ marca:'Botanika', tela:'setores', dados: SETORES, em: new Date().toISOString() }) }));
+  await pag.route('**/api/painel**', async (rota) => {
+    const req = rota.request();
+    if (req.method() === 'POST') {
+      gravacoes.push(JSON.parse(req.postData() || '{}'));
+      return rota.fulfill({ status:200, contentType:'application/json', body: JSON.stringify({ ok: true }) });
+    }
+    const q = Object.fromEntries(new URL(req.url()).searchParams);
+    const dados = q.tela === 'setor' ? SETOR_INF : q.tela === 'cupons' ? CUPONS : SETORES;
+    return rota.fulfill({ status:200, contentType:'application/json',
+      body: JSON.stringify({ marca:'Botanika', tela:q.tela, dados, em: new Date().toISOString() }) });
+  });
   await pag.goto(`http://127.0.0.1:${srv.address().port}/`, { waitUntil:'networkidle' });
   await pag.waitForTimeout(1500);
   await pag.evaluate((e) => { window.CentralEu = e; window.Acessos?.carregar?.(true) }, perfil);
@@ -132,6 +161,52 @@ conf('e aparece o atalho para voltar à sua', await pPe.locator('[data-ar-minha]
 await pPe.locator('[data-ar-minha]').click(); await pPe.waitForTimeout(900);
 conf('que devolve a área de quem está logado',
   await pPe.locator('[data-ar-area]').inputValue() === 'a-traf');
+/* ---------- a área de creators ---------- */
+await pPe.locator('[data-ar-area]').selectOption('a-cre');
+await pPe.waitForTimeout(1200);
+txt = (await pPe.locator('#painelCorpo').innerText()).replace(/\s+/g, ' ');
+conf('a área de creators traz o que só existe nela',
+  /Quem vendeu/i.test(txt) && /Victoria/.test(txt) && /Julia Colares/.test(txt));
+conf('com o desconto dado por creator, que é a conta do fechamento',
+  /Desconto dado/i.test(txt) && /R\$ 1\.093/.test(txt));
+conf('e a tendência dos últimos sete dias', /subindo/i.test(txt) && /caindo/i.test(txt));
+conf('cadastrado que não vendeu aparece separado, para ser cobrado',
+  /não venderam/i.test(txt) && /Anna Machado/.test(txt));
+conf('e cupom que não é de creator fica de fora dessa conta', !/Boas-vindas/.test(txt));
+conf('mostra de onde veio a venda: cliente novo contra recorrente',
+  /De onde veio a venda/i.test(txt) && /J[áa] eram clientes/i.test(txt));
+conf('e o faturamento por dia', /Faturamento por dia/i.test(txt));
+
+/* os cupons se editam ali mesmo */
+conf('os cupons dos creators vêm editáveis',
+  await pPe.locator('[data-cr-cupom]').count() === 3 && await pPe.locator('[data-cr-novo]').count() === 1);
+const linha = pPe.locator('[data-cr-cupom="VICTORIA"]');
+await linha.locator('[name=percentual]').fill('7');
+await linha.locator('button[type=submit]').click();
+await pPe.waitForTimeout(700);
+const g = gravacoes[gravacoes.length - 1];
+conf('salvar manda o cupom para o painel da marca',
+  g && g.acao === 'cupom' && g.dados.codigo === 'VICTORIA' && g.dados.percentual === 7 && g.dados.tipo === 'influencer');
+
+const novo = pPe.locator('[data-cr-novo]');
+await novo.locator('[name=codigo]').fill('nova');
+await novo.locator('[name=nome]').fill('Nova Creator');
+await novo.locator('[name=percentual]').fill('12');
+await novo.locator('button[type=submit]').click();
+await pPe.waitForTimeout(700);
+const g2 = gravacoes[gravacoes.length - 1];
+conf('e acrescentar um novo sobe com o código em maiúsculas',
+  g2 && g2.acao === 'cupom' && g2.dados.codigo === 'NOVA' && g2.dados.nome === 'Nova Creator');
+
+pPe.on('dialog', (d) => d.accept());
+await pPe.locator('[data-cr-tirar="ANNAM"]').click();
+await pPe.waitForTimeout(700);
+const g3 = gravacoes[gravacoes.length - 1];
+conf('tirar do acompanhamento pede confirmação e manda o código',
+  g3 && g3.acao === 'cupom_excluir' && g3.dados.codigo === 'ANNAM');
+
+conf('e a área ganhou filtro de período, que a de antes não tinha',
+  await pPe.locator('#painelView [data-preset]').count() === 6);
 await pPe.screenshot({ path: 'teste/31-area.png', fullPage: true });
 await pPe.close();
 

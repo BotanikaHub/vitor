@@ -102,6 +102,132 @@
     return { tipo: 'dia', valor: resta / faltam, resta, faltam };
   }
 
+
+  /* ====================================================================
+     O que só existe numa área
+
+     A página de área é a mesma para todas — métricas, campanhas, projetos,
+     tarefas. Mas cada área tem um trabalho que não cabe nesse molde: quem
+     cuida de influenciadores precisa do ranking de quem vendeu, de quanto
+     tem de comissão a pagar, e de mexer nos cupons sem pedir para
+     ninguém. É isso que entra aqui, por slug de área.
+     ==================================================================== */
+  const EXTRAS = {
+    creators: {
+      /* o que buscar além do de sempre */
+      pedir: async (ctx) => {
+        const [setor, cup] = await Promise.all([
+          ctx.pedir('setor', { setor: 'influenciadores', de: ctx.periodo.de, ate: ctx.periodo.ate }),
+          ctx.pedir('cupons', { de: ctx.periodo.de, ate: ctx.periodo.ate }).catch(() => null),
+        ]);
+        return { ...(setor || {}), cadastro: (cup && cup.cadastro) || [] };
+      },
+      render: creators,
+    },
+  };
+
+  const moedaBR = (v) => v == null || !isFinite(v) ? '—'
+    : `R$ ${(+v).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+
+  function creators(ctx, x) {
+    const { ui, fmt, periodo } = ctx;
+    if (!x) return ui.cartao('Influenciadores', 'sem números', ui.vazio('Não consegui os números desta área agora.'));
+    if (x.erro) return ui.cartao('Influenciadores', 'sem números', ui.vazio(x.erro));
+
+    const k = x.kpis || {}, aq = x.aquisicao || {}, ranking = x.ranking || [];
+    const cadastro = (x.cadastro || []).filter((c) => (c.tipo || '') === 'influencer');
+    const venderam = new Set(ranking.map((r) => String(r.nome || '').trim()));
+    const parados = cadastro.filter((c) => !venderam.has(String(c.nome || '').trim()));
+    const janela = `${fmt.dBR(periodo.de)} a ${fmt.dBR(periodo.ate)}`;
+
+    /* Comissão: quando o cupom é percentual, o desconto que o cliente teve é
+       o que a marca deixou de ganhar — e é a conta que a gestora usa para
+       fechar com cada creator. Vem pronta do banco por influencer. */
+    const comissao = ranking.reduce((s, r) => s + (+r.desconto || 0), 0);
+
+    const tiles = `<div class="pn-tiles">
+      ${ui.tile({ rotulo: 'Faturamento por cupom', valor: fmt.moeda(k.faturamento, 0), nota: janela })}
+      ${ui.tile({ rotulo: 'Vendas', valor: fmt.num(k.vendas), nota: `ticket ${fmt.moeda(k.ticket, 0)}` })}
+      ${ui.tile({ rotulo: 'Creators que venderam', valor: fmt.num(k.ativos),
+        nota: `${cadastro.length} cadastrados`, tom: parados.length ? 'atencao' : 'ok' })}
+      ${ui.tile({ rotulo: 'Desconto dado', valor: fmt.moeda(comissao, 0),
+        nota: k.faturamento ? `${fmt.pct(comissao * 100 / +k.faturamento, 1)} do faturamento` : '' })}
+    </div>`;
+
+    const seta = (t) => t === 'up' ? '<span class="pn-chip ok">subindo</span>'
+      : t === 'down' ? '<span class="pn-chip critico">caindo</span>' : '<span class="pn-chip neutro">estável</span>';
+
+    const tabelaRanking = ui.cartao('Quem vendeu', `${ranking.length} creator${ranking.length === 1 ? '' : 's'} com venda em ${janela}`,
+      ranking.length ? ui.tabela([
+        { t: 'Creator', f: (r) => `<b>${esc(r.nome)}</b><small class="pn-sub">${esc(r.codigos || '')}</small>` },
+        { t: 'Faturamento', num: true, f: (r) => fmt.moeda(r.faturamento, 0) },
+        { t: 'Vendas', num: true, f: (r) => fmt.num(r.vendas) },
+        { t: 'Ticket', num: true, f: (r) => fmt.moeda(r.ticket, 0) },
+        { t: 'Clientes novos', num: true, f: (r) => fmt.pct(r.pct_novos, 0) },
+        { t: 'Desconto dado', num: true, f: (r) => fmt.moeda(r.desconto, 0) },
+        { t: 'Últimos 7 dias', num: true, f: (r) => seta(r.tendencia) },
+      ], ranking) : ui.vazio('Nenhum cupom de creator vendeu neste período.'));
+
+    /* O número que a gestora cobra: quem tem cupom no ar e não vendeu nada. */
+    const quietos = ui.cartao('Cadastrados que não venderam', `${parados.length} sem uma venda em ${janela}`,
+      parados.length
+        ? `<div class="cr-parados">${parados.map((c) => `<span class="cr-parado"><b>${esc(c.nome || c.codigo)}</b><small>${esc(c.codigo)}</small></span>`).join('')}</div>`
+        : ui.vazio('Todo creator cadastrado vendeu neste período.'));
+
+    const aquisicao = ui.cartao('De onde veio a venda', 'cliente novo contra quem já comprava',
+      `<div class="cr-aq">
+        <div class="cr-aq-linha"><span>Clientes novos</span><b>${moedaBR(aq.novos)}</b></div>
+        <div class="cr-aq-linha"><span>Já eram clientes</span><b>${moedaBR(aq.recorrentes)}</b></div>
+        <div class="cr-aq-barra">
+          <i class="novo" style="width:${pctDe(aq.novos, aq.novos, aq.recorrentes)}%"></i>
+          <i class="rec" style="width:${pctDe(aq.recorrentes, aq.novos, aq.recorrentes)}%"></i>
+        </div>
+        <small class="pn-sub">É o número que diz se o canal está trazendo gente nova ou vendendo de novo para quem já vinha.</small>
+      </div>`);
+
+    const serie = (x.serie || []).map((p) => ({ x: p.dia, y: +p.faturamento || 0 }));
+    const porDia = ui.cartao('Faturamento por dia', 'pedidos com cupom de creator',
+      serie.length ? ui.colunas(serie) : ui.vazio('Nenhuma venda por cupom no período.'));
+
+    return tiles +
+      `<div class="pn-grid-2">${tabelaRanking}${quietos}</div>` +
+      `<div class="pn-grid-2">${aquisicao}${porDia}</div>` +
+      cupons(ctx, cadastro);
+  }
+
+  const pctDe = (v, a, b) => {
+    const t = (+a || 0) + (+b || 0);
+    return t ? Math.round((+v || 0) * 100 / t) : 0;
+  };
+
+  /* ---------- os cupons, editáveis aqui mesmo ----------
+     O banco já aceitava gravar cupom desde o começo (ação `cupom` em
+     central_gravar), mas só a tela de Cupons mostrava a lista, sem deixar
+     mexer. Quem cuida de creators mexe nisso toda semana — e ia pedir para
+     alguém abrir o Supabase. */
+  function cupons(ctx, cadastro) {
+    const { ui } = ctx;
+    const linhas = cadastro.length ? cadastro.map((c) => `
+      <form class="cr-cupom" data-cr-cupom="${esc(c.codigo)}">
+        <input name="codigo" value="${esc(c.codigo)}" readonly aria-label="Código">
+        <input name="nome" value="${esc(c.nome || '')}" placeholder="Nome do creator" aria-label="Nome">
+        <label class="cr-pct"><input name="percentual" type="number" step="any" min="0" max="99"
+          value="${c.percentual == null ? '' : c.percentual}" aria-label="Desconto do cupom"><span>%</span></label>
+        <button type="submit" class="cu-btn">Salvar</button>
+        <button type="button" class="cr-x" data-cr-tirar="${esc(c.codigo)}" title="Tirar do acompanhamento">×</button>
+      </form>`).join('') : ui.vazio('Nenhum cupom de creator cadastrado ainda.');
+
+    return ui.cartao('Cupons dos creators', `${cadastro.length} acompanhados · dá para editar aqui`,
+      `<div class="cr-cupons">${linhas}</div>
+       <form class="cr-novo" data-cr-novo>
+         <input name="codigo" placeholder="CÓDIGO" required aria-label="Código do cupom">
+         <input name="nome" placeholder="Nome do creator" required aria-label="Nome do creator">
+         <label class="cr-pct"><input name="percentual" type="number" step="any" min="0" max="99" placeholder="10" aria-label="Desconto"><span>%</span></label>
+         <button type="submit" class="cu-btn primary">Acrescentar</button>
+       </form>
+       <p class="pn-nota">O desconto é o que o cliente ganha com o cupom — é dele que sai a conta do quanto a marca deixou de ganhar com cada creator.</p>`);
+  }
+
   /* ====================================================================
      A tela
      ==================================================================== */
@@ -138,6 +264,7 @@
         ${manda && minha && minha.id !== escolhida.id ? `<button type="button" class="cu-btn" data-ar-minha="${esc(minha.id)}">Ver a minha</button>` : ''}
       </div>` +
       `<p class="pn-nota">Tudo nesta tela é da área ${esc(escolhida.nome)}: as tarefas de quem é dela e as do tipo de entrega dela, as campanhas onde essas tarefas estão, e as métricas dos setores que ela responde.</p>` +
+      (EXTRAS[escolhida.slug] ? EXTRAS[escolhida.slug].render(ctx, ctx.extra) : '') +
       kpis(ctx, escolhida, mapa, hoje) +
       campanhasDaArea(ctx, escolhida, ts, hoje) +
       projetosDaArea(ctx, ts, hoje) +
@@ -302,22 +429,25 @@
     const st = P.estado;
 
     P.registrar({
-      id: 'area', nome: 'Área', semPeriodo: true,
+      id: 'area', nome: 'Área',
       render: async (ctx) => {
-        const mapa = (() => {
-          const eu = window.CentralEu;
-          const todas = areasDoBanco();
-          const a = todas.find((x) => x.id === st.areaId) ||
-                    (eu && eu.area_id ? todas.find((x) => x.id === eu.area_id) : null) || todas[0];
-          return a ? doMapa(a.slug) : { setores: [] };
-        })();
-        let dados = null;
-        if (mapa.setores.length) {
-          const h = hojeSP();
-          try { dados = await ctx.pedir('setores', { ano: +h.slice(0, 4), mes: +h.slice(5, 7), de: h, ate: h }) }
-          catch (e) { dados = { erro: `Não consegui os números da ${ctx.marca}: ${(e && e.message) || e}` } }
-        }
-        return render({ ...ctx, dados });
+        const eu = window.CentralEu;
+        const todas = areasDoBanco();
+        const area = todas.find((x) => x.id === st.areaId) ||
+                     (eu && eu.area_id ? todas.find((x) => x.id === eu.area_id) : null) || todas[0];
+        const mapa = area ? doMapa(area.slug) : { setores: [] };
+
+        const h = hojeSP();
+        const pedirDados = mapa.setores.length
+          ? ctx.pedir('setores', { ano: +h.slice(0, 4), mes: +h.slice(5, 7), de: ctx.periodo.de, ate: ctx.periodo.ate })
+              .catch((e) => ({ erro: `Não consegui os números da ${ctx.marca}: ${(e && e.message) || e}` }))
+          : Promise.resolve(null);
+        const extraDa = area && EXTRAS[area.slug]
+          ? EXTRAS[area.slug].pedir(ctx).catch((e) => ({ erro: `Não consegui os números desta área: ${(e && e.message) || e}` }))
+          : Promise.resolve(null);
+
+        const [dados, extra] = await Promise.all([pedirDados, extraDa]);
+        return render({ ...ctx, dados, extra });
       },
     });
 
@@ -329,6 +459,38 @@
       if (!sel) return;
       st.areaId = sel.value;
       P.carregar(false);
+    });
+
+    view.addEventListener('submit', async (e) => {
+      const f = e.target.closest?.('[data-cr-cupom],[data-cr-novo]');
+      if (!f) return;
+      e.preventDefault();
+      const bt = f.querySelector('[type="submit"]');
+      const antes = bt ? bt.textContent : '';
+      if (bt) { bt.disabled = true; bt.textContent = 'Salvando…' }
+      try {
+        const pctBruto = String(f.percentual?.value ?? '').trim();
+        await P.gravar('cupom', {
+          codigo: String(f.codigo.value || '').trim().toUpperCase(),
+          nome: String(f.nome.value || '').trim(),
+          tipo: 'influencer',
+          percentual: pctBruto === '' ? null : +pctBruto,
+        });
+        window.showToast?.('Cupom salvo');
+        P.carregar(true);
+      } catch (err) {
+        window.showToast?.(`Não salvou: ${err.message}`);
+        if (bt) { bt.disabled = false; bt.textContent = antes }
+      }
+    });
+
+    view.addEventListener('click', async (e) => {
+      const tirar = e.target.closest?.('[data-cr-tirar]');
+      if (!tirar) return;
+      const cod = tirar.dataset.crTirar;
+      if (!window.confirm(`Tirar o cupom ${cod} do acompanhamento?\n\nO cupom continua valendo na loja — ele só deixa de ser medido aqui.`)) return;
+      try { await P.gravar('cupom_excluir', { codigo: cod }); window.showToast?.('Cupom fora do acompanhamento'); P.carregar(true) }
+      catch (err) { window.showToast?.(`Não tirei: ${err.message}`) }
     });
 
     view.addEventListener('click', (e) => {

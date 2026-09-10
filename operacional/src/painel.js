@@ -782,7 +782,7 @@
             pedir: (tela, args) => pedir(tela, args || {}, forcar),
             ui: { tile, cartao, tabela, colunas, barrasH, faisca, ritmo, delta, chipStatus, vazio },
             fmt: { moeda, num, pct, vezes, curto, dBR, dLonga, hora, esc, unidade, hojeSP, somaDias, fimDoMes },
-            metricaDe, avaliar, partes, metasCom, comDerivadas, envios, SETORES, METRICAS,
+            metricaDe, avaliar, partes, metasCom, comDerivadas, envios, gravar, SETORES, METRICAS,
           });
           break;
         }
@@ -973,6 +973,6 @@
   window.Painel = {
     mostrar, esconder, carregar, registrar, abrir, estado: st,
     periodoDe, avaliar, colunas, delta, moeda, num, pct,
-    telas: TELAS, setores: SETORES, metricas: METRICAS, comDerivadas, envios,
+    telas: TELAS, setores: SETORES, metricas: METRICAS, comDerivadas, envios, gravar,
   };
 })();

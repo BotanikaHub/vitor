@@ -327,6 +327,31 @@ demais para quem cuida de uma coisa só. A aba **Área** recorta tudo por área:
 - **Projetos desta área** — o que tem projeto e não é campanha, na mesma conta.
 - **Tarefas da área** — atrasadas, de hoje, dos próximos sete dias e sem prazo.
 
+### Gestão de influência: o que só existe nessa área
+
+A página de área é a mesma para todas — métricas, campanhas, projetos, tarefas.
+Mas cada área tem um trabalho que não cabe nesse molde. A de **Creators** ganha,
+por cima do padrão:
+
+- **Quem vendeu** — ranking por creator no período: faturamento, vendas, ticket,
+  % de clientes novos, **desconto dado** (a conta do fechamento) e a tendência
+  dos últimos sete dias contra os sete anteriores.
+- **Cadastrados que não venderam** — quem tem cupom no ar e nenhuma venda no
+  período. É o número que a gestora cobra, e não existia em lugar nenhum.
+- **De onde veio a venda** — cliente novo contra quem já comprava. É o que diz
+  se o canal traz gente nova ou revende para a mesma base.
+- **Faturamento por dia** — a série dos pedidos com cupom de creator.
+- **Cupons dos creators, editáveis ali mesmo** — nome, desconto, acrescentar e
+  tirar do acompanhamento. O banco já aceitava gravar cupom desde o começo
+  (ação `cupom` em `central_gravar`), mas nenhuma tela deixava mexer: quem
+  cuidasse disso teria que pedir para alguém abrir o Supabase.
+
+A área também passou a ter o **filtro de período** da barra do painel — o
+ranking do mês e o da semana são conversas diferentes.
+
+Área nova com bloco próprio entra em `EXTRAS`, no `src/area.js`, por slug: cada
+uma diz o que pedir a mais e o que desenhar com isso.
+
 ### A micrometa
 
 A micrometa divide **o que falta pelos dias que sobraram**, não a meta pelo mês
