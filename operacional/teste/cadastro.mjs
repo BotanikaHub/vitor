@@ -30,7 +30,7 @@ async function abrir(cfg) {
   const pag = await nav.newPage({ viewport: { width: 1440, height: 1000 } });
   pag.on('pageerror', (e) => console.log('  [erro na página]', e.message));
   await pag.addInitScript(([convites, opt]) => {
-    window.__chamadas = { rpc: [], signUp: [], signIn: [], signOut: 0 };
+    window.__chamadas = { rpc: [], signUp: [], signIn: [], signOut: 0, trocou: [] };
     window.supabase = { createClient: () => ({
       auth: {
         getSession: async () => ({ data: { session: opt.sessao || null } }),
@@ -38,6 +38,11 @@ async function abrir(cfg) {
         /* pelo sessionStorage porque sair recarrega a página, e o que
            estivesse só na memória iria embora junto */
         signOut: async () => { sessionStorage.setItem('__saiu', '1'); window.__chamadas.signOut++; return {} },
+        updateUser: async (a) => {
+          window.__chamadas.trocou.push(a);
+          sessionStorage.setItem('__trocou', JSON.stringify(a));
+          return { data: {}, error: opt.trocaErro ? { message: opt.trocaErro } : null };
+        },
         signUp: async (a) => {
           window.__chamadas.signUp.push(a);
           const r = opt.signUp || { session: null, user: { identities: [{ id: 'i1' }] } };
@@ -59,7 +64,7 @@ async function abrir(cfg) {
       }),
     }) };
   }, [CONVITES, cfg]);
-  await pag.goto(`http://127.0.0.1:${porta}/`, { waitUntil: 'domcontentloaded' });
+  await pag.goto(`http://127.0.0.1:${porta}/${cfg.hash || ''}`, { waitUntil: 'domcontentloaded' });
   await pag.locator('.ent-fundo').waitFor({ state: 'visible', timeout: 8000 });
   await pag.waitForTimeout(200);
   return pag;
@@ -210,7 +215,40 @@ await p.waitForTimeout(150);
 conf('o botão de sair realmente encerra a sessão', (await p.evaluate(() => sessionStorage.getItem('__saiu'))) === '1');
 await p.close();
 
-/* ---------- 9. entrou e está liberado: nada disso aparece ---------- */
+/* ---------- 9. o link de trocar a senha ---------- */
+console.log('\no link de trocar a senha');
+p = await abrir({
+  hash: '#access_token=abc&type=recovery',
+  sessao: { user: { id: 'u1', email: 'ass.italoneves@gmail.com' } },
+  perfil: { id: 'u1', nome: 'Ítalo Neves', email: 'ass.italoneves@gmail.com', papel: 'membro', ativo: true, cargo: '', area_id: null },
+});
+conf('quem volta pelo link cai na troca de senha, não na operação',
+     (await p.locator('.ent-sub').innerText()).includes('senha nova'));
+conf('e não pede o e-mail de novo — o link já diz quem é', await p.locator('#ent-email').count() === 0);
+await p.locator('#ent-senha').fill('curta');
+await p.locator('#ent-senha2').fill('curta');
+await p.locator('.ent-bt').click();
+await p.waitForTimeout(200);
+conf('senha curta também não passa aqui', (await p.locator('.ent-msg').innerText()).includes('8 caracteres'));
+conf('e nada foi gravado', (await p.evaluate(() => window.__chamadas.trocou.length)) === 0);
+await p.locator('#ent-senha').fill('senha-nova-do-italo');
+await p.locator('#ent-senha2').fill('senha-nova-do-italo');
+await p.locator('.ent-bt').click();
+await p.waitForTimeout(400);
+conf('a senha nova é gravada de verdade',
+     JSON.parse(await p.evaluate(() => sessionStorage.getItem('__trocou')) || '{}').password === 'senha-nova-do-italo');
+conf('e o link gasto sai do endereço, para o F5 não tentar de novo',
+     !(await p.evaluate(() => location.hash)).includes('recovery'));
+await p.close();
+
+console.log('\nlink vencido');
+p = await abrir({ hash: '#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired' });
+const vencido = await p.locator('.ent-msg').innerText();
+conf('o link vencido é explicado, em vez de virar uma tela de entrar muda', vencido.includes('venceu'));
+conf('e a saída é pedir outro', vencido.includes('Esqueci minha senha'));
+await p.close();
+
+/* ---------- 10. entrou e está liberado: nada disso aparece ---------- */
 console.log('\nquem está liberado');
 const pag = await nav.newPage({ viewport: { width: 1440, height: 1000 } });
 await pag.addInitScript(() => {

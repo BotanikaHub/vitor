@@ -519,6 +519,15 @@ existe conta. Papel, área e marcas não saem. É a única função da Central q
 o `anon` pode chamar, e ela é a razão de o linter do Supabase apontar um
 `SECURITY DEFINER` executável sem login.
 
+### Esqueci minha senha
+
+O botão já mandava o link, e o link já trazia a pessoa de volta logada — só
+que sem trocar senha nenhuma: na vez seguinte ela esbarraria na mesma senha
+esquecida. Agora quem volta pelo link cai numa tela de escolher a senha
+nova, e o endereço gasto sai da barra para o F5 não tentar usá-lo de novo.
+Link vencido ou já usado é dito com todas as letras, em vez de virar uma
+tela de entrar muda.
+
 Se mesmo assim alguém entrar com uma conta não liberada — outro e-mail, uma
 aba aberta antes —, a Central para antes de desenhar e explica: *"Conta
 criada, acesso ainda não."* Sem isso, a operação abriria vazia e a pessoa

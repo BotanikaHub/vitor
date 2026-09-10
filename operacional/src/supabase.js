@@ -202,6 +202,16 @@
     return m || 'Não consegui entrar.';
   }
 
+  /* O que o Supabase devolve pendurado no endereço quando o link falha. */
+  function recadoLink(m) {
+    const t = String(m || '');
+    if (/expired|otp_expired/i.test(t))
+      return 'Esse link já venceu. Peça outro em "Esqueci minha senha" — ele vale por uma hora.';
+    if (/already|used/i.test(t))
+      return 'Esse link já foi usado. Peça outro em "Esqueci minha senha".';
+    return 'O link não funcionou. Peça outro em "Esqueci minha senha".';
+  }
+
   function estilos() {
     if (document.getElementById('entrar-estilo')) return;
     const s = document.createElement('style');
@@ -264,9 +274,9 @@
      Quem cria a conta não escolhe nome, papel, área nem marca: isso já
      está na lista de convites e o gatilho do banco monta o perfil com o
      que está lá. A pessoa escolhe só a senha dela. */
-  function telaEntrar(sb, modo) {
+  function telaEntrar(sb, modo, aviso) {
     if (!document.body) {
-      addEventListener('DOMContentLoaded', () => telaEntrar(sb, modo), { once: true });
+      addEventListener('DOMContentLoaded', () => telaEntrar(sb, modo, aviso), { once: true });
       return;
     }
     estilos();
@@ -332,6 +342,8 @@
     for (const b of fundo.querySelectorAll('[data-modo]')) {
       b.onclick = () => telaEntrar(sb, b.dataset.modo);
     }
+
+    if (aviso) diz(aviso, 'erro');
 
     /* Quem já entrou uma vez não precisa digitar o e-mail de novo. */
     const lembrado = localStorage.getItem(ULTIMO_EMAIL);
@@ -474,6 +486,77 @@
       diz(error ? recado(error.message)
                 : 'Se esse e-mail estiver cadastrado, o link para trocar a senha já está a caminho.',
           error ? 'erro' : 'ok');
+    };
+  }
+
+  /* O "Esqueci minha senha" já mandava o link, e o link já trazia a pessoa
+     de volta logada — só que sem trocar senha nenhuma. Na próxima vez ela
+     esbarraria na mesma senha esquecida. Aqui é onde ela escolhe a nova.
+
+     Enquanto o Vitor cadastrava as contas na mão isso quase não acontecia;
+     com oito pessoas escolhendo a própria senha, acontece. */
+  function telaSenhaNova(sb) {
+    if (!document.body) {
+      addEventListener('DOMContentLoaded', () => telaSenhaNova(sb), { once: true });
+      return;
+    }
+    estilos();
+    document.querySelectorAll('.ent-fundo').forEach((e) => e.remove());
+
+    const fundo = document.createElement('div');
+    fundo.className = 'ent-fundo';
+    fundo.innerHTML = `
+      <div class="ent-cx">
+        <div class="ent-marca">Central</div>
+        <div class="ent-sub">Escolha uma senha nova.</div>
+        <form class="ent-cartao" novalidate>
+          <div class="ent-campo">
+            <label class="ent-rot" for="ent-senha">Senha nova</label>
+            <div class="ent-cai">
+              <input id="ent-senha" name="senha" type="password" required autocomplete="new-password">
+              <button type="button" class="ent-olho" data-olho>mostrar</button>
+            </div>
+            <div class="ent-dica">Pelo menos 8 caracteres.</div>
+          </div>
+          <div class="ent-campo">
+            <label class="ent-rot" for="ent-senha2">Repita a senha</label>
+            <input id="ent-senha2" name="senha2" type="password" required autocomplete="new-password">
+          </div>
+          <button type="submit" class="ent-bt">Salvar e entrar</button>
+          <div class="ent-msg" role="status" aria-live="polite"></div>
+        </form>
+        <div class="ent-pe">Esse link vale uma vez só.</div>
+      </div>`;
+    document.body.appendChild(fundo);
+
+    const f      = fundo.querySelector('form');
+    const senha  = fundo.querySelector('#ent-senha');
+    const senha2 = fundo.querySelector('#ent-senha2');
+    const bt     = fundo.querySelector('.ent-bt');
+    const msg    = fundo.querySelector('.ent-msg');
+    const olho   = fundo.querySelector('[data-olho]');
+    const diz = (t, tipo) => { msg.textContent = t; msg.className = 'ent-msg ' + (tipo || '') };
+    senha.focus();
+
+    olho.onclick = () => {
+      const escondida = senha.type === 'password';
+      senha.type = escondida ? 'text' : 'password';
+      olho.textContent = escondida ? 'ocultar' : 'mostrar';
+      senha.focus();
+    };
+
+    f.onsubmit = async (ev) => {
+      ev.preventDefault();
+      if (senha.value.length < 8) { diz('A senha precisa de pelo menos 8 caracteres.', 'erro'); senha.focus(); return }
+      if (senha.value !== senha2.value) { diz('As duas senhas estão diferentes.', 'erro'); senha2.select(); return }
+      bt.disabled = true;
+      diz('Salvando…', 'indo');
+      const { error } = await sb.auth.updateUser({ password: senha.value });
+      if (error) { bt.disabled = false; diz(recado(error.message), 'erro'); return }
+      /* Sem a marca a hidratação roda de novo, e sem o endereço na barra o
+         F5 não tenta usar de novo um link que já foi gasto. */
+      sessionStorage.removeItem(MARCA_RELOAD);
+      location.replace(location.pathname + location.search);
     };
   }
 
@@ -660,11 +743,27 @@
       console.error('[central] Supabase indisponível');
       return semAcesso();
     }
+    /* Lido ANTES de criar o cliente: o supabase-js consome o endereço para
+       montar a sessão e limpa o que estava lá, então depois não dá mais
+       para saber que a pessoa chegou por um link de recuperação. */
+    const trecho = String(location.hash || '').replace(/^#/, '');
+    const veio = new URLSearchParams(trecho);
+    const recuperando = veio.get('type') === 'recovery';
+    const recusa = veio.get('error_description') || veio.get('error');
+
     const sb = window.supabase.createClient(URL_SB, CHAVE_SB);
     /* o Painel precisa do token de quem está logado para falar com /api/painel */
     window.CentralSessao = () => sb.auth.getSession().then((r) => (r.data && r.data.session) || null).catch(() => null);
     const { data: { session } } = await sb.auth.getSession();
+
+    /* Link de recuperação vencido ou já usado: sem isto a pessoa cairia na
+       tela de entrar sem entender por que o link não funcionou. */
+    if (recusa && !session) return telaEntrar(sb, 'entrar', recadoLink(recusa));
     if (!session) return telaEntrar(sb);
+
+    /* Chegou pelo link do "esqueci minha senha": a senha se troca aqui,
+       antes de qualquer outra coisa. */
+    if (recuperando) return telaSenhaNova(sb);
 
     const uid = session.user.id;
     /* O cliente fica à mão dos módulos que leem tabelas de verdade
