@@ -28,17 +28,62 @@
 
   body.mn .main { margin-left: 18px !important; }
 
-  /* com espaço de sobra, o nome volta para o lado do ícone */
+  /* Com espaço de sobra, o nome volta para o lado do ícone.
+     O trilho antigo escondia o rótulo com font-size:0 e o trazia de volta
+     como balãozinho no :after, posicionado a 66px do ícone. Dentro da
+     gaveta isso vira texto por cima de texto — que foi o que apareceu na
+     tela. Aqui o rótulo volta a ser texto de verdade e o balão sai. */
   body.mn .sidebar .navitem {
     width: 100% !important;
+    height: auto !important;
+    min-height: 46px !important;
+    display: flex !important;
+    align-items: center !important;
     justify-content: flex-start !important;
-    gap: 11px !important;
+    gap: 12px !important;
     padding: 0 12px !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: transparent !important;
     font-size: 12.5px !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+    text-align: left !important;
+    overflow: visible !important;
+  }
+  body.mn .sidebar .navitem:hover { background: var(--cilo-soft, #f6f6f6) !important; }
+  body.mn .sidebar .navitem.active {
+    background: var(--cilo-black, #121415) !important;
+    color: #fff !important;
+  }
+  body.mn .sidebar .navitem:after { display: none !important; }
+  /* No trilho o ícone era posicionado à mão, absoluto, para ficar no
+     centro do quadradinho. Na gaveta ele precisa voltar a ser um item da
+     linha — senão ele ancora num ponto fixo e cai por cima do nome. */
+  body.mn .sidebar .navitem .icon {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    flex: 0 0 auto !important;
+    width: 22px !important; height: 22px !important;
+  }
+  body.mn .sidebar .navitem .icon svg { width: 20px !important; height: 20px !important; }
+  /* os contadores param de flutuar por cima do nome */
+  body.mn .sidebar .navitem .badge {
+    position: static !important;
+    margin-left: auto !important;
+    transform: none !important;
+  }
+  body.mn .sidebar .navgroup {
+    display: block !important;
+    width: 100% !important;
+    margin: 14px 0 6px !important;
+    padding: 0 12px !important;
+    font-size: 9px !important;
+    letter-spacing: .06em !important;
     text-align: left !important;
   }
-  body.mn .sidebar .navitem span { flex: 0 0 auto !important; }
-  body.mn .sidebar .navgroup { display: block !important; text-align: left !important; }
+  body.mn .sidebar .nav { width: 100% !important; align-items: stretch !important; gap: 2px !important; }
   body.mn .sidebar .brandrow,
   body.mn .sidebar .brandtitle,
   body.mn .sidebar .side-select { display: flex !important; }

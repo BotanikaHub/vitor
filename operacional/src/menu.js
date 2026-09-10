@@ -59,6 +59,14 @@
       sino.classList.add('mn-sino');
       barra.appendChild(sino);
     }
+
+    /* No trilho o contador era um pontinho vermelho por cima do ícone, e
+       zero passava despercebido. Escrito por extenso ao lado do nome,
+       "Tarefas 0" fica pior do que nada. */
+    for (const c of document.querySelectorAll('.sidebar .badge')) {
+      const n = +String(c.textContent || '').replace(/\D/g, '');
+      c.style.display = n > 0 ? '' : 'none';
+    }
   }
 
   function fundo() {
