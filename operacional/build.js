@@ -28,6 +28,7 @@ const CAMADAS = [
   'painel.css',
   'equipe.css',
   'acessos.css',
+  'home.css',
 ];
 
 const estilos = CAMADAS
@@ -39,7 +40,7 @@ let html = estilos
   ? base.replace('</style>', () => `\n${estilos}\n</style>`)
   : base;
 
-for (const js of ['cilo-design-v6.js', 'cilo-v8-comportamento.js', 'mapa.js', 'assistente.js', 'calendario.js', 'campanha.js', 'conferencia.js', 'inicio.js', 'descricao.js', 'painel.js', 'equipe.js', 'acessos.js'])
+for (const js of ['cilo-design-v6.js', 'cilo-v8-comportamento.js', 'mapa.js', 'assistente.js', 'calendario.js', 'campanha.js', 'conferencia.js', 'inicio.js', 'home.js', 'descricao.js', 'painel.js', 'equipe.js', 'acessos.js'])
   if (fs.existsSync(path.join(src, js)))
     html = html.replace('</body>', () => `<script>\n${leia(js).trim()}\n</script>\n</body>`);
 

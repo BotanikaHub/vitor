@@ -1,0 +1,92 @@
+/* ======================================================================
+   A home que cada um monta.
+
+   Mesma pele do resto: tinta #121415, cinza #7d8288, linha #e6e6e6,
+   cantos de 16px. A grade é de doze colunas, que é o que deixa metade,
+   um terço e um quarto caírem certo sem número quebrado.
+   ====================================================================== */
+#homeGrade{display:block}
+.hm-grade{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;align-items:start}
+.hm-bloco{min-width:0;position:relative;border-radius:16px;transition:box-shadow .15s ease,opacity .15s ease}
+.hm-bloco>.hm-corpo{min-width:0}
+.hm-bloco>.hm-corpo>*{margin:0}
+
+/* --- a barra de cima --- */
+.hm-barra{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+.hm-barra-txt{display:flex;flex-direction:column;gap:2px;margin-right:auto;min-width:0}
+.hm-barra-txt strong{font-size:12px;font-weight:700;color:#121415}
+.hm-barra-txt span{font-size:9.5px;color:#8a8f94}
+.hm-bt{min-height:32px;padding:0 12px;border:1px solid #dfdfdf;border-radius:10px;background:#fff;
+  color:#121415;font:inherit;font-size:11px;font-weight:600;cursor:pointer}
+.hm-bt:hover{background:#f6f6f6}
+.hm-bt-forte{background:#121415;border-color:#121415;color:#fff}
+.hm-bt-fraco{color:#7a7f84}
+
+/* --- o que aparece só quando se está organizando --- */
+.hm-ferramentas{display:flex;align-items:center;gap:7px;margin-bottom:7px;padding:5px 8px;
+  border:1px dashed #d8d8d8;border-radius:10px;background:#fafafa}
+.hm-pega{cursor:grab;color:#9aa0a5;font-size:13px;line-height:1;user-select:none}
+.hm-nome{font-size:10px;font-weight:700;color:#4c5257;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hm-largs{margin-left:auto;display:inline-flex;gap:2px}
+.hm-larg{min-width:24px;height:22px;border:0;border-radius:6px;background:transparent;color:#7a7f84;
+  font:inherit;font-size:10px;font-weight:700;cursor:pointer}
+.hm-larg:hover{background:#ececea}
+.hm-larg.ativa{background:#121415;color:#fff}
+.hm-x{width:22px;height:22px;border:0;border-radius:6px;background:transparent;color:#9aa0a5;
+  font-size:14px;line-height:1;cursor:pointer}
+.hm-x:hover{background:#f0e2e2;color:#c0392b}
+.hm-bloco[draggable="true"]{cursor:default}
+.hm-voando{opacity:.45}
+.hm-alvo{box-shadow:0 0 0 2px #121415}
+
+/* --- o catálogo --- */
+.hm-modal{position:fixed;inset:0;z-index:99998;display:grid;place-items:center;padding:24px}
+.hm-modal-fundo{position:absolute;inset:0;background:rgba(17,19,20,.42)}
+.hm-modal-caixa{position:relative;width:min(720px,100%);max-height:82vh;overflow:auto;
+  background:#fff;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,.24)}
+.hm-modal-caixa header{position:sticky;top:0;display:flex;align-items:flex-start;gap:12px;
+  padding:16px 18px;background:#fff;border-bottom:1px solid #eee}
+.hm-modal-caixa header div{display:flex;flex-direction:column;gap:2px;margin-right:auto}
+.hm-modal-caixa header strong{font-size:13px;color:#121415}
+.hm-modal-caixa header span{font-size:10px;color:#8a8f94}
+.hm-x-grande{border:0;background:transparent;color:#9aa0a5;font-size:20px;line-height:1;cursor:pointer}
+.hm-catalogo{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;padding:16px 18px 20px}
+.hm-nada{grid-column:1/-1;margin:0;padding:18px 2px;color:#9aa0a5;font-size:11px;text-align:center}
+.hm-oferta{display:flex;flex-direction:column;gap:6px;align-items:stretch;text-align:left;
+  padding:11px;border:1px solid #e6e6e6;border-radius:14px;background:#fff;cursor:pointer;font:inherit}
+.hm-oferta:hover{border-color:#121415;box-shadow:0 4px 14px rgba(17,19,20,.07)}
+.hm-oferta b{font-size:11.5px;font-weight:650;color:#121415}
+.hm-oferta small{font-size:9.5px;line-height:1.45;color:#8a8f94}
+
+/* --- as prévias: o formato do bloco, não o conteúdo --- */
+.hm-oferta-previa{display:flex;flex-direction:column;justify-content:center;gap:5px;height:56px;
+  padding:9px 10px;border-radius:10px;background:#f4f5f6;overflow:hidden}
+.hm-oferta-previa i{display:block;border-radius:3px;background:#d3d7da}
+.p-num{height:20px;width:44px;border-radius:5px!important}
+.p-linha{height:5px;width:100%}
+.p-linha.curta{width:52%}
+.p-item{height:7px;width:100%}
+.p-item:nth-child(2){width:82%}
+.p-item:nth-child(3){width:64%}
+.p-barra{height:6px;width:100%}
+.p-barra.media{width:70%}
+.p-barra.curta{width:44%}
+
+.hm-lista{display:flex;flex-direction:column;gap:2px;padding:4px 0 2px}
+.hm-lista .critico{color:#ed4a4a;font-weight:650}
+
+@media (max-width:1100px){ .hm-bloco{grid-column:span 12!important} }
+
+html[data-theme="dark"] .hm-barra-txt strong{color:#f2f2f2}
+html[data-theme="dark"] .hm-bt{background:#0f0f0f;border-color:#333;color:#e9e9e9}
+html[data-theme="dark"] .hm-bt-forte{background:#f2f2f2;border-color:#f2f2f2;color:#111}
+html[data-theme="dark"] .hm-ferramentas{background:#101010;border-color:#333}
+html[data-theme="dark"] .hm-nome{color:#c3c8cc}
+html[data-theme="dark"] .hm-larg.ativa{background:#f2f2f2;color:#111}
+html[data-theme="dark"] .hm-alvo{box-shadow:0 0 0 2px #f2f2f2}
+html[data-theme="dark"] .hm-modal-caixa{background:#111}
+html[data-theme="dark"] .hm-modal-caixa header{background:#111;border-bottom-color:#2b2b2b}
+html[data-theme="dark"] .hm-oferta{background:#111;border-color:#2b2b2b}
+html[data-theme="dark"] .hm-oferta b{color:#f2f2f2}
+html[data-theme="dark"] .hm-oferta-previa{background:#1a1a1a}
+html[data-theme="dark"] .hm-oferta-previa i{background:#333}

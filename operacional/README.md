@@ -167,6 +167,42 @@ Variables*, crie:
 
 e publique de novo. Não cole a chave em lugar nenhum além do painel.
 
+## A home que cada um monta
+
+A tela inicial vinha pronta e igual para todo mundo. Mas quem abre a Central de
+manhã não abre pelo mesmo motivo: o Pedro quer ver o que estreia, a Lissia quer
+a fila do dia, o Vitor quer o ritmo do mês.
+
+Agora ela é um quadro de blocos numa grade de doze colunas. Cada bloco tem
+largura (¼, ⅓, ½, ⅔ ou inteiro), **se arrasta** para onde se quer, sai quando
+não serve e volta pelo catálogo. O botão **Organizar** liga as alças, as
+larguras e o ×; **Adicionar bloco** abre o catálogo, onde cada oferta traz uma
+**prévia do formato** — linhas para lista, barras para campanha, um número
+grande para contador.
+
+O arranjo é **de cada pessoa**: mora em `central.home.layout.<uid>`, que a ponte
+guarda por dono. O da Sarah não mexe no do Pedro.
+
+**Os quatro blocos que já existiam não foram reescritos — foram adotados.** O nó
+do app inteiro é movido para dentro da moldura nova, e quem os preenche
+(`inicio.js`) continua encontrando `#homeAtencao` e `[data-stat]` onde sempre
+esteve. Quando um deles sai da home, o nó fica guardado num canto escondido e
+volta inteiro se a pessoa o chamar de novo.
+
+Os blocos disponíveis:
+
+| Bloco | O que mostra |
+|---|---|
+| Semana | a linha do tempo com campanhas e marcos dos sete dias |
+| Perto do vencimento · Vencidas · Conclusão no mês | os três contadores, agora separados |
+| Tarefas que pedem atenção | vencidas primeiro, depois as próximas 48h |
+| Campanhas do mês | as com data neste mês, com o quanto já andou |
+| **As minhas de hoje** | só o que está no seu nome, vencendo ou atrasado |
+| **O que estreia** | campanhas dos próximos dez dias e quantas seguem abertas |
+| **Travadas na conferência** | o que não fecha porque falta item obrigatório |
+| **Entregue sem conferir** | o que foi fechado por fora |
+| **Ações combinadas** | o que ficou da daily e da reunião, com prazo até hoje |
+
 ## O painel
 
 O acompanhamento morava em dois apps do Lovable — o Botanika Analytics e o
