@@ -1,0 +1,50 @@
+/* ======================================================================
+   A página da área — mesma pele do painel.
+   ====================================================================== */
+.ar-barra{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:2px}
+.ar-troca{display:inline-flex;align-items:center;gap:7px;font-size:10px;color:var(--pn-muted)}
+.ar-troca select{min-height:36px;padding:0 10px;border:1px solid var(--pn-line);border-radius:11px;
+  background:var(--pn-surface);color:var(--pn-ink);font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.ar-fixa{display:inline-flex;align-items:center;height:36px;padding:0 14px;border-radius:11px;
+  background:var(--pn-ink);color:#fff;font-size:12.5px;font-weight:600}
+.ar-gente{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-right:auto;min-width:0}
+.ar-pessoa{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;
+  border:1px solid var(--pn-line);background:var(--pn-surface);font-size:10.5px;color:var(--pn-ink)}
+.ar-pessoa.vazia{border-style:dashed;color:var(--pn-muted)}
+
+/* --- a micrometa: a coluna que responde "e hoje?" --- */
+.ar-hoje b{display:block;font-size:13px;font-weight:700;letter-spacing:-.01em;color:var(--pn-ink)}
+.ar-hoje b.ok{color:var(--pn-ok)}
+.ar-hoje small{display:block;margin-top:1px;font-size:9px;font-weight:400;color:var(--pn-muted)}
+.ar-sem{font-size:10px;color:var(--pn-muted);font-style:italic}
+
+/* --- campanhas e projetos --- */
+.ar-lista{display:flex;flex-direction:column;gap:10px}
+.ar-item{border:1px solid var(--pn-line);border-left-width:3px;border-radius:12px;padding:11px 13px;
+  background:var(--pn-surface);cursor:pointer}
+.ar-item[data-ar-campanha]:hover{border-color:var(--pn-ink)}
+.ar-item.critico{border-left-color:var(--pn-critico);background:var(--pn-critico-bg)}
+.ar-item-topo{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.ar-item-topo b{font-size:12.5px;font-weight:650;color:var(--pn-ink)}
+.ar-item-topo span{margin-left:auto;font-size:10px;color:var(--pn-muted);white-space:nowrap}
+.ar-pct{display:flex;flex-direction:column;gap:5px}
+.ar-pct-barra{height:8px;border-radius:999px;background:#ececea;overflow:hidden}
+.ar-pct-barra i{display:block;height:100%;border-radius:999px;background:var(--pn-serie);transition:width .5s ease}
+.ar-pct span{font-size:10px;color:var(--pn-muted)}
+.ar-pct b{color:var(--pn-ink);font-weight:700}
+.ar-alerta{margin-top:7px;font-size:10px;font-weight:650;color:var(--pn-critico)}
+
+/* --- tarefas --- */
+.ar-grupo{margin-top:12px}
+.ar-grupo:first-child{margin-top:0}
+.ar-grupo h4{margin:0 0 6px;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--pn-muted)}
+.ar-grupo h4.critico{color:var(--pn-critico)}
+.ar-tarefa{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--pn-line);
+  background:transparent;padding:8px 2px;font:inherit;cursor:pointer}
+.ar-tarefa:hover{background:var(--pn-soft)}
+.ar-tarefa b{display:block;font-size:11.5px;font-weight:600;color:var(--pn-ink)}
+.ar-tarefa small{display:block;margin-top:2px;font-size:9.5px;color:var(--pn-muted)}
+.ar-tarefa.vencida b{color:var(--pn-critico)}
+
+html[data-theme="dark"] .ar-pct-barra{background:#242424}
+html[data-theme="dark"] .ar-item.critico{background:#1c1010}

@@ -1,0 +1,140 @@
+/* A página de cada área.
+
+   O que precisa valer: quem é membro vê a própria área e não troca; quem
+   manda troca; a tarefa da área é a de quem é dela mais a do tipo dela;
+   campanha e projeto mostram o quanto falta; e a micrometa diz o que
+   precisa sair hoje, dividindo o que falta pelos dias que sobraram. */
+import { chromium } from '/home/user/vitor/node_modules/playwright-core/index.mjs';
+import { readFileSync } from 'node:fs';
+import { createServer } from 'node:http';
+import assert from 'node:assert/strict';
+
+const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
+const srv = createServer((_, r) => { r.writeHead(200,{'content-type':'text/html; charset=utf-8'}); r.end(html) }).listen(0);
+const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+
+const hoje = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+const dia = (n) => { const d = new Date(`${hoje}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10) };
+const ANO = +hoje.slice(0, 4), MES = +hoje.slice(5, 7), DIA = +hoje.slice(8, 10);
+
+const AREAS = [
+  { id: 'a-traf', nome: 'Tráfego', slug: 'trafego' },
+  { id: 'a-soc', nome: 'Social Media', slug: 'social-media' },
+  { id: 'a-gest', nome: 'Gestão', slug: 'gestao' },
+];
+const PERFIS = [
+  { id: 'u-pedro', nome: 'Pedro Lage', email: 'pedro@b.com', papel: 'gestor', ativo: true, cargo: 'Tráfego', area_id: 'a-traf', criado_em: null },
+  { id: 'u-italo', nome: 'Ítalo Neves', email: 'italo@b.com', papel: 'membro', ativo: true, cargo: 'Social', area_id: 'a-soc', criado_em: null },
+];
+const base = { description:'', subtasks:[], checklist:[], attachments:[], comments:[], history:[], recurrence:'none', priority:'normal' };
+const tarefas = [
+  { ...base, id:'t1', title:'Subir criativos no gerenciador', status:'feito', assignees:['Pedro Lage'], due:dia(-3), brand:'Botanika', project:'Dia D', feitaEm:dia(-3) },
+  { ...base, id:'t2', title:'Ajustar públicos do anúncio', status:'a fazer', assignees:['Pedro Lage'], due:dia(-1), brand:'Botanika', project:'Dia D' },
+  { ...base, id:'t3', title:'Revisar a página da coleção no site', status:'a fazer', assignees:[], due:dia(1), brand:'Botanika', project:'Dia D' },
+  { ...base, id:'t4', title:'Post do feed de quinta', status:'a fazer', assignees:['Ítalo Neves'], due:dia(2), brand:'Botanika', project:'Orgânico' },
+  { ...base, id:'t5', title:'Padronizar UTMs dos links', status:'a fazer', assignees:['Pedro Lage'], due:dia(4), brand:'Botanika', project:'Arrumação interna' },
+];
+const campanhas = [
+  { id:'c1', name:'Dia D', brand:'Botanika', type:'Dia D', status:'Em execução', owner:'', start:dia(-2), end:dia(2),
+    goal:0, budget:0, progress:0, color:'#121415', objective:'', offer:'', benefits:[], channels:[], products:[], schedule:[], tap:[] },
+];
+const SETORES = { ano: ANO, mes: MES, dias: 30, dia_hoje: DIA, hoje, inicio: `${hoje.slice(0,7)}-01`, fim: `${hoje.slice(0,7)}-30`,
+  metas: { 'trafego||investimento': { valor: 30000, unidade: 'R$' }, 'trafego||roas_alvo': { valor: 3, unidade: 'x' } },
+  realizados: { 'trafego||investimento': 12000, 'trafego||roas_alvo': 2.4 },
+  manuais: {}, meta_geral: null, historico_metas: [], semanas: [], sessoes: {}, sugestao: { semanas: [] },
+  periodo: { de: hoje, ate: hoje, dias: 1 }, realizado_periodo: {} };
+
+async function abrir(perfil) {
+  const pag = await nav.newPage({ viewport: { width: 1440, height: 1000 } });
+  pag.on('pageerror', (e) => console.log('  [erro na página]', e.message));
+  await pag.addInitScript(([ts, cs, areas, perfis, eu]) => {
+    window.__eu = eu;
+    window.supabase = { createClient: () => ({
+      auth:{getSession:async()=>({data:{session:{access_token:'jwt',user:{id:eu.id,email:eu.email}}}}),signOut:async()=>({})},
+      rpc: async () => ({ data: {}, error: null }),
+      from:(tab)=>({
+        select:()=>({
+          or:async()=>({data:[
+            {chave:'central.tasks.vitor-gutierrez',dono:null,valor:ts},
+            {chave:'central.campaigns.vitor-gutierrez',dono:null,valor:cs}],error:null}),
+          eq:()=>({is:()=>({maybeSingle:async()=>({data:null})}),eq:()=>({maybeSingle:async()=>({data:null})}),
+                   maybeSingle:async()=>({data:eu})}),
+          order:async()=>({data: tab==='areas'?areas: tab==='profiles'?perfis: [], error:null}),
+          then:(f)=>f({data: tab==='areas'?areas: tab==='profiles'?perfis: [], error:null}),
+        }),
+        upsert:async()=>({error:null}),
+      }) }) };
+  }, [tarefas, campanhas, AREAS, PERFIS, perfil]);
+  await pag.route('**/supabase.js', (r) => r.fulfill({ status:200, body:'', contentType:'application/javascript' }));
+  await pag.route('**/api/painel**', (rota) => rota.fulfill({ status:200, contentType:'application/json',
+    body: JSON.stringify({ marca:'Botanika', tela:'setores', dados: SETORES, em: new Date().toISOString() }) }));
+  await pag.goto(`http://127.0.0.1:${srv.address().port}/`, { waitUntil:'networkidle' });
+  await pag.waitForTimeout(1500);
+  await pag.evaluate((e) => { window.CentralEu = e; window.Acessos?.carregar?.(true) }, perfil);
+  await pag.locator('#painelNav').click();
+  await pag.waitForTimeout(500);
+  await pag.locator('#painelView [data-tela="area"]').click();
+  await pag.waitForTimeout(1200);
+  return pag;
+}
+
+const ok = [];
+const conf = (n, v) => { assert.ok(v, n); ok.push(n) };
+
+/* ---------- o membro ---------- */
+const pIt = await abrir({ id:'u-italo', nome:'Ítalo Neves', email:'italo@b.com', papel:'membro', ativo:true, cargo:'Social', area_id:'a-soc' });
+conf('a área virou uma tela do painel', await pIt.locator('#painelView [data-tela="area"]').count() === 1);
+let txt = (await pIt.locator('#painelCorpo').innerText()).replace(/\s+/g, ' ');
+conf('quem é membro cai na área dele', /Social Media/i.test(txt));
+conf('e não ganha seletor para bisbilhotar as outras',
+  await pIt.locator('[data-ar-area]').count() === 0 && await pIt.locator('.ar-fixa').count() === 1);
+conf('a tarefa de quem é da área entra', /Post do feed/i.test(txt));
+conf('e a de outra área fica de fora', !/Ajustar p[úu]blicos/i.test(txt));
+await pIt.close();
+
+/* ---------- quem manda ---------- */
+const pPe = await abrir({ id:'u-pedro', nome:'Pedro Lage', email:'pedro@b.com', papel:'gestor', ativo:true, cargo:'Tráfego', area_id:'a-traf' });
+txt = (await pPe.locator('#painelCorpo').innerText()).replace(/\s+/g, ' ');
+conf('quem é gestor ganha o seletor de área', await pPe.locator('[data-ar-area]').count() === 1);
+conf('e cai na própria por padrão',
+  await pPe.locator('[data-ar-area]').inputValue() === 'a-traf');
+conf('as tarefas de quem é da área entram', /Ajustar p[úu]blicos/i.test(txt));
+conf('e as do tipo da área também, mesmo sem responsável', /Revisar a p[áa]gina da cole[çc][ãa]o/i.test(txt));
+conf('mas a de outra área não', !/Post do feed/i.test(txt));
+
+/* ---------- campanha e projeto, com o quanto falta ---------- */
+conf('a campanha em que a área está aparece com o quanto entregou',
+  /Dia D/.test(txt) && /entregue/.test(txt));
+const camp = await pPe.locator('[data-ar-campanha="Dia D"]').innerText();
+conf('e a conta é das tarefas da área naquela campanha, não das de todo mundo',
+  /33% entregue/.test(camp.replace(/\s+/g, ' ')) && /faltam 67%/.test(camp.replace(/\s+/g, ' ')));
+conf('projeto que não é campanha entra separado',
+  /Projetos desta [áa]rea/i.test(txt) && /Arruma[çc][ãa]o interna/.test(txt));
+
+/* ---------- micrometa ---------- */
+conf('a métrica de fluxo ganha micrometa do dia', /Micrometa de hoje/i.test(txt));
+const mm = await pPe.evaluate(({ dias, diaHoje }) => window.AreaTela.micrometa(
+  { tipo: 'fluxo' }, 30000, 12000, diaHoje, dias), { dias: 30, diaHoje: DIA });
+conf('ela divide o que falta pelos dias que sobraram, não a meta pelo mês inteiro',
+  mm.tipo === 'dia' && Math.round(mm.valor) === Math.round(18000 / (30 - DIA + 1)));
+const nivel = await pPe.evaluate(() => window.AreaTela.micrometa({ tipo: 'taxa' }, 3, 2.4, 9, 30));
+conf('e métrica de nível não se divide: mostra o alvo a manter',
+  nivel.tipo === 'nivel' && nivel.valor === 3);
+conf('meta já batida não pede mais nada',
+  (await pPe.evaluate(() => window.AreaTela.micrometa({ tipo: 'fluxo' }, 100, 120, 9, 30))).resta === 0);
+
+/* ---------- trocar de área ---------- */
+await pPe.locator('[data-ar-area]').selectOption('a-soc');
+await pPe.waitForTimeout(900);
+txt = (await pPe.locator('#painelCorpo').innerText()).replace(/\s+/g, ' ');
+conf('trocar de área troca tudo na tela', /Post do feed/i.test(txt) && !/Ajustar p[úu]blicos/i.test(txt));
+conf('e aparece o atalho para voltar à sua', await pPe.locator('[data-ar-minha]').count() === 1);
+await pPe.locator('[data-ar-minha]').click(); await pPe.waitForTimeout(900);
+conf('que devolve a área de quem está logado',
+  await pPe.locator('[data-ar-area]').inputValue() === 'a-traf');
+await pPe.screenshot({ path: 'teste/31-area.png', fullPage: true });
+await pPe.close();
+
+console.log(ok.map((s) => '  ✓ ' + s).join('\n'));
+console.log(`\nárea: ${ok.length} checagens passaram`);
+await nav.close(); srv.close();

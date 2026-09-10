@@ -314,6 +314,47 @@ recorte que escolheu — hoje, ontem, 3 dias, 7, 30 ou um período à mão — a
 do mês e da meta. O mês é o compromisso; o período é o que a pessoa está
 olhando agora.
 
+## A página da área
+
+Cada um abre a Central por um motivo diferente, e o painel inteiro é grande
+demais para quem cuida de uma coisa só. A aba **Área** recorta tudo por área:
+
+- **Métricas da área** — as métricas dos setores que ela responde, com a meta do
+  mês, onde está, e a **micrometa de hoje**.
+- **Campanhas desta área** — só as que têm tarefa da área, cada uma com o
+  **quanto já entregou e quanto falta** — contado sobre as tarefas *da área*
+  naquela campanha, não sobre as de todo mundo.
+- **Projetos desta área** — o que tem projeto e não é campanha, na mesma conta.
+- **Tarefas da área** — atrasadas, de hoje, dos próximos sete dias e sem prazo.
+
+### A micrometa
+
+A micrometa divide **o que falta pelos dias que sobraram**, não a meta pelo mês
+inteiro. Assim ela sobe quando se atrasa e desce quando se adianta — que é o que
+a pessoa precisa saber de manhã. Métrica de nível (ROAS, CSAT, conversão) não se
+divide: mostra o alvo a manter.
+
+### Três vocabulários de "área", um lugar só
+
+O sistema tinha três listas diferentes: os **setores** do painel (que falam de
+métrica), as **áreas** da conferência (que falam de tipo de entrega) e a tabela
+**`areas`** do banco (que fala de gente). Quem manda é a última — é a que as
+nove pessoas já têm no cadastro. As outras duas são traduzidas pelo `MAPA` de
+`src/area.js`, num lugar só: `trafego` responde pelos setores *tráfego* e *site*
+e pelas entregas *Tráfego* e *Site*; `automacoes` responde por *E-mail*,
+*Grupos* e *API*; e assim por diante.
+
+**Tarefa da área** é a de quem é dela **mais** a do tipo dela. Nenhuma das duas
+sozinha cobre: tarefa sem responsável ainda é da área pelo tipo, e tarefa
+atípica com a pessoa certa ainda é dela.
+
+### Quem vê o quê
+
+Membro cai na própria área e não tem seletor. Admin e gestor trocam de área e
+têm um atalho para voltar à sua. **Isso é recorte de tela, não tranca**: o
+estado da operação é compartilhado por desenho, e quem quiser ver o de outra
+área consegue por outros caminhos.
+
 ## Daily, reunião de KPI, pessoas e projetos
 
 ### A daily olha para frente
