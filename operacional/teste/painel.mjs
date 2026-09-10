@@ -10,6 +10,18 @@ import { createServer } from 'node:http';
 import assert from 'node:assert/strict';
 
 const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
+
+/* A lateral agora fica guardada atrás do sanduíche: navegar é abrir e
+   escolher, que é o que uma pessoa faz. */
+const irPara = async (p, id) => {
+  const bt = p.locator('#menuBotao');
+  if (await bt.isVisible().catch(() => false)) {
+    const jaAberto = await p.evaluate(() => document.body.classList.contains('mn-aberto'));
+    if (!jaAberto) { await bt.click(); await p.waitForTimeout(260) }
+  }
+  await p.locator(`#${id}`).click();
+  await p.waitForTimeout(140);
+};
 const srv = createServer((_, r) => { r.writeHead(200,{'content-type':'text/html; charset=utf-8'}); r.end(html) }).listen(0);
 const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
 const pag = await nav.newPage({ viewport: { width: 1440, height: 1000 } });
@@ -161,7 +173,7 @@ const espera = async (sel, t = 4000) => pag.locator(sel).first().waitFor({ state
 
 /* ---------- abrir ---------- */
 conf('a barra lateral ganhou o botão do painel', await pag.locator('#painelNav').count() === 1);
-await pag.locator('#painelNav').click();
+await irPara(pag, 'painelNav');
 await espera('#painelView .pn-tile');
 conf('o painel abre e a home sai da frente',
   await pag.locator('#painelView').evaluate((e) => e.classList.contains('active')) &&
@@ -349,10 +361,10 @@ await pag.locator('#brandSelect').selectOption('Botanika'); await pag.waitForTim
 conf('e volta quando a marca volta', await pag.locator('#painelCorpo .pn-metrica').count() > 0);
 
 /* ---------- convivência com o app ---------- */
-await pag.locator('#tasksNav').click(); await pag.waitForTimeout(300);
+await irPara(pag, 'tasksNav'); await pag.waitForTimeout(300);
 conf('abrir Tarefas esconde o painel', !(await pag.locator('#painelView').evaluate((e) => e.classList.contains('active'))) &&
   !(await pag.locator('#painelNav').evaluate((e) => e.classList.contains('active'))));
-await pag.locator('#painelNav').click(); await pag.waitForTimeout(300);
+await irPara(pag, 'painelNav'); await pag.waitForTimeout(300);
 conf('e o painel volta na tela em que estava', await pag.locator('#painelView').evaluate((e) => e.classList.contains('active')) &&
   await pag.locator('#painelView [data-tela="setores"]').evaluate((e) => e.classList.contains('active')));
 await pag.evaluate(() => window.__centralShowHome?.()); await pag.waitForTimeout(200);

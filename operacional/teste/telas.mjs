@@ -5,6 +5,18 @@ import { chromium } from '/home/user/vitor/node_modules/playwright-core/index.mj
 import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
+
+/* A lateral agora fica guardada atrás do sanduíche: navegar é abrir e
+   escolher, que é o que uma pessoa faz. */
+const irPara = async (p, id) => {
+  const bt = p.locator('#menuBotao');
+  if (await bt.isVisible().catch(() => false)) {
+    const jaAberto = await p.evaluate(() => document.body.classList.contains('mn-aberto'));
+    if (!jaAberto) { await bt.click(); await p.waitForTimeout(260) }
+  }
+  await p.locator(`#${id}`).click();
+  await p.waitForTimeout(140);
+};
 const srv = createServer((_, r) => { r.writeHead(200,{'content-type':'text/html; charset=utf-8'}); r.end(html) }).listen(0);
 const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
 const tarefaDoTeste = [{ id:'t1', title:'DIA D — Programar disparos de e-mail e WhatsApp', status:'a fazer',
@@ -22,7 +34,7 @@ for (const [w, h] of [[1280,800],[1440,900],[1728,1080],[1920,1080]]) {
   await pag.goto(`http://127.0.0.1:${srv.address().port}/`, { waitUntil:'networkidle' });
 
   /* painel da tarefa */
-  await pag.waitForTimeout(1200); await pag.locator('#tasksNav').click(); await pag.waitForTimeout(600);
+  await pag.waitForTimeout(1200); await irPara(pag, 'tasksNav'); await pag.waitForTimeout(600);
   await pag.locator('.cu-row[data-task-id="t1"]').first().click();
   await pag.waitForTimeout(600);
   const painel = await pag.evaluate(() => {

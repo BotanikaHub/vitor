@@ -90,3 +90,27 @@ html[data-theme="dark"] .hm-oferta{background:#111;border-color:#2b2b2b}
 html[data-theme="dark"] .hm-oferta b{color:#f2f2f2}
 html[data-theme="dark"] .hm-oferta-previa{background:#1a1a1a}
 html[data-theme="dark"] .hm-oferta-previa i{background:#333}
+
+/* ---------- a área da pessoa, dentro da home ---------- */
+.hm-area-topo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:9px;
+  border-bottom:1px solid var(--pn-line,#e6e6e6);margin-bottom:9px}
+.hm-area-topo b{font-size:13px;font-weight:700;color:var(--pn-ink,#121415)}
+.hm-area-topo span{font-size:10px;color:var(--pn-muted,#7d8288)}
+.hm-area-topo span.critico{color:var(--pn-critico,#ed4a4a);font-weight:650}
+.hm-area-topo .hm-bt{margin-left:auto}
+.hm-area-micro{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:11px}
+.hm-area-mm{display:flex;flex-direction:column;gap:1px;padding:9px 11px;border-radius:12px;background:var(--pn-soft,#f6f6f6)}
+.hm-area-mm small{font-size:9px;color:var(--pn-muted,#7d8288);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hm-area-mm b{font-size:15px;font-weight:700;letter-spacing:-.01em;color:var(--pn-ink,#121415)}
+.hm-area-mm i{font-style:normal;font-size:9px;color:var(--pn-muted,#7d8288)}
+.hm-area-camps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;margin-bottom:11px}
+.hm-area-camp{padding:9px 11px;border:1px solid var(--pn-line,#e6e6e6);border-radius:12px;cursor:pointer}
+.hm-area-camp:hover{border-color:var(--pn-ink,#121415)}
+.hm-area-camp-topo{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.hm-area-camp-topo b{font-size:11px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hm-area-camp-topo span{margin-left:auto;font-size:10px;font-weight:700;color:var(--pn-muted,#7d8288)}
+.hm-area-camp small{display:block;margin-top:5px;font-size:9px;color:var(--pn-muted,#7d8288)}
+html[data-theme="dark"] .hm-area-mm{background:#1a1a1a}
+html[data-theme="dark"] .hm-area-camp{border-color:#2b2b2b}
+.hm-area-rot{margin:2px 0 4px;font-size:9px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--pn-muted,#7d8288)}

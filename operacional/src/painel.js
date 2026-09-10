@@ -974,5 +974,6 @@
     mostrar, esconder, carregar, registrar, abrir, estado: st,
     periodoDe, avaliar, colunas, delta, moeda, num, pct,
     telas: TELAS, setores: SETORES, metricas: METRICAS, comDerivadas, envios, gravar,
+    pedir: (tela, args, forcar) => pedir(tela, args || {}, forcar),
   };
 })();

@@ -10,6 +10,18 @@ import { createServer } from 'node:http';
 import assert from 'node:assert/strict';
 
 const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
+
+/* A lateral agora fica guardada atrás do sanduíche: navegar é abrir e
+   escolher, que é o que uma pessoa faz. */
+const irPara = async (p, id) => {
+  const bt = p.locator('#menuBotao');
+  if (await bt.isVisible().catch(() => false)) {
+    const jaAberto = await p.evaluate(() => document.body.classList.contains('mn-aberto'));
+    if (!jaAberto) { await bt.click(); await p.waitForTimeout(260) }
+  }
+  await p.locator(`#${id}`).click();
+  await p.waitForTimeout(140);
+};
 const srv = createServer((_, r) => { r.writeHead(200,{'content-type':'text/html; charset=utf-8'}); r.end(html) }).listen(0);
 const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
 const contexto = await nav.newContext({ viewport: { width: 1440, height: 1000 }, permissions: ['clipboard-read', 'clipboard-write'] });
@@ -120,7 +132,7 @@ const texto = async (sel) => (await pag.locator(sel).innerText()).replace(/\s+/g
 const espera = async (sel, t = 5000) => pag.locator(sel).first().waitFor({ state: 'visible', timeout: t });
 const escritas = () => pag.evaluate(() => window.__escritas);
 
-await pag.locator('#painelNav').click(); await espera('#painelView [data-tela="acessos"]');
+await irPara(pag, 'painelNav'); await espera('#painelView [data-tela="acessos"]');
 await pag.locator('#painelView [data-tela="acessos"]').click(); await espera('#painelCorpo .ac-tabela');
 
 /* ---------- quem entra e quem espera ---------- */

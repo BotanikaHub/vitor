@@ -167,6 +167,44 @@ Variables*, crie:
 
 e publique de novo. Não cole a chave em lugar nenhum além do painel.
 
+## A lateral guardada, e a área na home
+
+Duas mudanças que andam juntas: a Central tinha seis destinos fixos na lateral,
+e quem executa precisava ir a uma aba para ver a própria área.
+
+**A lateral fica guardada atrás de um sanduíche.** Ela some por padrão no
+tamanho de computador e volta num botão na barra de cima — e, como não precisa
+mais caber num trilho de 84px, volta melhor: com os **nomes escritos ao lado dos
+ícones**, que ninguém tinha. Escolher um destino fecha o menu sozinho. No
+celular a lateral já era barra de baixo, e ali ela está certa: `menu.js` não
+encosta nesse tamanho.
+
+**Duas coisas não ficam guardadas:** o seletor de marca, que se troca o dia
+inteiro, e o sino, que existe para avisar. Os dois sobem para a barra de cima.
+O que fica atrás do sanduíche são os seis destinos — o que ninguém abre de
+minuto em minuto.
+
+**A área da pessoa aparece na home.** O bloco *A minha área* traz o nome da
+área, as **micrometas de hoje**, as campanhas com o quanto falta *a área*
+entregar, e o que está atrasado ou vence hoje. Sem nada atrasado, ele mostra o
+que vem a seguir em vez de ficar vazio. E tem um atalho para a área inteira.
+
+Esse bloco precisa buscar número do painel da marca, então os blocos da home
+passaram a aceitar **render assíncrono**: quem devolve promessa desenha
+"Buscando…" na hora e preenche quando chega, sem segurar o resto da tela.
+
+### O arranjo de fábrica muda com o papel
+
+Quem executa abre a Central para ver o que é da área dele e fechar o que é dele;
+quem administra abre para o contrário. Então o padrão é diferente:
+
+| Papel | Home de fábrica |
+|---|---|
+| membro | *A minha área* · *As minhas de hoje* · *Tarefas que pedem atenção* |
+| admin e gestor | *A minha área* · semana · os três contadores · atenção · campanhas |
+
+Depois disso, cada um monta a sua — o arranjo continua sendo de cada pessoa.
+
 ## A home que cada um monta
 
 A tela inicial vinha pronta e igual para todo mundo. Mas quem abre a Central de

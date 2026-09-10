@@ -6,6 +6,18 @@ import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 
 const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
+
+/* A lateral agora fica guardada atrás do sanduíche: navegar é abrir e
+   escolher, que é o que uma pessoa faz. */
+const irPara = async (p, id) => {
+  const bt = p.locator('#menuBotao');
+  if (await bt.isVisible().catch(() => false)) {
+    const jaAberto = await p.evaluate(() => document.body.classList.contains('mn-aberto'));
+    if (!jaAberto) { await bt.click(); await p.waitForTimeout(260) }
+  }
+  await p.locator(`#${id}`).click();
+  await p.waitForTimeout(140);
+};
 const srv = createServer((_, r) => { r.writeHead(200,{'content-type':'text/html; charset=utf-8'}); r.end(html) }).listen(0);
 const porta = srv.address().port;
 
@@ -32,7 +44,7 @@ await foto('01-inicio');
 
 /* Tarefas */
 await pag.waitForTimeout(1200);
-await pag.locator('#tasksNav').click(); await pag.waitForTimeout(600); await foto('02-tarefas');
+await irPara(pag, 'tasksNav'); await pag.waitForTimeout(600); await foto('02-tarefas');
 
 /* abre a primeira tarefa da lista, que é onde o pop-up sai do lugar */
 await pag.locator('.cu-row[data-task-id="t1"]').first().click();

@@ -8,6 +8,18 @@ import { createServer } from 'node:http';
 import assert from 'node:assert/strict';
 
 const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
+
+/* A lateral agora fica guardada atrás do sanduíche: navegar é abrir e
+   escolher, que é o que uma pessoa faz. */
+const irPara = async (p, id) => {
+  const bt = p.locator('#menuBotao');
+  if (await bt.isVisible().catch(() => false)) {
+    const jaAberto = await p.evaluate(() => document.body.classList.contains('mn-aberto'));
+    if (!jaAberto) { await bt.click(); await p.waitForTimeout(260) }
+  }
+  await p.locator(`#${id}`).click();
+  await p.waitForTimeout(140);
+};
 const srv = createServer((_, r) => { r.writeHead(200,{'content-type':'text/html; charset=utf-8'}); r.end(html) }).listen(0);
 const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
 
@@ -109,7 +121,7 @@ conf('clicar na tarefa abre a ficha dela',
 await pag.locator('#taskDetailClose').click();
 await pag.waitForTimeout(300);
 
-await pag.locator('#homeNav').click();
+await irPara(pag, 'homeNav');
 await pag.waitForTimeout(400);
 await pag.locator('#homeCampanhas [data-ini-campanha="Dia D — 09/09"]').click();
 await pag.waitForTimeout(900);
@@ -117,7 +129,7 @@ conf('clicar na campanha abre a campanha',
   await pag.locator('#campaignWorkspace.active').count() === 1 &&
   (await pag.locator('#campaignWorkspace .cw-title h2').innerText()).includes('Dia D — 09/09'));
 
-await pag.locator('#homeNav').click();
+await irPara(pag, 'homeNav');
 await pag.waitForTimeout(400);
 await pag.screenshot({ path: 'teste/20-inicio.png' });
 await pag.close();

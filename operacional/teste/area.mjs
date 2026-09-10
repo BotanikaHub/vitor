@@ -10,6 +10,18 @@ import { createServer } from 'node:http';
 import assert from 'node:assert/strict';
 
 const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
+
+/* A lateral agora fica guardada atrás do sanduíche: navegar é abrir e
+   escolher, que é o que uma pessoa faz. */
+const irPara = async (p, id) => {
+  const bt = p.locator('#menuBotao');
+  if (await bt.isVisible().catch(() => false)) {
+    const jaAberto = await p.evaluate(() => document.body.classList.contains('mn-aberto'));
+    if (!jaAberto) { await bt.click(); await p.waitForTimeout(260) }
+  }
+  await p.locator(`#${id}`).click();
+  await p.waitForTimeout(140);
+};
 const srv = createServer((_, r) => { r.writeHead(200,{'content-type':'text/html; charset=utf-8'}); r.end(html) }).listen(0);
 const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
 
@@ -100,7 +112,7 @@ async function abrir(perfil) {
   await pag.goto(`http://127.0.0.1:${srv.address().port}/`, { waitUntil:'networkidle' });
   await pag.waitForTimeout(1500);
   await pag.evaluate((e) => { window.CentralEu = e; window.Acessos?.carregar?.(true) }, perfil);
-  await pag.locator('#painelNav').click();
+  await irPara(pag, 'painelNav');
   await pag.waitForTimeout(500);
   await pag.locator('#painelView [data-tela="area"]').click();
   await pag.waitForTimeout(1200);
@@ -109,6 +121,25 @@ async function abrir(perfil) {
 
 const ok = [];
 const conf = (n, v) => { assert.ok(v, n); ok.push(n) };
+
+/* ---------- a área na home de quem executa ----------
+   Quem executa abre a Central para ver o que é da área dele; quem
+   administra, para acompanhar a operação. O arranjo de fábrica é
+   diferente para cada um. */
+const pHome = await abrir({ id:'u-italo', nome:'Ítalo Neves', email:'italo@b.com', papel:'membro', ativo:true, cargo:'Social', area_id:'a-soc' });
+await irPara(pHome, 'homeNav'); await pHome.waitForTimeout(900);
+const arr = await pHome.evaluate(() => window.HomeModular.arranjo().map((b) => b.id));
+conf('quem executa nasce com a área na frente e pouca coisa atrás',
+  arr[0] === 'minhaArea' && arr.length === 3 && !arr.includes('semana'));
+await pHome.waitForTimeout(900);
+const bloco = (await pHome.locator('[data-hm-bloco="minhaArea"]').innerText()).replace(/\s+/g, ' ');
+conf('e a área dele já aparece na home, sem ir a lugar nenhum',
+  /Social Media/i.test(bloco) && /1 abertas/.test(bloco));
+conf('sem nada atrasado, a home mostra o que vem em vez de ficar vazia',
+  /O que vem a seguir/i.test(bloco) && /Post do feed/i.test(bloco));
+conf('com atalho para abrir a área inteira',
+  await pHome.locator('[data-hm-abre-area]').count() === 1);
+await pHome.close();
 
 /* ---------- o membro ---------- */
 const pIt = await abrir({ id:'u-italo', nome:'Ítalo Neves', email:'italo@b.com', papel:'membro', ativo:true, cargo:'Social', area_id:'a-soc' });

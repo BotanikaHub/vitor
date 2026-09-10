@@ -52,6 +52,8 @@
     { id: 'campanhas', nome: 'Campanhas do mês', sobre: 'As que têm data dentro deste mês, com o quanto já andou.',
       larg: 4, adota: '[data-module="campaigns"]' },
 
+    { id: 'minhaArea', nome: 'A minha área', sobre: 'O resumo da sua área: micrometas de hoje, campanhas e o que está atrasado.',
+      larg: 12, render: minhaArea },
     { id: 'minhas', nome: 'As minhas de hoje', sobre: 'Só o que está no seu nome: o que vence hoje e o que atrasou.',
       larg: 6, render: minhas },
     { id: 'estreia', nome: 'O que estreia', sobre: 'Campanhas dos próximos dez dias e quantas tarefas seguem abertas.',
@@ -67,8 +69,18 @@
   const doCatalogo = (id) => BLOCOS.find((b) => b.id === id) || null;
   const LARGURAS = [{ v: 3, n: '¼' }, { v: 4, n: '⅓' }, { v: 6, n: '½' }, { v: 8, n: '⅔' }, { v: 12, n: '1' }];
 
-  const PADRAO = () => ['semana', 'perto', 'vencidas', 'conclusao', 'atencao', 'campanhas']
-    .map((id) => ({ id, larg: doCatalogo(id).larg }));
+  /* Quem executa abre a Central para ver o que é da área dele e fechar o
+     que é dele — não para acompanhar a operação inteira. Quem administra
+     abre para o contrário. Então o arranjo de fábrica é diferente para
+     cada um; depois disso, todo mundo monta o seu. */
+  const PADRAO = () => {
+    const papel = (window.CentralEu || {}).papel;
+    const manda = papel === 'admin' || papel === 'gestor';
+    const ids = manda
+      ? ['minhaArea', 'semana', 'perto', 'vencidas', 'conclusao', 'atencao', 'campanhas']
+      : ['minhaArea', 'minhas', 'atencao'];
+    return ids.map((id) => ({ id, larg: id === 'minhas' ? 6 : id === 'atencao' && !manda ? 6 : doCatalogo(id).larg }));
+  };
 
   /* ---------- o arranjo de quem está logado ---------- */
   function arranjo() {
@@ -108,6 +120,128 @@
       </div>
       <span class="due ${d != null && d < 0 ? '' : 'soon'}">${esc(quando)}${t.due ? ` · ${dBR(t.due)}` : ''}</span>
     </div>`;
+  }
+
+
+  /* ---------- a área da pessoa, já na home ----------
+     Antes era preciso ir à aba Área para ver o que é da sua. Quem executa
+     abre a Central e quer isso na cara: o que a área precisa entregar
+     hoje, o quanto falta em cada campanha, e o que já passou do prazo.
+
+     As métricas vêm do painel da marca, que é rede — por isso este bloco
+     devolve promessa. O resto é local e aparece na hora. */
+  let cacheArea = { em: 0, dados: null, marca: '' };
+
+  async function metricasDaArea(setores, marca) {
+    if (!setores.length) return null;
+    const P = window.Painel;
+    if (!P || !P.pedir) return null;
+    if (cacheArea.dados && cacheArea.marca === marca && Date.now() - cacheArea.em < 60000) return cacheArea.dados;
+    const h = new Date().toISOString().slice(0, 10);
+    const d = await P.pedir('setores', { ano: +h.slice(0, 4), mes: +h.slice(5, 7), de: h, ate: h });
+    cacheArea = { em: Date.now(), dados: d, marca };
+    return d;
+  }
+
+  async function minhaArea() {
+    const A = window.AreaTela;
+    if (!A) return vazio('A página de área ainda não está de pé nesta tela.');
+    const eu = window.CentralEu;
+    const todas = A.areasDoBanco();
+    const area = eu && eu.area_id ? todas.find((x) => x.id === eu.area_id) : null;
+    if (!area) return vazio('Você ainda não está ligado a uma área. Peça a quem administra para escolher a sua em Acessos.');
+
+    const marca = document.getElementById('brandSelect')?.value || '';
+    const ts = A.tarefasDaArea(area, ['Botanika', 'VermeFree'].includes(marca) ? marca : '');
+    const h = new Date().toISOString().slice(0, 10);
+    const abertas = ts.filter((t) => t.status !== 'feito');
+    const atrasadas = abertas.filter((t) => t.due && t.due < h);
+    const deHoje = abertas.filter((t) => t.due === h);
+
+    const cabeca = `<div class="hm-area-topo">
+      <b>${esc(area.nome)}</b>
+      <span class="${atrasadas.length ? 'critico' : ''}">${atrasadas.length} atrasada${atrasadas.length === 1 ? '' : 's'}</span>
+      <span>${deHoje.length} para hoje</span>
+      <span>${abertas.length} abertas</span>
+      <button type="button" class="hm-bt" data-hm-abre-area>Abrir a área</button>
+    </div>`;
+
+    /* campanhas: o quanto falta a ÁREA entregar em cada uma */
+    const cs = lerLista(`central.campaigns.${uid()}`)
+      .map((c) => {
+        const n = limpaTxt(c.name);
+        const minhasT = ts.filter((t) => {
+          const p = limpaTxt(t.project);
+          if (!p || p === 'sem projeto') return false;
+          return n === p || n.startsWith(p + ' ') || p.startsWith(n + ' ') || (n.startsWith(p) && p.length >= 5);
+        });
+        return { c, minhasT, feitas: minhasT.filter((t) => t.status === 'feito').length };
+      })
+      .filter((x) => x.minhasT.length)
+      .slice(0, 4);
+
+    const camps = cs.length ? `<div class="hm-area-camps">${cs.map((x) => {
+      const pct = Math.round((x.feitas / x.minhasT.length) * 100);
+      return `<div class="hm-area-camp" data-ini-campanha="${esc(x.c.name)}">
+        <div class="hm-area-camp-topo"><b>${esc(x.c.name)}</b><span>${pct}%</span></div>
+        <div class="ar-pct-barra"><i style="width:${pct}%"></i></div>
+        <small>faltam ${x.minhasT.length - x.feitas} de ${x.minhasT.length}</small>
+      </div>`;
+    }).join('')}</div>` : '';
+
+    /* Sem nada atrasado nem de hoje, a tela não fica vazia: mostra o que
+       vem — quem executa quer saber o que é dele daqui para a frente,
+       não só o que já queimou. */
+    const proximas = abertas
+      .filter((t) => !atrasadas.includes(t) && !deHoje.includes(t))
+      .sort((a, b) => String(a.due || '9999').localeCompare(String(b.due || '9999')));
+    const mostrar = (atrasadas.length || deHoje.length)
+      ? [...atrasadas, ...deHoje].slice(0, 5)
+      : proximas.slice(0, 5);
+    const listaTarefas = mostrar.length
+      ? (atrasadas.length || deHoje.length ? '' : '<div class="hm-area-rot">O que vem a seguir</div>') +
+        mostrar.map(linhaTarefa).join('')
+      : '<div class="ini-vazio">Nenhuma tarefa aberta nesta área.</div>';
+
+    /* as micrometas: só as de fluxo com meta, que são as que viram "hoje" */
+    let micro = '';
+    try {
+      const mapa = A.MAPA[area.slug] || { setores: [] };
+      const d = await metricasDaArea(mapa.setores, marca);
+      if (d && !d.erro) {
+        const P = window.Painel;
+        const metas = d.metas || {};
+        const real = P.comDerivadas ? P.comDerivadas({ ...(d.manuais || {}), ...(d.realizados || {}) }, d.manuais) : (d.realizados || {});
+        const linhas = Object.keys(metas)
+          .filter((k) => mapa.setores.includes(String(k).split('|')[0]))
+          .map((k) => {
+            const cfg = P.metricas[k] || { nome: k, tipo: 'fluxo', un: '' };
+            const mm = A.micrometa(cfg, +metas[k].valor, real[k], +d.dia_hoje || 0, +d.dias || 30);
+            return { k, cfg, mm, un: metas[k].unidade || cfg.un };
+          })
+          .filter((x) => x.mm)
+          .slice(0, 4);
+        if (linhas.length) micro = `<div class="hm-area-micro">${linhas.map((x) => `
+          <div class="hm-area-mm">
+            <small>${esc(x.cfg.nome)}</small>
+            <b>${x.mm.tipo === 'nivel' ? valorBR(x.un, x.mm.valor) : x.mm.resta <= 0 ? 'batida' : valorBR(x.un, x.mm.valor)}</b>
+            <i>${x.mm.tipo === 'nivel' ? 'manter' : x.mm.resta <= 0 ? 'meta do mês' : 'hoje'}</i>
+          </div>`).join('')}</div>`;
+      }
+    } catch { /* sem número, a área ainda vale pelas tarefas */ }
+
+    return cabeca + micro + camps + listaTarefas;
+  }
+
+  const limpaTxt = (t) => String(t || '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+
+  function valorBR(un, v) {
+    if (v == null || !isFinite(v)) return '—';
+    if (un === 'R$') return `R$ ${Math.round(v).toLocaleString('pt-BR')}`;
+    if (un === '%') return `${(+v).toFixed(1)}%`;
+    if (un === 'x') return `${(+v).toFixed(2)}x`;
+    return Math.round(v).toLocaleString('pt-BR');
   }
 
   function minhas() {
@@ -276,17 +410,33 @@
     }
 
     /* o conteúdo dos blocos que eu desenho é refeito sempre — é barato e
-       evita a tela ficar velha depois de alguém salvar em outra aba */
+       evita a tela ficar velha depois de alguém salvar em outra aba.
+       Bloco que precisa buscar coisa devolve promessa: desenha o que dá na
+       hora e preenche quando chegar, sem segurar o resto da tela. */
     for (const b of arranjo()) {
       const cat = doCatalogo(b.id);
       if (!cat || !cat.render) continue;
       const corpo = grade.querySelector(`[data-hm-corpo="${CSS.escape(b.id)}"]`);
       if (!corpo) continue;
-      const html = `<div class="card"><div class="cardhead"><strong>${esc(cat.nome)}</strong><span>${esc(cat.sobre)}</span></div>
-        <div class="hm-lista">${cat.render()}</div></div>`;
+      const dentro = cat.render();
+      if (dentro && typeof dentro.then === 'function') {
+        if (!corpo.dataset.html) corpo.innerHTML = molde(cat, '<div class="ini-vazio">Buscando…</div>');
+        const meu = (esperando[b.id] = (esperando[b.id] || 0) + 1);
+        dentro.then((h) => {
+          if (esperando[b.id] !== meu) return;
+          const html = molde(cat, h);
+          if (corpo.dataset.html !== html) { corpo.dataset.html = html; corpo.innerHTML = html }
+        }).catch(() => {});
+        continue;
+      }
+      const html = molde(cat, dentro);
       if (corpo.dataset.html !== html) { corpo.dataset.html = html; corpo.innerHTML = html }
     }
   }
+
+  const esperando = {};
+  const molde = (cat, dentro) => `<div class="card"><div class="cardhead"><strong>${esc(cat.nome)}</strong><span>${esc(cat.sobre)}</span></div>
+    <div class="hm-lista">${dentro}</div></div>`;
 
   /* ---------- o catálogo na tela ---------- */
   function abrirCatalogo() {
@@ -326,6 +476,11 @@
     if (alvo.closest?.('[data-hm-add]')) return abrirCatalogo();
     if (alvo.closest?.('[data-hm-fechar]')) return fecharCatalogo();
     if (alvo.closest?.('[data-hm-padrao]')) { try { localStorage.removeItem(CHAVE()) } catch {} ; return desenhar() }
+    if (alvo.closest?.('[data-hm-abre-area]')) {
+      document.getElementById('painelNav')?.click();
+      setTimeout(() => document.querySelector('#painelView [data-tela="area"]')?.click(), 160);
+      return;
+    }
 
     const por = alvo.closest?.('[data-hm-por]');
     if (por) {

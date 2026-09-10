@@ -9,6 +9,18 @@ import { chromium } from '/home/user/vitor/node_modules/playwright-core/index.mj
 import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
+
+/* A lateral agora fica guardada atrás do sanduíche: navegar é abrir e
+   escolher, que é o que uma pessoa faz. */
+const irPara = async (p, id) => {
+  const bt = p.locator('#menuBotao');
+  if (await bt.isVisible().catch(() => false)) {
+    const jaAberto = await p.evaluate(() => document.body.classList.contains('mn-aberto'));
+    if (!jaAberto) { await bt.click(); await p.waitForTimeout(260) }
+  }
+  await p.locator(`#${id}`).click();
+  await p.waitForTimeout(140);
+};
 const srv = createServer((_, r) => { r.writeHead(200,{'content-type':'text/html; charset=utf-8'}); r.end(html) }).listen(0);
 const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
 const pag = await nav.newPage({ viewport: { width: 1440, height: 900 } });
@@ -22,7 +34,7 @@ await pag.addInitScript((ts) => { window.supabase = { createClient: () => ({
 await pag.route('**/supabase.js', (r) => r.fulfill({ status:200, body:'', contentType:'application/javascript' }));
 await pag.goto(`http://127.0.0.1:${srv.address().port}/`, { waitUntil:'networkidle' });
 await pag.waitForTimeout(1200);
-await pag.locator('#tasksNav').click(); await pag.waitForTimeout(500);
+await irPara(pag, 'tasksNav'); await pag.waitForTimeout(500);
 
 const aberto = () => pag.evaluate(() => !!document.querySelector('.tdrawer.open'));
 const abrir = async () => {

@@ -9,6 +9,18 @@ import { createServer } from 'node:http';
 import assert from 'node:assert/strict';
 
 const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
+
+/* A lateral agora fica guardada atrás do sanduíche: navegar é abrir e
+   escolher, que é o que uma pessoa faz. */
+const irPara = async (p, id) => {
+  const bt = p.locator('#menuBotao');
+  if (await bt.isVisible().catch(() => false)) {
+    const jaAberto = await p.evaluate(() => document.body.classList.contains('mn-aberto'));
+    if (!jaAberto) { await bt.click(); await p.waitForTimeout(260) }
+  }
+  await p.locator(`#${id}`).click();
+  await p.waitForTimeout(140);
+};
 const srv = createServer((_, r) => { r.writeHead(200,{'content-type':'text/html; charset=utf-8'}); r.end(html) }).listen(0);
 const nav = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
 const pag = await nav.newPage({ viewport: { width: 1440, height: 1000 } });
@@ -76,7 +88,7 @@ await pag.waitForTimeout(1400);
 const ok = [];
 const conf = (n, v) => { assert.ok(v, n); ok.push(n) };
 
-await pag.locator('#tasksNav').click(); await pag.waitForTimeout(500);
+await irPara(pag, 'tasksNav'); await pag.waitForTimeout(500);
 await pag.locator('.cu-row[data-task-id="86akbh65m"]').click(); await pag.waitForTimeout(600);
 
 const lida = pag.locator('#descricaoLida');
@@ -154,7 +166,7 @@ conf('e o app salva o Markdown, e não o HTML',
   salva === '## Novo briefing\n\nEscrito **aqui**.');
 
 /* ---------- sem descrição, diz que não tem ---------- */
-await pag.locator('#tasksNav').click(); await pag.waitForTimeout(400);
+await irPara(pag, 'tasksNav'); await pag.waitForTimeout(400);
 await pag.locator('.cu-row[data-task-id="t2"]').click(); await pag.waitForTimeout(600);
 conf('tarefa sem briefing avisa em vez de mostrar caixa vazia',
   (await pag.locator('#descricaoLida').innerText()).includes('ainda não foi escrito'));
