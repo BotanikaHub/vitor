@@ -669,6 +669,13 @@
     window.MapaMental?.virarCampanha(A.noId, { nome: c.name, cor: T.cor, campId: c.id });
     window.RecarregarCampanhas?.();
     aviso(`"${c.name}" criada — nó no mapa e TAP montado.`);
+
+    /* A campanha nascia sem tarefa nenhuma: enquanto o ClickUp era o dono
+       delas, vinham copiadas de lá; com ele fora, alguém teria que digitar
+       as vinte e poucas de novo todo mês. O backlog já tem essa lista por
+       formato — aqui ela é oferecida, com as datas contadas a partir
+       destas, para quem está criando aceitar ou não. */
+    setTimeout(() => window.Backlog?.oferecer?.(c), 450);
   }
 
   /* ======================================================================
