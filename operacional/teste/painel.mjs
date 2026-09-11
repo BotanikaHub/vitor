@@ -181,7 +181,7 @@ conf('o painel abre e a home sai da frente',
   await pag.locator('#painelNav').evaluate((e) => e.classList.contains('active')) &&
   !(await pag.locator('#homeNav').evaluate((e) => e.classList.contains('active'))));
 conf('a URL guarda a tela', await pag.evaluate(() => location.hash) === '#painel');
-conf('o cabeçalho tem as sete telas do painel e as sete da equipe, da área e do backlog', await pag.locator('#painelView [data-tela]').count() === 14);
+conf('o cabeçalho tem as sete telas do painel e as oito da equipe, da área, do backlog e da agenda', await pag.locator('#painelView [data-tela]').count() === 15);
 conf('e os seis atalhos de período', await pag.locator('#painelView [data-preset]').count() === 6);
 
 const hojeSP = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());

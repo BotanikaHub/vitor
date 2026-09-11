@@ -1,0 +1,81 @@
+/* ======================================================================
+   A agenda — mesma pele do painel.
+   ====================================================================== */
+.ag-abas{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.ag-fonte{margin-left:auto;font-size:10px;color:var(--pn-muted)}
+.ag-bt{min-height:34px;padding:0 15px;border:0;border-radius:10px;background:var(--pn-ink);color:#fff;
+  font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.ag-bt:hover{opacity:.88}
+.ag-bt[disabled]{opacity:.5;cursor:default}
+.ag-bt-vazio{min-height:28px;padding:0 11px;border:1px solid var(--pn-line);border-radius:999px;
+  background:transparent;color:var(--pn-muted);font:inherit;font-size:10.5px;font-weight:600;cursor:pointer}
+.ag-bt-vazio:hover{color:var(--pn-ink);border-color:var(--pn-ink)}
+
+/* --- ligar o calendário --- */
+.ag-ligar{max-width:560px}
+.ag-ligar b{font-size:13px;color:var(--pn-ink)}
+.ag-ligar p{margin:6px 0 0;font-size:12px;line-height:1.55;color:var(--pn-muted)}
+.ag-ligar ol{margin:11px 0 0;padding-left:20px;font-size:12px;line-height:1.7;color:var(--pn-ink)}
+.ag-obs{font-size:11px!important}
+.ag-ligar form{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.ag-ligar input{flex:1 1 260px;min-height:34px;padding:0 11px;border:1px solid var(--pn-line);
+  border-radius:10px;background:var(--pn-surface);color:var(--pn-ink);font:inherit;font-size:12px}
+.ag-ligar input:focus{outline:none;border-color:var(--pn-ink)}
+.ag-msg{margin-top:10px;font-size:12px}
+.ag-msg.erro{color:var(--pn-critico)}
+.ag-msg.indo{color:var(--pn-muted)}
+.ag-erro{margin:0 0 12px;font-size:11.5px;color:var(--pn-atencao,#a66a20)}
+
+/* --- o dia --- */
+.ag-dia{margin-top:20px}
+.ag-dia:first-of-type{margin-top:2px}
+.ag-dia h4{display:flex;align-items:baseline;gap:8px;margin:0 0 8px;padding-bottom:6px;
+  border-bottom:1px solid var(--pn-line);font-size:10px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--pn-muted)}
+.ag-dia h4 span{margin-left:auto;font-size:10px;letter-spacing:0;font-variant-numeric:tabular-nums}
+.ag-hoje h4{color:var(--pn-ink)}
+
+/* --- o compromisso --- */
+.ag-ev{border:1px solid var(--pn-line);border-radius:12px;padding:10px 12px;margin-bottom:7px;
+  background:var(--pn-surface);cursor:pointer}
+.ag-ev:hover{border-color:var(--pn-ink)}
+.ag-ev.aberto{border-color:var(--pn-ink);cursor:default}
+.ag-ev-topo{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.ag-ev-topo b{flex:1 1 auto;min-width:0;font-size:12.5px;font-weight:650;color:var(--pn-ink)}
+.ag-hora{flex:0 0 auto;font-size:11px;font-weight:700;color:var(--pn-muted);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.ag-gente,.ag-tem-nota{flex:0 0 auto;font-size:9px;color:var(--pn-muted);white-space:nowrap}
+.ag-tem-nota{padding:2px 7px;border-radius:999px;background:#eef1ef;color:#4f8a70;font-weight:700}
+.ag-onde{margin-top:3px;font-size:10.5px;color:var(--pn-muted)}
+
+.ag-ficha{margin-top:11px;padding-top:11px;border-top:1px solid var(--pn-line)}
+.ag-sobre{margin:0 0 11px;max-height:150px;overflow:auto;font:inherit;font-size:11.5px;line-height:1.55;
+  color:var(--pn-muted);white-space:pre-wrap;word-break:break-word}
+.ag-rot{display:flex;align-items:baseline;gap:8px;margin-bottom:6px;font-size:10px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--pn-muted)}
+.ag-rot span{font-size:9.5px;font-weight:400;letter-spacing:0;text-transform:none;opacity:.85}
+.ag-nota{display:block;width:100%;padding:9px 11px;border:1px solid var(--pn-line);border-radius:10px;
+  background:var(--pn-surface);color:var(--pn-ink);font:inherit;font-size:12px;line-height:1.6;resize:vertical}
+.ag-nota:focus{outline:none;border-color:var(--pn-ink)}
+.ag-assina{margin-top:5px;font-size:9.5px;color:var(--pn-muted)}
+
+/* --- o que mais cai no dia --- */
+.ag-lado{margin-top:9px;padding-left:11px;border-left:2px solid var(--pn-line)}
+.ag-lado h5{margin:0 0 5px;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--pn-muted)}
+.ag-tarefa{display:flex;align-items:baseline;gap:9px;padding:4px 0;font-size:11.5px;color:var(--pn-ink);
+  cursor:pointer}
+.ag-tarefa:hover b{text-decoration:underline}
+.ag-tarefa b{font-weight:500}
+.ag-tarefa span{margin-left:auto;font-size:9.5px;color:var(--pn-muted);white-space:nowrap}
+.ag-rotina{display:flex;align-items:flex-start;gap:8px;padding:4px 0;font-size:11.5px;color:var(--pn-ink);
+  cursor:pointer}
+.ag-rotina input{flex:0 0 auto;width:14px;height:14px;margin:2px 0 0;accent-color:var(--pn-ink);cursor:pointer}
+.ag-rotina span{flex:1 1 auto;min-width:0}
+.ag-rotina small{flex:0 0 auto;font-size:9px;color:var(--pn-muted)}
+.ag-rotina.ok span{color:var(--pn-muted);text-decoration:line-through}
+
+@media (max-width:640px){
+  .ag-fonte{margin-left:0;flex:1 1 100%}
+  .ag-ev-topo b{flex:1 1 100%;order:3}
+}

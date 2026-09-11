@@ -534,6 +534,57 @@ Aparece no início de cada pessoa e na página da área dela. Semanal e
 mensal com dia marcado só aparecem no dia — uma lista de trinta itens que
 nunca muda vira papel de parede, e ninguém marca papel de parede.
 
+## A agenda
+
+Cada pessoa liga o próprio calendário e vê o dia dela dentro da Central,
+no Painel → **Agenda**: os compromissos, as tarefas que vencem e a rotina
+que cai hoje. As três coisas que decidem a manhã de alguém estavam em
+três telas.
+
+Dentro de cada reunião há um espaço de anotação. A daily e a reunião de
+KPI acontecem toda semana e o que se combina nelas se perde — fica no
+caderno de um, na cabeça de outro. Agora fica na reunião, e a anotação é
+da equipe: o valor está em quem não pôde ir abrir a daily de terça e ler
+o que ficou combinado. A tela diz isso em cima da caixa, porque quem
+escreve tem que saber quem lê.
+
+### Por que o endereço secreto do iCal, e não "entrar com o Google"
+
+O escopo de leitura de calendário é sensível no Google: um aplicativo não
+verificado só funciona em modo de teste, onde a autorização **expira a
+cada sete dias**. A equipe teria que reconectar toda semana. O endereço
+secreto em formato iCal funciona hoje, sem projeto no Google Cloud, sem
+verificação e sem expirar; serve para o Notion Calendar, que roda em cima
+de uma conta Google, e para o Outlook, que publica o mesmo formato. O
+preço é ser leitura, e o Google atualizar o arquivo com algumas horas de
+atraso.
+
+Esse endereço é uma credencial de leitura vitalícia. Ele vai uma vez para
+`/api/agenda`, fica em `agenda_fonte` (RLS: cada linha só para o dono, e
+nem admin lê a do outro) e **nunca volta para o navegador** — de lá para
+cá vêm só compromissos. Se estivesse no `localStorage`, uma extensão
+qualquer leria a agenda inteira de quem a instalou.
+
+Três motivos para a leitura acontecer no servidor: o segredo não desce; o
+navegador não conseguiria, porque o Google não libera CORS no iCal; e a
+leitura é cara, então o resultado fica guardado por dez minutos — oito
+pessoas abrindo a Central não viram oito downloads por minuto. Quando a
+leitura falha, a tela mostra a última que deu certo e diz que está velha:
+uma agenda de ontem serve, uma tela em branco não.
+
+A função só aceita endereços `https` de calendar.google.com, Outlook,
+iCloud e Notion. Sem essa porta fechada, ela viraria um buscador de
+páginas internas — o servidor tem rede que o navegador não tem, e é assim
+que uma função inocente vira um jeito de ler o que está atrás do
+firewall.
+
+O leitor de iCalendar (`api/lib/ical.mjs`) trata o que um calendário de
+trabalho usa: linha quebrada em 75 bytes, fuso por nome (a reunião das
+10h não pode virar 7h), repetição diária, semanal e mensal, exceções, e a
+ocorrência que foi movida ou cancelada. A conversão de fuso usa o banco
+de fusos do próprio runtime, então horário de verão entra de graça e não
+há tabela para envelhecer.
+
 ## Quem entra na Central
 
 Acesso é uma coisa; cadastro de pessoa é outra. As duas moram na tela
