@@ -102,3 +102,13 @@
   .bk-oferta-cx li{flex-wrap:wrap}
   .bk-oferta-cx li small{margin-left:44px;padding-left:0}
 }
+
+/* --- a rotina --- */
+.bk-corte{flex:0 0 auto;width:1px;align-self:stretch;margin:4px 7px;
+  background:linear-gradient(180deg,transparent,var(--pn-line) 22%,var(--pn-line) 78%,transparent)}
+.bk-rot-grupo{margin-top:20px}
+.bk-rot-grupo:first-of-type{margin-top:14px}
+.bk-rot-grupo h4{display:flex;align-items:baseline;gap:7px;margin:0 0 7px;font-size:9px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--pn-muted)}
+.bk-rot-grupo h4 span{font-size:10px;letter-spacing:0;opacity:.7;font-variant-numeric:tabular-nums}
+.bk-rot-grupo .bk-tabela td:first-child{width:60%}

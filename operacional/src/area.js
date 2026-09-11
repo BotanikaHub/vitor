@@ -265,10 +265,44 @@
       </div>` +
       `<p class="pn-nota">Tudo nesta tela é da área ${esc(escolhida.nome)}: as tarefas de quem é dela e as do tipo de entrega dela, as campanhas onde essas tarefas estão, e as métricas dos setores que ela responde.</p>` +
       (EXTRAS[escolhida.slug] ? EXTRAS[escolhida.slug].render(ctx, ctx.extra) : '') +
+      rotinaDaArea(ctx, escolhida, hoje) +
       kpis(ctx, escolhida, mapa, hoje) +
       campanhasDaArea(ctx, escolhida, ts, hoje) +
       projetosDaArea(ctx, ts, hoje) +
       tarefasNaTela(ctx, ts, hoje);
+  }
+
+  /* ---------- a rotina da área ----------
+     Campanha tem começo e fim; rotina não tem. O que a área faz todo dia,
+     toda semana e todo mês não cabe em tarefa — viraria milhares de linhas
+     por ano — então fica aqui, marcável, e o que se guarda é só a marca do
+     período. Diária inteira; semanal e mensal, o que cai hoje. */
+  function rotinaDaArea(ctx, area, hoje) {
+    const R = window.Rotina;
+    if (!R) return '';
+    const grupos = R.daArea(area.slug, hoje);
+    if (!grupos.length) return '';
+
+    const dizQuando = (i) => {
+      if (i.cadencia === 'diaria') return 'todo dia';
+      if (i.dia == null) return i.cadencia === 'semanal' ? 'na semana' : 'no mês';
+      return i.cadencia === 'semanal' ? R.DIAS[+i.dia] : `dia ${i.dia}`;
+    };
+
+    const bloco = (g) => {
+      const cai = g.itens.filter((i) => i.hoje);
+      const feitos = cai.filter((i) => i.feito).length;
+      return `<div class="ar-rot-grupo"><h4>${esc(g.cadencia.nome)}<span>${cai.length ? `${feitos}/${cai.length} hoje` : 'nada hoje'}</span></h4>` +
+        g.itens.map((i) => `<label class="ar-rot ${i.feito ? 'ok' : ''} ${i.hoje ? '' : 'fora'}">` +
+          `<input type="checkbox" data-ar-rotina="${esc(i.id)}" ${i.feito ? 'checked' : ''} ${i.hoje ? '' : 'disabled'}>` +
+          `<span>${esc(i.titulo)}</span><small>${esc(dizQuando(i))}</small></label>`).join('') +
+        '</div>';
+    };
+
+    const total = grupos.reduce((n, g) => n + g.itens.filter((i) => i.hoje).length, 0);
+    const feitos = grupos.reduce((n, g) => n + g.itens.filter((i) => i.hoje && i.feito).length, 0);
+    return ctx.ui.cartao('A rotina de ' + area.nome, `${feitos} de ${total} para hoje`,
+      `<div class="ar-rot-linha">${grupos.map(bloco).join('')}</div>`);
   }
 
   /* ---------- KPIs, metas e micrometas ---------- */
@@ -455,6 +489,18 @@
     if (!view) return;
 
     view.addEventListener('change', (e) => {
+      /* marcar a rotina não redesenha a tela inteira: quem marca marca
+         três seguidas, e recarregar o painel a cada uma tiraria a lista
+         de baixo do dedo */
+      const cx = e.target.closest?.('[data-ar-rotina]');
+      if (cx) {
+        const R = window.Rotina;
+        const item = (R.rotina() || []).find((x) => x.id === cx.dataset.arRotina);
+        if (!item) return;
+        R.marcar(item, cx.checked);
+        cx.closest('.ar-rot')?.classList.toggle('ok', cx.checked);
+        return;
+      }
       const sel = e.target.closest?.('[data-ar-area]');
       if (!sel) return;
       st.areaId = sel.value;

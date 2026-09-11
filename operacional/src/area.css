@@ -80,3 +80,19 @@ html[data-theme="dark"] .ar-item.critico{background:#1c1010}
 html[data-theme="dark"] .cr-aq-barra{background:#242424}
 html[data-theme="dark"] .cr-aq-barra .rec{background:#3a3a3a}
 html[data-theme="dark"] .cr-parado{background:#1b1409}
+
+/* --- a rotina da área --- */
+.ar-rot-linha{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.ar-rot-grupo h4{display:flex;align-items:baseline;gap:8px;margin:0 0 7px;font-size:9px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--pn-muted)}
+.ar-rot-grupo h4 span{margin-left:auto;font-size:9px;letter-spacing:0;text-transform:none;opacity:.8;
+  font-variant-numeric:tabular-nums}
+.ar-rot{display:flex;align-items:flex-start;gap:9px;padding:6px 0;border-bottom:1px solid var(--pn-line);
+  font-size:11.5px;line-height:1.45;color:var(--pn-ink);cursor:pointer}
+.ar-rot:last-child{border-bottom:0}
+.ar-rot input{flex:0 0 auto;width:14px;height:14px;margin:2px 0 0;accent-color:var(--pn-ink);cursor:pointer}
+.ar-rot span{flex:1 1 auto;min-width:0}
+.ar-rot small{flex:0 0 auto;font-size:9px;color:var(--pn-muted);white-space:nowrap}
+.ar-rot.ok span{color:var(--pn-muted);text-decoration:line-through}
+.ar-rot.fora{cursor:default;opacity:.5}
+.ar-rot.fora input{cursor:default}

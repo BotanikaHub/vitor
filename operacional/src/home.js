@@ -64,6 +64,8 @@
       larg: 6, render: furo },
     { id: 'acoes', nome: 'Ações combinadas', sobre: 'O que ficou combinado na daily e na reunião, com prazo até hoje.',
       larg: 6, render: acoes },
+    { id: 'rotina', nome: 'A rotina de hoje', sobre: 'O que a sua área faz todo dia, e o da semana e do mês que cai hoje.',
+      larg: 6, render: rotinaHoje },
   ];
 
   const doCatalogo = (id) => BLOCOS.find((b) => b.id === id) || null;
@@ -77,9 +79,9 @@
     const papel = (window.CentralEu || {}).papel;
     const manda = papel === 'admin' || papel === 'gestor';
     const ids = manda
-      ? ['minhaArea', 'semana', 'perto', 'vencidas', 'conclusao', 'atencao', 'campanhas']
-      : ['minhaArea', 'minhas', 'atencao'];
-    return ids.map((id) => ({ id, larg: id === 'minhas' ? 6 : id === 'atencao' && !manda ? 6 : doCatalogo(id).larg }));
+      ? ['minhaArea', 'rotina', 'semana', 'perto', 'vencidas', 'conclusao', 'atencao', 'campanhas']
+      : ['minhaArea', 'minhas', 'rotina', 'atencao'];
+    return ids.map((id) => ({ id, larg: id === 'minhas' ? 6 : id === 'rotina' ? 6 : id === 'atencao' && !manda ? 6 : doCatalogo(id).larg }));
   };
 
   /* ---------- o arranjo de quem está logado ---------- */
@@ -143,9 +145,19 @@
     return d;
   }
 
+  /* A lista de áreas vem do banco e só é lida quando alguém abre a tela
+     de Acessos. Quem chega direto no início — que é todo mundo, toda
+     manhã — não passou por lá: sem isto, `areasDoBanco` cai no plano B e
+     o id da área de cada um não casa com nada. A pessoa lia "você não
+     está ligado a uma área" estando. */
+  async function comCadastro() {
+    try { await window.Acessos?.carregar?.(false) } catch {}
+  }
+
   async function minhaArea() {
     const A = window.AreaTela;
     if (!A) return vazio('A página de área ainda não está de pé nesta tela.');
+    await comCadastro();
     const eu = window.CentralEu;
     const todas = A.areasDoBanco();
     const area = eu && eu.area_id ? todas.find((x) => x.id === eu.area_id) : null;
@@ -257,6 +269,30 @@
       ? 'Nada seu vence hoje nem nos próximos três dias.'
       : `Nenhuma tarefa no nome de ${esc(nomes[0])}.`);
     return lista.map(linhaTarefa).join('');
+  }
+
+  /* A rotina da área de quem está olhando. Diária inteira; semanal e
+     mensal só quando caem hoje — uma lista de trinta itens que nunca
+     muda vira papel de parede, e ninguém marca papel de parede. */
+  async function rotinaHoje() {
+    const R = window.Rotina;
+    if (!R) return vazio('A rotina ainda não carregou.');
+    await comCadastro();
+    const eu = window.CentralEu;
+    const A = window.AreaTela;
+    const area = eu && eu.area_id && A ? (A.areasDoBanco() || []).find((a) => a.id === eu.area_id) : null;
+    const grupos = R.daArea(area ? area.slug : null);
+    const itens = grupos.flatMap((g) => g.itens.filter((i) => i.hoje).map((i) => ({ ...i, c: g.cadencia })));
+    if (!itens.length) {
+      return vazio(area
+        ? `Nada na rotina de ${esc(area.nome)} para hoje.`
+        : 'Sem área no seu cadastro — peça para ligarem a sua em Acessos, e a rotina dela aparece aqui.');
+    }
+    const feitos = itens.filter((i) => i.feito).length;
+    return `<div class="hm-rot-topo">${feitos} de ${itens.length} ${area ? `· ${esc(area.nome)}` : ''}</div>` +
+      itens.map((i) => `<label class="hm-rot ${i.feito ? 'ok' : ''}">` +
+        `<input type="checkbox" data-hm-rotina="${esc(i.id)}" ${i.feito ? 'checked' : ''}>` +
+        `<span>${esc(i.titulo)}</span><small>${esc(i.c.curto)}</small></label>`).join('');
   }
 
   function estreia() {
@@ -468,6 +504,22 @@
     if (['campanhas', 'estreia'].includes(b.id)) return '<i class="p-barra"></i><i class="p-barra media"></i><i class="p-barra curta"></i>';
     return '<i class="p-item"></i><i class="p-item"></i><i class="p-item"></i>';
   }
+
+  /* ---------- marcar a rotina ----------
+     No change e não no click: a caixa é um input, e o estado que interessa
+     é o depois. Só o bloco é redesenhado — desenhar a home inteira roubaria
+     o foco de quem está marcando três itens seguidos. */
+  document.addEventListener('change', (e) => {
+    const cx = e.target.closest?.('[data-hm-rotina]');
+    if (!cx) return;
+    const R = window.Rotina;
+    const item = (R.rotina() || []).find((x) => x.id === cx.dataset.hmRotina);
+    if (!item) return;
+    R.marcar(item, cx.checked);
+    const bloco = cx.closest('[data-hm-bloco]');
+    const dentro = bloco && bloco.querySelector('.hm-corpo');
+    if (dentro) Promise.resolve(rotinaHoje()).then((h) => { dentro.innerHTML = h });
+  });
 
   /* ---------- cliques ---------- */
   document.addEventListener('click', (e) => {

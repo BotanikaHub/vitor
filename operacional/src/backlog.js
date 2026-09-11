@@ -323,9 +323,63 @@
 
   function abas(atual) {
     const ms = modelos();
+    const R = window.Rotina;
     return '<div class="bk-abas">' +
       ms.map((m) => `<button type="button" class="cu-view ${m.id === atual ? 'active' : ''}" data-bk-modelo="${esc(m.id)}">${esc(m.nome)}<span>${(m.itens || []).length}</span></button>`).join('') +
-      '<button type="button" class="bk-novo" data-bk-novo>+ modelo</button></div>';
+      '<button type="button" class="bk-novo" data-bk-novo>+ modelo</button>' +
+      '<span class="bk-corte" aria-hidden="true"></span>' +
+      `<button type="button" class="cu-view ${atual === 'rotina' ? 'active' : ''}" data-bk-modelo="rotina">Rotina<span>${R ? R.rotina().length : 0}</span></button>` +
+      '</div>';
+  }
+
+  /* ====================================================================
+     A rotina, que é o outro lado da mesma moeda
+
+     O modelo diz o que uma campanha sempre pede; a rotina diz o que a
+     área sempre faz, campanha ou não. Mora na mesma tela porque quem vem
+     aqui vem pela mesma pergunta: o que se repete?
+     ==================================================================== */
+  function telaRotina(ctx) {
+    const R = window.Rotina;
+    if (!R) return ctx.ui.cartao('Rotina', '', '<div class="pn-vazio">Carregando…</div>');
+    const A = window.AreaTela;
+    const areas = (A ? A.areasDoBanco() : []).map((a) => ({ id: a.slug, nome: a.nome }));
+    const rs = R.rotina();
+
+    const selArea = (r) => `<select data-bk-rot-campo="area" data-bk-rot="${esc(r.id)}">` +
+      areas.map((a) => `<option value="${esc(a.id)}" ${a.id === r.area ? 'selected' : ''}>${esc(a.nome)}</option>`).join('') +
+      (areas.some((a) => a.id === r.area) ? '' : `<option value="${esc(r.area)}" selected>${esc(r.area)}</option>`) + '</select>';
+
+    const selQuando = (r) => {
+      if (r.cadencia === 'semanal') {
+        return `<select data-bk-rot-campo="dia" data-bk-rot="${esc(r.id)}"><option value="">todo dia da semana</option>` +
+          R.DIAS.map((d, i) => `<option value="${i}" ${String(r.dia) === String(i) ? 'selected' : ''}>${esc(d)}</option>`).join('') + '</select>';
+      }
+      if (r.cadencia === 'mensal') {
+        return `<select data-bk-rot-campo="dia" data-bk-rot="${esc(r.id)}"><option value="">qualquer dia do mês</option>` +
+          Array.from({ length: 31 }, (_, i) => `<option value="${i + 1}" ${String(r.dia) === String(i + 1) ? 'selected' : ''}>dia ${i + 1}</option>`).join('') + '</select>';
+      }
+      return '<span class="bk-sem">todo dia útil ou não</span>';
+    };
+
+    const grupo = (c) => {
+      const meus = rs.filter((r) => r.cadencia === c.id);
+      return `<div class="bk-rot-grupo"><h4>${esc(c.nome)} <span>${meus.length}</span></h4>` +
+        (meus.length
+          ? `<table class="bk-tabela"><tbody>${meus.map((r) => `<tr>` +
+              `<td><span class="bk-ed" contenteditable="plaintext-only" spellcheck="false" data-bk-rot-campo="titulo" data-bk-rot="${esc(r.id)}">${esc(r.titulo)}</span></td>` +
+              `<td>${selArea(r)}</td>` +
+              `<td>${selQuando(r)}</td>` +
+              `<td><button type="button" class="bk-x" data-bk-rot-tira="${esc(r.id)}" title="tirar da rotina">×</button></td>` +
+            `</tr>`).join('')}</tbody></table>`
+          : '<div class="bk-sem">nada nesta cadência</div>') +
+        `<button type="button" class="bk-mais" data-bk-rot-mais="${esc(c.id)}">+ item ${esc(c.curto === 'dia' ? 'diário' : c.curto === 'semana' ? 'semanal' : 'mensal')}</button></div>`;
+    };
+
+    return abas('rotina') + ctx.ui.cartao('Rotina',
+      'o que cada área faz sempre, com campanha ou sem',
+      '<p class="pn-nota">Isto não vira tarefa. Tarefa de rotina encheria a lista com milhares de linhas por ano — aqui fica uma lista curta que se marca, e o que se guarda é só a marca do período. Aparece no início de cada pessoa e na página da área dela.</p>' +
+      R.CADENCIAS.map(grupo).join(''));
   }
 
   function linhaItem(m, it, aberto) {
@@ -361,6 +415,7 @@
   async function tela(ctx) {
     await comCadastro();
     const st = (window.Painel || {}).estado || {};
+    if (st.bkModelo === 'rotina') return telaRotina(ctx);
     const ms = modelos();
     const m = ms.find((x) => x.id === st.bkModelo) || ms[0];
     if (!m) return '<div class="pn-vazio">Nenhum modelo.</div>';
@@ -498,6 +553,26 @@
         return redesenhar();
       }
 
+      const rotTira = e.target.closest('[data-bk-rot-tira]');
+      if (rotTira) {
+        const R = window.Rotina;
+        R.gravarRotina(R.rotina().filter((x) => x.id !== rotTira.dataset.bkRotTira));
+        return redesenhar();
+      }
+
+      const rotMais = e.target.closest('[data-bk-rot-mais]');
+      if (rotMais) {
+        const R = window.Rotina;
+        const eu = window.CentralEu;
+        const A = window.AreaTela;
+        const minha = eu && eu.area_id && (A ? A.areasDoBanco() : []).find((a) => a.id === eu.area_id);
+        const rs = R.rotina();
+        rs.push({ id: novoId('rot'), titulo: 'Novo item da rotina',
+                  area: (minha && minha.slug) || 'gestao', cadencia: rotMais.dataset.bkRotMais, dia: null });
+        R.gravarRotina(rs);
+        return redesenhar();
+      }
+
       const aplica = e.target.closest('[data-bk-aplica]');
       if (aplica) {
         const m = modelos().find((x) => x.id === aplica.dataset.bkAplica);
@@ -522,7 +597,26 @@
       mudarItem(el.dataset.bkItem, el.dataset.bkCampo, pegar(el));
     }, true);
 
+    const mudarRotina = (el) => {
+      const R = window.Rotina;
+      const rs = R.rotina();
+      const r = rs.find((x) => x.id === el.dataset.bkRot);
+      if (!r) return;
+      const campo = el.dataset.bkRotCampo;
+      const valor = el.tagName === 'SELECT' ? el.value : el.textContent;
+      if (campo === 'dia') r.dia = valor === '' ? null : +valor;
+      else r[campo] = String(valor).trim();
+      R.gravarRotina(rs);
+    };
+
+    view.addEventListener('focusout', (e) => {
+      const el = e.target.closest('[data-bk-rot-campo]');
+      if (el && el.isContentEditable) mudarRotina(el);
+    }, true);
+
     view.addEventListener('change', (e) => {
+      const rot = e.target.closest('[data-bk-rot-campo]');
+      if (rot) { mudarRotina(rot); return redesenhar() }
       const el = e.target.closest('[data-bk-campo]');
       if (!el || el.tagName === 'TEXTAREA') return;
       mudarItem(el.dataset.bkItem, el.dataset.bkCampo, el.value);

@@ -129,8 +129,8 @@ const conf = (n, v) => { assert.ok(v, n); ok.push(n) };
 const pHome = await abrir({ id:'u-italo', nome:'Ítalo Neves', email:'italo@b.com', papel:'membro', ativo:true, cargo:'Social', area_id:'a-soc' });
 await irPara(pHome, 'homeNav'); await pHome.waitForTimeout(900);
 const arr = await pHome.evaluate(() => window.HomeModular.arranjo().map((b) => b.id));
-conf('quem executa nasce com a área na frente e pouca coisa atrás',
-  arr[0] === 'minhaArea' && arr.length === 3 && !arr.includes('semana'));
+conf('quem executa nasce com a área e a rotina na frente, e pouca coisa atrás',
+  arr[0] === 'minhaArea' && arr.includes('rotina') && arr.length === 4 && !arr.includes('semana'));
 await pHome.waitForTimeout(900);
 const bloco = (await pHome.locator('[data-hm-bloco="minhaArea"]').innerText()).replace(/\s+/g, ' ');
 conf('e a área dele já aparece na home, sem ir a lugar nenhum',

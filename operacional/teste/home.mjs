@@ -50,8 +50,8 @@ const guardado = () => pag.evaluate(() =>
 
 /* ---------- a grade ---------- */
 conf('a home vira uma grade de blocos', await pag.locator('#homeGrade .hm-grade').count() === 1);
-conf('quem administra nasce com a área na frente e a operação inteira atrás',
-  (await arranjo()).join(',') === 'minhaArea:12,semana:12,perto:4,vencidas:4,conclusao:4,atencao:8,campanhas:4');
+conf('quem administra nasce com a área e a rotina na frente e a operação inteira atrás',
+  (await arranjo()).join(',') === 'minhaArea:12,rotina:6,semana:12,perto:4,vencidas:4,conclusao:4,atencao:8,campanhas:4');
 conf('os blocos do app foram movidos para dentro da grade, não recriados',
   await pag.locator('#homeGrade [data-hm-corpo="atencao"] #homeAtencao').count() === 1 &&
   await pag.locator('#homeGrade [data-hm-corpo="perto"] [data-stat="perto"]').count() === 1);
@@ -66,7 +66,7 @@ conf('fora do modo organizar, nada de alça nem de x',
   await pag.locator('.hm-ferramentas').count() === 0);
 await pag.locator('[data-hm-organizar]').click(); await pag.waitForTimeout(300);
 conf('organizar mostra alça, largura e o x em cada bloco',
-  await pag.locator('.hm-ferramentas').count() === 7 &&
+  await pag.locator('.hm-ferramentas').count() === 8 &&
   await pag.locator('[data-hm-bloco="atencao"] [data-hm-larg]').count() === 5);
 conf('e o bloco passa a poder ser arrastado',
   await pag.locator('[data-hm-bloco="semana"]').getAttribute('draggable') === 'true');
@@ -126,7 +126,7 @@ conf('e o bloco "o que estreia" mostra a campanha que vem, com as abertas',
 /* ---------- voltar ao padrão ---------- */
 await pag.locator('[data-hm-padrao]').click(); await pag.waitForTimeout(400);
 conf('voltar ao padrão devolve o arranjo de fábrica',
-  (await arranjo()).join(',') === 'minhaArea:12,semana:12,perto:4,vencidas:4,conclusao:4,atencao:8,campanhas:4');
+  (await arranjo()).join(',') === 'minhaArea:12,rotina:6,semana:12,perto:4,vencidas:4,conclusao:4,atencao:8,campanhas:4');
 await pag.locator('[data-hm-organizar]').click(); await pag.waitForTimeout(300);
 conf('e sair do modo organizar limpa as ferramentas',
   await pag.locator('.hm-ferramentas').count() === 0);

@@ -114,3 +114,14 @@ html[data-theme="dark"] .hm-area-mm{background:#1a1a1a}
 html[data-theme="dark"] .hm-area-camp{border-color:#2b2b2b}
 .hm-area-rot{margin:2px 0 4px;font-size:9px;font-weight:700;letter-spacing:.05em;
   text-transform:uppercase;color:var(--pn-muted,#7d8288)}
+
+/* --- a rotina de hoje --- */
+.hm-rot-topo{margin-bottom:8px;font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:#92999e}
+.hm-rot{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid #f2f2f0;
+  font-size:12px;line-height:1.45;color:#151718;cursor:pointer}
+.hm-rot:last-child{border-bottom:0}
+.hm-rot input{flex:0 0 auto;width:15px;height:15px;margin:1px 0 0;accent-color:#151718;cursor:pointer}
+.hm-rot span{flex:1 1 auto;min-width:0}
+.hm-rot small{flex:0 0 auto;font-size:9px;color:#a4a8ac;text-transform:uppercase;letter-spacing:.04em}
+.hm-rot.ok span{color:#92999e;text-decoration:line-through}

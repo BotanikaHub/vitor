@@ -476,6 +476,64 @@ outra chave `central.*`:
 Nenhuma ação vira tarefa no ClickUp por aqui: isso só depois que a escrita de
 volta for liberada.
 
+## O que se repete
+
+Duas coisas se repetem na operação, em escalas diferentes, e nenhuma
+tinha lugar no sistema.
+
+### O backlog: modelos de campanha
+
+As campanhas são quase sempre as mesmas — muda a oferta e uma coisa ou
+outra. Enquanto o ClickUp era o dono das tarefas, elas vinham copiadas do
+mês anterior; com ele fora, o assistente criava campanha, TAP e nó no
+mapa, e **nenhuma tarefa**.
+
+Agora existe um modelo por formato (`src/backlog.js`), no Painel →
+**Backlog**. Cada item guarda o título, a área de entrega, o checklist e
+o dia contado a partir do começo ou do fim da campanha:
+
+    D−7  Fechar a oferta                    Oferta
+    D−2  Subir banner, tarja e avisos       Site
+    D    Ligar as campanhas e acompanhar    Tráfego
+    F+1  Desligar cupons e religar o resto  Oferta
+
+O modelo guarda a **área**, não o nome de quem faz: um modelo com nome
+dentro envelhece no dia em que alguém troca de função. A pessoa sai do
+cadastro na hora de aplicar. A área também viaja na tarefa como `canal`,
+então ela nasce sabendo qual roteiro de conferência responde por ela, em
+vez de depender de a classificação adivinhar pelo título.
+
+A campanha nova mostra a lista inteira e espera um clique. Aplicar duas
+vezes não duplica: o que já existe com o mesmo título fica como está.
+
+### A rotina e a recorrência
+
+O campo **Recorrência** existia na ficha da tarefa desde o começo —
+"não repetir / diária / semanal / mensal" — e nada no sistema nunca olhou
+para ele. Agora, quando uma tarefa que se repete é concluída, a próxima
+nasce (`src/rotina.js`).
+
+Não fica pendurado no clique de fechar, porque a tarefa fecha em mais de
+um lugar e porque quem fechou foi o Pedro, no navegador dele — a Sarah
+precisa ver a próxima aparecer sem ter clicado em nada. É uma varredura:
+toda tarefa concluída que se repete e ainda não gerou a seguinte, gera. O
+id da nova sai da origem e da data, e não de um sorteio, para dois
+navegadores chegarem no mesmo id e a junção do banco fundir em vez de
+duplicar. Fechar com atraso não gera tarefa vencida: a próxima é a
+primeira que ainda não passou.
+
+A **rotina** é o que a área faz sempre, com campanha ou sem: ler o
+gerenciador de manhã, zerar a fila do atendimento, fechar o número da
+semana, revisar as réguas do mês. Isso **não vira tarefa** — três mil e
+seiscentas linhas por ano afogariam a lista. É uma lista curta que se
+marca, e o que fica guardado é só a marca do período: o dia, a segunda
+daquela semana, o ano-mês. Marca de dia com mais de dois meses é podada;
+a do mês fica, porque o ano inteiro cabe.
+
+Aparece no início de cada pessoa e na página da área dela. Semanal e
+mensal com dia marcado só aparecem no dia — uma lista de trinta itens que
+nunca muda vira papel de parede, e ninguém marca papel de parede.
+
 ## Quem entra na Central
 
 Acesso é uma coisa; cadastro de pessoa é outra. As duas moram na tela
