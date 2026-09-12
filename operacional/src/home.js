@@ -71,18 +71,18 @@
   const doCatalogo = (id) => BLOCOS.find((b) => b.id === id) || null;
   const LARGURAS = [{ v: 3, n: '¼' }, { v: 4, n: '⅓' }, { v: 6, n: '½' }, { v: 8, n: '⅔' }, { v: 12, n: '1' }];
 
-  /* Quem executa abre a Central para ver o que é da área dele e fechar o
-     que é dele — não para acompanhar a operação inteira. Quem administra
-     abre para o contrário. Então o arranjo de fábrica é diferente para
-     cada um; depois disso, todo mundo monta o seu. */
-  const PADRAO = () => {
-    const papel = (window.CentralEu || {}).papel;
-    const manda = papel === 'admin' || papel === 'gestor';
-    const ids = manda
-      ? ['minhaArea', 'rotina', 'semana', 'perto', 'vencidas', 'conclusao', 'atencao', 'campanhas']
-      : ['minhaArea', 'minhas', 'rotina', 'atencao'];
-    return ids.map((id) => ({ id, larg: id === 'minhas' ? 6 : id === 'rotina' ? 6 : id === 'atencao' && !manda ? 6 : doCatalogo(id).larg }));
-  };
+  /* A home de fábrica é a de sempre, igual para todo mundo. Já teve uma
+     versão que mudava com o papel e punha a área e a rotina na frente;
+     na prática atrapalhou mais do que ajudou, e voltou para cá. Os dois
+     blocos continuam existindo no catálogo, para quem quiser chamar. */
+  const PADRAO = () => ['semana', 'perto', 'vencidas', 'conclusao', 'atencao', 'campanhas']
+    .map((id) => ({ id, larg: doCatalogo(id).larg }));
+
+  /* Esses dois entraram no arranjo de todo mundo sem ninguém ter pedido,
+     então saem do de todo mundo uma vez só. Quem os quiser de volta pega
+     no catálogo, e daí em diante eles ficam — a marca abaixo é o que
+     impede a limpeza de acontecer de novo e desfazer essa escolha. */
+  const IMPOSTOS = ['minhaArea', 'rotina'];
 
   /* ---------- o arranjo de quem está logado ---------- */
   function arranjo() {
@@ -90,15 +90,23 @@
       const g = JSON.parse(localStorage.getItem(CHAVE()) || 'null');
       const blocos = g && Array.isArray(g.blocos) ? g.blocos : null;
       if (!blocos) return PADRAO();
-      const limpo = blocos
+      let limpo = blocos
         .filter((b) => b && doCatalogo(b.id))
         .map((b) => ({ id: b.id, larg: LARGURAS.some((l) => l.v === +b.larg) ? +b.larg : doCatalogo(b.id).larg }));
+      if (g.limpo !== 1) {
+        limpo = limpo.filter((b) => !IMPOSTOS.includes(b.id));
+        gravarCru(limpo);
+      }
       return limpo.length ? limpo : PADRAO();
     } catch { return PADRAO() }
   }
 
+  const gravarCru = (blocos) => {
+    try { localStorage.setItem(CHAVE(), JSON.stringify({ v: 1, limpo: 1, blocos })) } catch {}
+  };
+
   function gravar(blocos) {
-    try { localStorage.setItem(CHAVE(), JSON.stringify({ v: 1, blocos })) } catch {}
+    gravarCru(blocos);
     desenhar();
   }
 

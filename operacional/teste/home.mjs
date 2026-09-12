@@ -50,8 +50,8 @@ const guardado = () => pag.evaluate(() =>
 
 /* ---------- a grade ---------- */
 conf('a home vira uma grade de blocos', await pag.locator('#homeGrade .hm-grade').count() === 1);
-conf('quem administra nasce com a área e a rotina na frente e a operação inteira atrás',
-  (await arranjo()).join(',') === 'minhaArea:12,rotina:6,semana:12,perto:4,vencidas:4,conclusao:4,atencao:8,campanhas:4');
+conf('a home nasce com o arranjo de fábrica, igual para todo mundo',
+  (await arranjo()).join(',') === 'semana:12,perto:4,vencidas:4,conclusao:4,atencao:8,campanhas:4');
 conf('os blocos do app foram movidos para dentro da grade, não recriados',
   await pag.locator('#homeGrade [data-hm-corpo="atencao"] #homeAtencao').count() === 1 &&
   await pag.locator('#homeGrade [data-hm-corpo="perto"] [data-stat="perto"]').count() === 1);
@@ -66,7 +66,7 @@ conf('fora do modo organizar, nada de alça nem de x',
   await pag.locator('.hm-ferramentas').count() === 0);
 await pag.locator('[data-hm-organizar]').click(); await pag.waitForTimeout(300);
 conf('organizar mostra alça, largura e o x em cada bloco',
-  await pag.locator('.hm-ferramentas').count() === 8 &&
+  await pag.locator('.hm-ferramentas').count() === 6 &&
   await pag.locator('[data-hm-bloco="atencao"] [data-hm-larg]').count() === 5);
 conf('e o bloco passa a poder ser arrastado',
   await pag.locator('[data-hm-bloco="semana"]').getAttribute('draggable') === 'true');
@@ -75,7 +75,7 @@ conf('e o bloco passa a poder ser arrastado',
 const antes = await arranjo();
 await pag.evaluate(() => {
   const de = document.querySelector('[data-hm-bloco="campanhas"]');
-  const para = document.querySelector('[data-hm-bloco="minhaArea"]');
+  const para = document.querySelector('[data-hm-bloco="semana"]');
   const dt = new DataTransfer();
   de.dispatchEvent(new DragEvent('dragstart', { dataTransfer: dt, bubbles: true }));
   para.dispatchEvent(new DragEvent('dragover', { dataTransfer: dt, bubbles: true, cancelable: true }));
@@ -126,22 +126,16 @@ conf('e o bloco "o que estreia" mostra a campanha que vem, com as abertas',
 /* ---------- voltar ao padrão ---------- */
 await pag.locator('[data-hm-padrao]').click(); await pag.waitForTimeout(400);
 conf('voltar ao padrão devolve o arranjo de fábrica',
-  (await arranjo()).join(',') === 'minhaArea:12,rotina:6,semana:12,perto:4,vencidas:4,conclusao:4,atencao:8,campanhas:4');
+  (await arranjo()).join(',') === 'semana:12,perto:4,vencidas:4,conclusao:4,atencao:8,campanhas:4');
 await pag.locator('[data-hm-organizar]').click(); await pag.waitForTimeout(300);
 conf('e sair do modo organizar limpa as ferramentas',
   await pag.locator('.hm-ferramentas').count() === 0);
-/* ---------- a lateral guardada ---------- */
-conf('a lateral some e vira sanduíche no tamanho de computador',
-  await pag.locator('#menuBotao').isVisible() &&
-  await pag.evaluate(() => document.body.classList.contains('mn')));
-conf('e nasce fechada', !(await pag.evaluate(() => document.body.classList.contains('mn-aberto'))));
-await pag.locator('#menuBotao').click(); await pag.waitForTimeout(350);
-conf('o sanduíche abre a lateral', await pag.evaluate(() => document.body.classList.contains('mn-aberto')));
-conf('e agora os destinos aparecem com nome, não só ícone',
-  (await pag.locator('.sidebar #painelNav').innerText()).trim().length > 3);
-await pag.locator('.sidebar #homeNav').click(); await pag.waitForTimeout(400);
-conf('escolher um destino fecha o menu sozinho',
-  !(await pag.evaluate(() => document.body.classList.contains('mn-aberto'))));
+/* ---------- a lateral ----------
+   Já esteve guardada atrás de um sanduíche; atrapalhou e voltou. Fica
+   aqui a checagem de que ela está à vista, para não voltar por acidente. */
+conf('a lateral fica à vista, sem sanduíche no meio',
+  await pag.locator('.sidebar #painelNav').isVisible() &&
+  await pag.locator('#menuBotao').count() === 0);
 
 await pag.screenshot({ path: 'teste/30-home-modular.png', fullPage: true });
 

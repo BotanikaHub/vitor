@@ -184,7 +184,13 @@ console.log('\nno início');
 await pag.evaluate(() => { try { localStorage.removeItem('central.home.layout.u1') } catch {} });
 await pag.reload({ waitUntil:'networkidle' });
 await pag.waitForTimeout(1500);
-conf('o bloco da rotina aparece na tela inicial', await pag.locator('[data-hm-bloco="rotina"]').count() === 1);
+/* A rotina não se impõe na home de ninguém: chegou a nascer no arranjo de
+   fábrica, atrapalhou, e voltou a ser um bloco do catálogo. */
+conf('a rotina não entra sozinha na home', await pag.locator('[data-hm-bloco="rotina"]').count() === 0);
+await pag.locator('[data-hm-organizar]').click(); await pag.waitForTimeout(300);
+await pag.locator('[data-hm-add]').click(); await pag.waitForTimeout(300);
+await pag.locator('[data-hm-por="rotina"]').click(); await pag.waitForTimeout(800);
+conf('mas está no catálogo, e entra quando se pede', await pag.locator('[data-hm-bloco="rotina"]').count() === 1);
 const cxs = pag.locator('[data-hm-bloco="rotina"] [data-hm-rotina]');
 conf('com os itens da área de quem está logado', await cxs.count() > 0);
 const titulo = await pag.locator('[data-hm-bloco="rotina"] .hm-rot span').first().innerText();

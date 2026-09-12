@@ -11,14 +11,8 @@ import assert from 'node:assert/strict';
 
 const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
 
-/* A lateral agora fica guardada atrás do sanduíche: navegar é abrir e
-   escolher, que é o que uma pessoa faz. */
+/* Navegar é clicar no destino na lateral, que está sempre à vista. */
 const irPara = async (p, id) => {
-  const bt = p.locator('#menuBotao');
-  if (await bt.isVisible().catch(() => false)) {
-    const jaAberto = await p.evaluate(() => document.body.classList.contains('mn-aberto'));
-    if (!jaAberto) { await bt.click(); await p.waitForTimeout(260) }
-  }
   await p.locator(`#${id}`).click();
   await p.waitForTimeout(140);
 };
@@ -129,11 +123,17 @@ const conf = (n, v) => { assert.ok(v, n); ok.push(n) };
 const pHome = await abrir({ id:'u-italo', nome:'Ítalo Neves', email:'italo@b.com', papel:'membro', ativo:true, cargo:'Social', area_id:'a-soc' });
 await irPara(pHome, 'homeNav'); await pHome.waitForTimeout(900);
 const arr = await pHome.evaluate(() => window.HomeModular.arranjo().map((b) => b.id));
-conf('quem executa nasce com a área e a rotina na frente, e pouca coisa atrás',
-  arr[0] === 'minhaArea' && arr.includes('rotina') && arr.length === 4 && !arr.includes('semana'));
+/* A home de fábrica é a de sempre: a área não entra sozinha na frente de
+   ninguém — chegou a entrar, atrapalhou, e voltou para o catálogo. */
+conf('a área não se impõe na home de quem não pediu', !arr.includes('minhaArea'));
+await pHome.locator('[data-hm-organizar]').click(); await pHome.waitForTimeout(300);
+await pHome.locator('[data-hm-add]').click(); await pHome.waitForTimeout(300);
+await pHome.locator('[data-hm-por="minhaArea"]').click(); await pHome.waitForTimeout(1200);
+conf('mas está no catálogo, para quem quiser chamar',
+  (await pHome.evaluate(() => window.HomeModular.arranjo().map((b) => b.id))).includes('minhaArea'));
 await pHome.waitForTimeout(900);
 const bloco = (await pHome.locator('[data-hm-bloco="minhaArea"]').innerText()).replace(/\s+/g, ' ');
-conf('e a área dele já aparece na home, sem ir a lugar nenhum',
+conf('e aí a área dele aparece na home, sem ir a lugar nenhum',
   /Social Media/i.test(bloco) && /1 abertas/.test(bloco));
 conf('sem nada atrasado, a home mostra o que vem em vez de ficar vazia',
   /O que vem a seguir/i.test(bloco) && /Post do feed/i.test(bloco));

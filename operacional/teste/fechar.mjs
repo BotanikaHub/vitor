@@ -10,14 +10,8 @@ import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 const html = readFileSync(new URL('../dist/index.html', import.meta.url), 'utf8');
 
-/* A lateral agora fica guardada atrás do sanduíche: navegar é abrir e
-   escolher, que é o que uma pessoa faz. */
+/* Navegar é clicar no destino na lateral, que está sempre à vista. */
 const irPara = async (p, id) => {
-  const bt = p.locator('#menuBotao');
-  if (await bt.isVisible().catch(() => false)) {
-    const jaAberto = await p.evaluate(() => document.body.classList.contains('mn-aberto'));
-    if (!jaAberto) { await bt.click(); await p.waitForTimeout(260) }
-  }
   await p.locator(`#${id}`).click();
   await p.waitForTimeout(140);
 };
