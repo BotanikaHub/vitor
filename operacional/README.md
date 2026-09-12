@@ -534,6 +534,45 @@ Aparece no início de cada pessoa e na página da área dela. Semanal e
 mensal com dia marcado só aparecem no dia — uma lista de trinta itens que
 nunca muda vira papel de parede, e ninguém marca papel de parede.
 
+## Os arquivos de cada marca
+
+O Drive da Botanika para a Botanika, o da VermeFree para a VermeFree —
+trocar de marca na barra de cima troca a pasta que se enxerga. Fica no
+Painel → **Arquivos** (`src/drive.js`, `api/drive.mjs`), e a mesma lista
+serve em três lugares: a tela, a ficha da tarefa e a campanha.
+
+Anexar aqui é guardar o link, não o arquivo. O que o app fazia antes
+guardava só o nome — "banner-final-v3.png, 240 KB" — e dali não se abria
+nada. Agora o anexo leva ao arquivo de verdade, que continua morando no
+Drive, com a versão que o Drive tem.
+
+### Por que conta de serviço, e não "entrar com o Google"
+
+Ler o Drive de alguém é **escopo restrito** no Google, o mais fechado que
+existe: um aplicativo não verificado não passa, e a verificação de escopo
+restrito exige avaliação de segurança — semanas e dinheiro. Com conta de
+serviço não há tela de consentimento: a pasta é compartilhada com um
+e-mail de robô, como se compartilha com uma pessoa, e o robô só enxerga o
+que foi compartilhado com ele. Ninguém da equipe autoriza nada, e ninguém
+reconecta toda semana.
+
+A chave mora em `GOOGLE_DRIVE_SA`, na Vercel, e nunca desce para o
+navegador (o JSON pode ir cru ou em base64 — colar JSON com quebras de
+linha no painel da Vercel é onde isso costuma quebrar). O id da pasta,
+esse sim desce: ele não é segredo, o acesso é. Fica em
+`painel_marcas.drive_pasta`, uma linha por marca.
+
+### A porta
+
+Pedir a pasta de outra marca é barrado: a função sobe de pai em pai até
+achar a raiz daquela marca, e recusa o que não estiver lá dentro. Sem
+isso bastaria passar o id da pasta da outra para ler a outra — o robô
+enxerga as duas.
+
+Procurar vale a pasta inteira, e não só o nível aberto: quem procura não
+sabe em que subpasta o arquivo está, e era justamente por isso que ia ao
+Drive em vez de procurar aqui.
+
 ## A agenda
 
 Cada pessoa liga o próprio calendário e vê o dia dela dentro da Central,

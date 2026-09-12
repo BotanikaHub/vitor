@@ -92,7 +92,7 @@ const espera = async (sel, t = 5000) => pag.locator(sel).first().waitFor({ state
 const chave = async (k) => pag.evaluate((k) => JSON.parse(localStorage.getItem(k) || 'null'), k);
 
 await irPara(pag, 'painelNav'); await espera('#painelView .pn-tile');
-conf('o cabeçalho ganhou o grupo de rituais, equipe, acessos, área, backlog e agenda', await pag.locator('#painelView .pn-extras [data-tela]').count() === 8);
+conf('o cabeçalho ganhou o grupo de rituais, equipe, acessos, área, backlog e agenda', await pag.locator('#painelView .pn-extras [data-tela]').count() === 9);
 
 /* ---------- Daily ---------- */
 await pag.locator('#painelView [data-tela="daily"]').click(); await espera('#painelCorpo .eq-pessoa');

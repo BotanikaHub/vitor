@@ -1721,6 +1721,6 @@
     roteiros: ROTEIROS, roteiroPadrao, gravarRoteiroPadrao, porRegrasRoteiro,
     escopoRoteiro, garantirRoteiro, refazerRoteiro, registrarErroRoteiro,
     areasDa, areasDeFora, tarefaPrincipal, ehPrincipal, travas, faltamTotal,
-    donoRoteiro, gravarDono, gentePossivel,
+    donoRoteiro, gravarDono, gentePossivel, tarefaDaFicha,
   };
 })();

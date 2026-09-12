@@ -1,0 +1,78 @@
+/* ======================================================================
+   Os arquivos — mesma pele do painel.
+   ====================================================================== */
+.dv-barra{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.dv-trilha{display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-width:0}
+.dv-trilha span{color:var(--pn-muted);font-size:11px}
+.dv-passo{padding:0;border:0;background:none;font:inherit;font-size:11.5px;font-weight:600;
+  color:var(--pn-muted);cursor:pointer}
+.dv-passo:hover{color:var(--pn-ink);text-decoration:underline}
+.dv-passo:last-of-type{color:var(--pn-ink)}
+.dv-busca{display:flex;align-items:center;gap:6px;margin-left:auto}
+.dv-busca input{min-height:32px;width:220px;padding:0 11px;border:1px solid var(--pn-line);
+  border-radius:999px;background:var(--pn-surface);color:var(--pn-ink);font:inherit;font-size:12px}
+.dv-busca input:focus{outline:none;border-color:var(--pn-ink)}
+
+.dv-bt{min-height:34px;padding:0 15px;border:0;border-radius:10px;background:var(--pn-ink);color:#fff;
+  font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.dv-bt:hover{opacity:.88}
+.dv-bt-vazio{min-height:30px;padding:0 11px;border:1px solid var(--pn-line);border-radius:999px;
+  background:transparent;color:var(--pn-muted);font:inherit;font-size:11px;font-weight:600;cursor:pointer}
+.dv-bt-vazio:hover{color:var(--pn-ink);border-color:var(--pn-ink)}
+.dv-x{width:26px;height:26px;flex:0 0 auto;border:1px solid var(--pn-line);border-radius:8px;
+  background:var(--pn-surface);color:var(--pn-muted);font:inherit;font-size:14px;line-height:1;cursor:pointer}
+.dv-x:hover{border-color:var(--pn-critico);color:var(--pn-critico)}
+
+/* --- a lista --- */
+.dv-lista{display:flex;flex-direction:column}
+.dv-item{display:flex;align-items:center;gap:11px;width:100%;padding:9px 10px;border:0;
+  border-bottom:1px solid var(--pn-line);border-radius:9px;background:transparent;
+  font:inherit;font-size:12.5px;color:var(--pn-ink);text-align:left;text-decoration:none;cursor:pointer}
+.dv-item:last-child{border-bottom:0}
+.dv-item:hover{background:#f4f4f2}
+.dv-sinal{flex:0 0 auto;width:22px;font-style:normal;font-size:13px;color:var(--pn-muted);text-align:center}
+.dv-pasta .dv-sinal{color:var(--pn-ink)}
+.dv-nome{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dv-pasta .dv-nome{font-weight:600}
+.dv-meta{flex:0 0 auto;font-size:10px;color:var(--pn-muted);white-space:nowrap}
+.dv-abrir{flex:0 0 auto;font-size:10px;color:var(--pn-muted);opacity:0;transition:opacity .12s}
+.dv-item:hover .dv-abrir,.dv-anexo:hover .dv-abrir{opacity:1}
+.dv-sem{font-size:11.5px;color:var(--pn-muted);font-style:italic}
+.dv-obs{margin-top:10px;font-size:10.5px;color:var(--pn-muted)}
+
+/* --- o anexo, na tarefa e na campanha --- */
+.dv-anexo{display:flex;align-items:center;gap:7px}
+.dv-anexo>a,.dv-anexo>span{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:11px;
+  padding:8px 10px;border-radius:9px;font-size:12px;color:var(--pn-ink,#151718);text-decoration:none}
+.dv-anexo>a:hover{background:#f4f4f2}
+
+/* --- ligar a pasta --- */
+.dv-ligar{max-width:600px}
+.dv-ligar b{font-size:13px;color:var(--pn-ink)}
+.dv-ligar p{margin:6px 0 0;font-size:12px;line-height:1.55;color:var(--pn-muted)}
+.dv-ligar ol{margin:11px 0 0;padding-left:20px;font-size:12px;line-height:1.85;color:var(--pn-ink)}
+.dv-ligar code{padding:1px 5px;border-radius:5px;background:#f1f1ef;font-size:11px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.dv-ligar form{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.dv-ligar input{flex:1 1 260px;min-height:34px;padding:0 11px;border:1px solid var(--pn-line);
+  border-radius:10px;background:var(--pn-surface);color:var(--pn-ink);font:inherit;font-size:12px}
+.dv-ligar input:focus{outline:none;border-color:var(--pn-ink)}
+.dv-msg{margin-top:10px;font-size:12px}
+.dv-msg.erro{color:var(--pn-critico)}
+
+/* --- o escolhedor --- */
+.dv-modal{position:fixed;inset:0;z-index:9600;display:flex;align-items:center;justify-content:center;
+  padding:24px;background:rgba(18,20,21,.42)}
+.dv-modal-cx{width:100%;max-width:620px;max-height:80vh;display:flex;flex-direction:column;
+  border-radius:16px;background:#fff;box-shadow:0 18px 50px rgba(0,0,0,.22);overflow:hidden}
+.dv-modal-topo{display:flex;align-items:center;gap:10px;padding:15px 18px;border-bottom:1px solid #ececea}
+.dv-modal-topo b{flex:1 1 auto;font-size:13.5px;color:#151718}
+.dv-modal-corpo{flex:1 1 auto;overflow:auto;padding:15px 18px}
+.dv-modal .dv-busca{margin-left:auto}
+.dv-modal .dv-busca input{width:170px}
+
+@media (max-width:640px){
+  .dv-busca{margin-left:0;flex:1 1 100%}
+  .dv-busca input{width:100%}
+  .dv-meta{display:none}
+}
