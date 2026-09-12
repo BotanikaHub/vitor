@@ -31,6 +31,12 @@
     recompra: { nome: 'Ações de recompra',dias: 0, desc: 'Contínua no mês',                    cor: 4, app: 'Recompra' },
     perpetuo: { nome: 'Perpétuo',         dias: 0, desc: 'E-mail e API rodando sempre',        cor: 5, app: 'Perpétuo' },
     outro:    { nome: 'Outro formato',    dias: 5, desc: 'Você define tudo',                   cor: 3, app: 'Livre' },
+    /* Um lançamento não cabe em nenhum dos moldes acima: não tem Dia D,
+       não tem semana temática, e o TAP de sempre — os canais, as fases e
+       o ritmo da Botanika — atrapalharia mais do que ajudaria. Este
+       formato não traz nada: nasce com o nome, o período e uma seção só,
+       e o resto se escreve à mão. É o que "em branco" quer dizer. */
+    branco:   { nome: 'Em branco',       dias: 30, desc: 'Lançamento ou o que sair do padrão — TAP vazio', cor: 7, app: 'Em branco', branco: true },
   };
 
   const PADRAO = {
@@ -253,6 +259,18 @@
 
   function montarTap(c, tipo, tema) {
     const O = A || {};
+    /* Em branco é em branco: uma seção só, com o que identifica a
+       campanha, e nada do repertório da Botanika. As outras seções a
+       pessoa cria no próprio TAP, no botão "+ seção". */
+    if (TIPOS[tipo] && TIPOS[tipo].branco) {
+      const i = dISO(c.start), f = dISO(c.end);
+      return [{ title: 'SOBRE O EVENTO', columns: ['Campo', 'Valor'], rows: [
+        ['Nome da Campanha', c.name],
+        ['Período', c.start === c.end ? dBR(i) : `${dBR(i)} a ${dBR(f)}`],
+        ['Meta de faturamento', c.goal ? brl(c.goal) : '—'],
+        ['Verba', c.budget ? brl(c.budget) : '—'],
+      ] }];
+    }
     const ini = dISO(c.start), fim = dISO(c.end);
     const T = TIPOS[tipo], P = PADRAO[tipo] || PADRAO.outro;
     const periodo = c.start === c.end ? dBR(ini) : `${dBR(ini)} a ${dBR(fim)}`;
@@ -447,12 +465,17 @@
       <div class="as-resumo" id="as-resumo"></div>
       <div class="as-bts">
         <button class="as-bt" data-voltar>Voltar</button>
-        <button class="as-bt as-ok" data-adiante>Produtos e oferta →</button>
+        <button class="as-bt as-ok" data-adiante>${TIPOS[A.tipo].branco ? 'Criar em branco' : 'Produtos e oferta →'}</button>
       </div>`);
     const ids = ['as-nome', 'as-ini', 'as-fim', 'as-meta', 'as-verba'];
     ids.forEach((id) => { cx.querySelector('#' + id).oninput = resumo });
     cx.querySelector('[data-voltar]').onclick = () => (TIPOS[A.tipo].temas ? passoTema() : passo1());
-    cx.querySelector('[data-adiante]').onclick = () => { lerCampos(); passoOferta() };
+    cx.querySelector('[data-adiante]').onclick = () => {
+      lerCampos();
+      /* em branco pula produtos e divisão de canais: os dois só existem
+         para preencher um TAP que aqui nasce vazio de propósito */
+      if (TIPOS[A.tipo].branco) criar(); else passoOferta();
+    };
     resumo();
   }
 
@@ -643,7 +666,7 @@
       owner: 'Vitor Gutierrez',
       start: A.inicio, end: A.fim,
       goal: A.meta, budget: A.verba, progress: 0,
-      color: A.marca === 'VermeFree' ? '#4f8a70' : '#121415',
+      color: (window.Marcas && window.Marcas.cor(A.marca)) || '#121415',
       objective: `${T.desc}${A.tema ? ' — tema ' + A.tema : ''}`,
       offer: A.modoDesc === 'cada'
         ? 'Desconto por produto (já embutido no preço) — ver SOBRE A OFERTA'
@@ -668,7 +691,9 @@
     fechar();
     window.MapaMental?.virarCampanha(A.noId, { nome: c.name, cor: T.cor, campId: c.id });
     window.RecarregarCampanhas?.();
-    aviso(`"${c.name}" criada — nó no mapa e TAP montado.`);
+    aviso(T.branco
+      ? `"${c.name}" criada em branco — nó no mapa e um TAP vazio para você montar.`
+      : `"${c.name}" criada — nó no mapa e TAP montado.`);
 
     /* A campanha nascia sem tarefa nenhuma: enquanto o ClickUp era o dono
        delas, vinham copiadas de lá; com ele fora, alguém teria que digitar

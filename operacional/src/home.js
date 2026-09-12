@@ -172,7 +172,7 @@
     if (!area) return vazio('Você ainda não está ligado a uma área. Peça a quem administra para escolher a sua em Acessos.');
 
     const marca = document.getElementById('brandSelect')?.value || '';
-    const ts = A.tarefasDaArea(area, ['Botanika', 'VermeFree'].includes(marca) ? marca : '');
+    const ts = A.tarefasDaArea(area, window.Marcas?.ehMarca(marca) ? marca : '');
     const h = new Date().toISOString().slice(0, 10);
     const abertas = ts.filter((t) => t.status !== 'feito');
     const atrasadas = abertas.filter((t) => t.due && t.due < h);

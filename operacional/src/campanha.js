@@ -40,6 +40,35 @@
     `<span class="cp-ed ${cls || ''}" contenteditable="plaintext-only" spellcheck="false"` +
     ` data-campo="${campo}">${esc(valor ?? '')}</span>`;
 
+  /* ====================================================================
+     Fazer o app enxergar a campanha que acabou de nascer
+
+     O app lê as campanhas do localStorage uma vez, no boot, e guarda o
+     vetor dentro dele. Quem grava de fora — o assistente ao criar, este
+     módulo ao editar — mexia no localStorage e chamava
+     `window.RecarregarCampanhas`, que ninguém nunca definiu. Resultado:
+     a campanha existia no banco e na memória do navegador, e não aparecia
+     na lista até alguém recarregar a página.
+
+     `__centralGetCampaigns` devolve o vetor do app, e não uma cópia:
+     esvaziar e reencher é o suficiente para o app passar a enxergar. O
+     redesenho só acontece se a LISTA estiver na frente — chamar
+     `showCampaigns` com alguém dentro de uma campanha o jogaria para
+     fora no meio do trabalho.
+     ==================================================================== */
+  window.RecarregarCampanhas = function () {
+    const vivo = window.__centralGetCampaigns && window.__centralGetCampaigns();
+    if (!Array.isArray(vivo)) return;
+    const doDisco = ler(chaveCamp());
+    vivo.length = 0;
+    vivo.push(...doDisco);
+    const lista = document.getElementById('campaignOverviewList');
+    const dentro = document.getElementById('campaignWorkspace');
+    if (lista && !lista.classList.contains('hidden') && !(dentro && dentro.classList.contains('active'))) {
+      window.__centralShowCampaigns && window.__centralShowCampaigns();
+    }
+  };
+
   function gravar(c) {
     const todas = ler(chaveCamp());
     const i = todas.findIndex((x) => String(x.id) === String(c.id));

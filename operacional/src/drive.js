@@ -26,7 +26,7 @@
 
   const marcaAtual = () => {
     const v = document.getElementById('brandSelect')?.value || '';
-    return ['Botanika', 'VermeFree'].includes(v) ? v : 'Botanika';
+    return window.Marcas?.ehMarca(v) ? v : (window.Marcas?.nomes()[0] || 'Botanika');
   };
 
   const tamanho = (n) => {

@@ -21,7 +21,7 @@
 
   const ATUALIZA_MS = 45000;
   const CACHE_MS = 45000;
-  const MARCAS = ['Botanika', 'VermeFree'];
+  const MARCAS = () => (window.Marcas ? window.Marcas.nomes() : ['Botanika', 'VermeFree']);
   const REF_SB = 'sjkuysdmixfzeerxuudn';
 
   /* ---------- formatação, em português ---------- */
@@ -715,12 +715,12 @@
   function cabecalho() {
     const sel = document.getElementById('brandSelect');
     const global = sel ? sel.value : '';
-    const marcaFixa = MARCAS.includes(global);
+    const marcaFixa = MARCAS().includes(global);
     const p = periodoDe(st.preset, st.de, st.ate);
     const ex = telaExtra(st.tela);
     const semPeriodo = ['estoque', 'alertas'].includes(st.tela) || !!(ex && ex.semPeriodo);
     return `<header class="taskspage-head pn-head"><div class="taskspage-title"><div><h1>Painel</h1><p>Central / Acompanhamento / ${esc((TELAS.find((t) => t.id === st.tela) || ex || {}).nome || '')}</p></div>` +
-      `<div class="pn-head-dir">${marcaFixa ? `<span class="pn-marca">${esc(st.marca)}</span>` : `<div class="cu-views pn-marcas">${MARCAS.map((m) => `<button type="button" class="cu-view ${st.marca === m ? 'active' : ''}" data-marca="${m}">${m}</button>`).join('')}</div>`}` +
+      `<div class="pn-head-dir">${marcaFixa ? `<span class="pn-marca">${esc(st.marca)}</span>` : `<div class="cu-views pn-marcas">${MARCAS().map((m) => `<button type="button" class="cu-view ${st.marca === m ? 'active' : ''}" data-marca="${m}">${m}</button>`).join('')}</div>`}` +
       `<span class="pn-atualizado" id="painelAtualizado">${st.carregando ? 'atualizando…' : st.em ? `atualizado ${hora(st.em)}` : ''}</span><button type="button" class="cu-btn" data-painel-atualiza title="buscar de novo agora">↻</button></div></div>` +
       /* Uma barra só de abas. Antes eram duas cápsulas cinzas idênticas
          lado a lado — os números e os rituais — e uma terceira embaixo
@@ -828,7 +828,7 @@
     if (location.hash !== '#painel') location.hash = 'painel';
     st.aberto = true;
     const sel = document.getElementById('brandSelect');
-    if (sel && MARCAS.includes(sel.value)) st.marca = sel.value;
+    if (sel && MARCAS().includes(sel.value)) st.marca = sel.value;
     carregar(false);
     ligarRelogio();
   }
@@ -868,7 +868,7 @@
     document.getElementById('painelNav')?.addEventListener('click', mostrar);
     document.querySelectorAll('.navitem').forEach((b) => { if (b.id !== 'painelNav') b.addEventListener('click', () => { if (st.aberto) esconder() }, true) });
     document.getElementById('brandSelect')?.addEventListener('change', (e) => {
-      if (MARCAS.includes(e.target.value)) st.marca = e.target.value;
+      if (MARCAS().includes(e.target.value)) st.marca = e.target.value;
       if (st.aberto) { st.editando = null; carregar(false) }
     });
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && st.aberto) carregar(false) });

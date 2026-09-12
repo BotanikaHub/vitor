@@ -38,10 +38,13 @@ await pag.waitForSelector('.as-cx', { timeout: 4000 });
 conf('o + da raiz abre o assistente', true);
 
 const formatos = await pag.locator('.as-op').allTextContents();
-conf('oferece os formatos do planejador (' + formatos.length + ')', formatos.length === 7);
+conf('oferece os formatos do planejador (' + formatos.length + ')', formatos.length === 8);
 conf('tem Dia D, Semana temática e Livre',
   formatos.some(t => t.includes('Dia D')) && formatos.some(t => t.includes('Semana temática'))
   && formatos.some(t => t.includes('Livre')));
+/* e o que não cabe em molde nenhum, que é o caso de um lançamento */
+conf('e um formato em branco, para o que não é campanha de sempre',
+  formatos.some(t => t.includes('Em branco')));
 
 /* Semana temática pede o tema antes das datas */
 await pag.locator('.as-op', { hasText: 'Semana temática' }).click();

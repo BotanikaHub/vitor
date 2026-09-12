@@ -37,7 +37,7 @@
   const ler = (k, padrao) => { try { const v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? padrao : v } catch { return padrao } };
   const gravar = (k, v) => localStorage.setItem(k, JSON.stringify(v));
   const esc = (t) => String(t ?? '').replace(/[<>&"]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
-  const MARCAS = ['Botanika', 'VermeFree'];
+  const MARCAS = () => (window.Marcas ? window.Marcas.nomes() : ['Botanika', 'VermeFree']);
   const AREAS = [
     { id: 'gestao', nome: 'Gestão' }, { id: 'trafego', nome: 'Tráfego' }, { id: 'influenciadores', nome: 'Influenciadores' },
     { id: 'social_media', nome: 'Social media' }, { id: 'automacoes', nome: 'Automações' }, { id: 'atendimento', nome: 'Atendimento' },
@@ -108,7 +108,7 @@
       /* quem assina tarefa e não está na lista de acessos continua
          aparecendo: a tarefa é real, e alguém precisa vê-la */
       const soltos = [...vistos.keys()].filter((n) => !cobertos.has(n)).map((n) => ({
-        nome: n, nomes: [n], email: '', area: '', funcao: '', marcas: [...MARCAS],
+        nome: n, nomes: [n], email: '', area: '', funcao: '', marcas: MARCAS(),
         ativo: true, temAcesso: false, origem: 'clickup',
       }));
       return [...doB, ...soltos]
@@ -121,13 +121,13 @@
     for (const t of tarefas()) for (const a of (t.assignees || [])) { if (!a) continue; const v = vistos.get(a) || { marcas: new Set(), n: 0 }; v.marcas.add(t.brand); v.n++; vistos.set(a, v) }
     for (const c of campanhas()) if (c.owner) { const v = vistos.get(c.owner) || { marcas: new Set(), n: 0 }; v.marcas.add(c.brand); vistos.set(c.owner, v) }
     for (const [nome, v] of vistos) if (!porNome.has(nome)) porNome.set(nome, { nome, area: '', funcao: '', marcas: [...v.marcas].filter(Boolean), ativo: true, origem: 'clickup' });
-    return [...porNome.values()].map((p) => ({ ...p, nomes: [p.nome], marcas: Array.isArray(p.marcas) && p.marcas.length ? p.marcas : [...MARCAS], tarefas: (vistos.get(p.nome) || {}).n || 0 }))
+    return [...porNome.values()].map((p) => ({ ...p, nomes: [p.nome], marcas: Array.isArray(p.marcas) && p.marcas.length ? p.marcas : MARCAS(), tarefas: (vistos.get(p.nome) || {}).n || 0 }))
       .sort((a, b) => (b.ativo - a.ativo) || (b.tarefas - a.tarefas) || a.nome.localeCompare(b.nome));
   }
   function gravarPessoa(nome, campos) {
     const lista = pessoas().map(({ tarefas: _t, ...p }) => p);
     let p = lista.find((x) => x.nome === nome);
-    if (!p) { p = { nome, area: '', funcao: '', marcas: [...MARCAS], ativo: true, origem: 'manual' }; lista.push(p) }
+    if (!p) { p = { nome, area: '', funcao: '', marcas: MARCAS(), ativo: true, origem: 'manual' }; lista.push(p) }
     Object.assign(p, campos);
     gravar(K.pessoas(), lista);
   }
@@ -467,7 +467,7 @@
     const cadastro = `<div class="pn-rolagem"><table class="pn-tabela eq-cadastro"><thead><tr><th>Pessoa</th><th>Área</th><th>Função</th><th>Marcas</th><th>Ativa</th><th class="num">Tarefas</th></tr></thead><tbody>${todas.map((p) => `<tr class="${p.ativo ? '' : 'inativa'}"><td><b>${esc(p.nome)}</b><small class="pn-sub">${p.origem === 'clickup' ? 'vem do ClickUp' : 'cadastro manual'}</small></td>` +
       `<td><select data-eq-pessoa="${esc(p.nome)}" data-campo="area"><option value="">sem área</option>${AREAS.map((a) => `<option value="${a.id}" ${a.id === p.area ? 'selected' : ''}>${a.nome}</option>`).join('')}</select></td>` +
       `<td><input data-eq-pessoa="${esc(p.nome)}" data-campo="funcao" value="${esc(p.funcao || '')}" placeholder="função"></td>` +
-      `<td>${MARCAS.map((m) => `<label class="eq-marca"><input type="checkbox" data-eq-pessoa="${esc(p.nome)}" data-campo="marca:${m}" ${(p.marcas || []).includes(m) ? 'checked' : ''}>${m}</label>`).join('')}</td>` +
+      `<td>${MARCAS().map((m) => `<label class="eq-marca"><input type="checkbox" data-eq-pessoa="${esc(p.nome)}" data-campo="marca:${m}" ${(p.marcas || []).includes(m) ? 'checked' : ''}>${m}</label>`).join('')}</td>` +
       `<td><input type="checkbox" data-eq-pessoa="${esc(p.nome)}" data-campo="ativo" ${p.ativo ? 'checked' : ''}></td><td class="num">${fmt.num(p.tarefas)}</td></tr>`).join('')}</tbody></table></div>` +
       `<form class="eq-form" data-eq-pessoa-nova><input name="nome" placeholder="Nome de quem entra" required><select name="area"><option value="">Área</option>${AREAS.map((a) => `<option value="${a.id}">${a.nome}</option>`).join('')}</select><button type="submit" class="cu-btn primary">Adicionar pessoa</button></form>`;
 
@@ -624,7 +624,7 @@
       if (el.matches('[data-eq-pessoa]')) {
         const nome = el.dataset.eqPessoa, campo = el.dataset.campo;
         if (campo === 'ativo') gravarPessoa(nome, { ativo: el.checked });
-        else if (campo.startsWith('marca:')) { const p = pessoas().find((x) => x.nome === nome); const m = new Set(p ? p.marcas : MARCAS); if (el.checked) m.add(campo.slice(6)); else m.delete(campo.slice(6)); gravarPessoa(nome, { marcas: [...m] }) }
+        else if (campo.startsWith('marca:')) { const p = pessoas().find((x) => x.nome === nome); const m = new Set(p ? p.marcas : MARCAS()); if (el.checked) m.add(campo.slice(6)); else m.delete(campo.slice(6)); gravarPessoa(nome, { marcas: [...m] }) }
         else gravarPessoa(nome, { [campo]: el.value });
         window.showToast?.('Cadastro salvo');
         if (campo === 'ativo' || campo.startsWith('marca:')) redesenhar();

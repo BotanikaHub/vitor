@@ -476,6 +476,43 @@ outra chave `central.*`:
 Nenhuma ação vira tarefa no ClickUp por aqui: isso só depois que a escrita de
 volta for liberada.
 
+## As marcas
+
+Eram duas, escritas à mão em nove lugares — três `<select>` no HTML, o
+subtítulo da lateral e listas soltas dentro de cinco módulos. Entrar uma
+terceira significava achar os nove e acertar todos; esquecer um deixava a
+marca invisível justamente na tela que a pessoa fosse usar.
+
+Agora a lista vem da tabela `brands` (`src/marcas.js`), que já era onde o
+cadastro decide quem trabalha em quê. Os seletores são reescritos a
+partir dela — inclusive o da ficha da tarefa, que o app remonta a cada
+abertura — e quem precisa da lista pergunta a `window.Marcas`. O plano B
+são as duas de sempre: se o banco não responder, o sistema continua
+funcionando em vez de ficar sem marca nenhuma.
+
+A cor da campanha também sai daí, pela posição na lista, e não de um nome
+escrito no código — senão a marca nova nasceria sem cor.
+
+Uma marca pode existir sem painel de números próprio: a `painel_marcas`
+virou "os ganchos externos da marca" (painel do Lovable e pasta do
+Drive), e `url`/`chave_publica` aceitam vazio. Marca nascendo não tem
+analytics ainda.
+
+### O formato em branco
+
+Um lançamento não cabe em nenhum dos moldes do planejador: não tem Dia D,
+não tem semana temática, e o TAP de sempre — os canais, as fases e o
+ritmo da Botanika — atrapalharia mais do que ajudaria.
+
+O formato **Em branco** não traz nada. Pula o passo dos produtos e o da
+divisão de canais (os dois só existem para preencher um TAP que aqui
+nasce vazio de propósito) e monta uma seção só, `SOBRE O EVENTO`, com
+nome, período, meta e verba. O resto se escreve no próprio TAP, no
+"+ seção" e no "+ linha", que já existiam.
+
+O mapa mental já era por marca e já nascia em branco — uma raiz
+"Planejamento" e nada mais.
+
 ## O que se repete
 
 Duas coisas se repetem na operação, em escalas diferentes, e nenhuma
